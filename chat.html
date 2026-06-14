@@ -23,7 +23,6 @@
             bottom: 0;
         }
 
-        /* ========== ДЕСКТОП ========== */
         .desktop-layout { display: flex; height: 100vh; overflow: hidden; }
         .icon { width: 20px; height: 20px; display: inline-block; background-size: contain; background-repeat: no-repeat; background-position: center; vertical-align: middle; }
         .icon-home { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z'/%3E%3C/svg%3E"); }
@@ -89,6 +88,8 @@
         .settings-group { margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #30363d; }
         .gift-option { display: flex; justify-content: space-between; align-items: center; padding: 12px; margin: 8px 0; background: #21262d; border-radius: 12px; cursor: pointer; }
         .gift-option:hover { background: #30363d; }
+        .chat-option { display: flex; justify-content: space-between; align-items: center; padding: 12px; margin: 8px 0; background: #21262d; border-radius: 12px; cursor: pointer; }
+        .chat-option:hover { background: #30363d; }
         .gift-history-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid #30363d; }
         .gift-icon-small { width: 28px; height: 28px; background-size: contain; background-repeat: no-repeat; }
         .gift-sweet-icon { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23FF69B4' viewBox='0 0 24 24'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z'/%3E%3Ccircle cx='12' cy='12' r='4' fill='%23FF69B4'/%3E%3C/svg%3E"); }
@@ -101,7 +102,7 @@
         .btn-unban { background: #2f81f7; border: none; padding: 6px 12px; border-radius: 6px; color: white; cursor: pointer; font-size: 0.75rem; }
         .close-admin-btn { background: #2f81f7; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 1rem; font-size: 0.9rem; }
         
-        /* ========== МОБИЛЬНАЯ ВЕРСИЯ — ИСПРАВЛЕНА ========== */
+        /* ========== МОБИЛЬНАЯ ВЕРСИЯ ========== */
         @media (max-width: 768px) {
             .desktop-layout { display: none; }
             .mobile-layout { display: flex; flex-direction: column; height: 100%; width: 100%; position: relative; background: #0d1117; }
@@ -175,7 +176,7 @@
         </div>
     </div>
 
-    <!-- МОБИЛЬНЫЙ ИНТЕРФЕЙС — ИСПРАВЛЕН -->
+    <!-- МОБИЛЬНЫЙ ИНТЕРФЕЙС -->
     <div class="mobile-layout" id="mobileLayout">
         <div class="mobile-chats-screen" id="mobileChatsScreen">
             <div class="mobile-header">
@@ -216,6 +217,7 @@
     <div id="newChatModal" class="modal hidden"><div class="modal-content"><h3>Новый чат</h3><input type="text" id="chatUsernameInput" placeholder="Username собеседника"><button id="createChatBtn">Начать</button><button id="cancelChatBtn">Отмена</button></div></div>
     <div id="giftShopModal" class="modal hidden"><div class="modal-content"><h3>🎁 Магазин подарков</h3><div id="giftShopList"></div><button id="closeGiftShopBtn">Закрыть</button></div></div>
     <div id="giftHistoryModal" class="modal hidden"><div class="modal-content"><h3>📦 Полученные подарки</h3><div id="giftHistoryList"></div><button id="closeGiftHistoryBtn">Закрыть</button></div></div>
+    <div id="selectChatModal" class="modal hidden"><div class="modal-content"><h3>📱 Выберите получателя</h3><div id="selectChatList"></div><button id="closeSelectChatBtn">Отмена</button></div></div>
     <div id="adminPanel" class="admin-panel hidden"><h3>Админ панель</h3><div id="adminUsersList"></div><button id="closeAdminBtn" class="close-admin-btn">Закрыть</button></div>
 
     <script>
@@ -223,6 +225,7 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth(), db = firebase.database();
         let currentUser = null, currentUserData = null, currentChatId = null, currentChatOtherId = null, chats = [], messagesUnsubscribe = null, allUsersCache = null;
+        let pendingGift = null; // для мобилки: { type, cost, name }
 
         function validateUsername(u) { return /^[a-zA-Z0-9]{5,15}$/.test(u); }
         function setFontSize(s) { let f = s==='small'?'12px':s==='medium'?'14px':'16px'; document.body.style.fontSize = f; localStorage.setItem('trailless_font_size', s); }
@@ -349,22 +352,21 @@
             scrollToBottom(true);
         }
         
-        async function sendGift(giftType, cost, giftName) {
-            if(!currentChatOtherId) { 
-                if(window.innerWidth <= 768) alert('Сначала откройте чат с пользователем');
-                return; 
-            }
+        async function sendGiftToUser(targetUserId, targetChatId, giftType, cost, giftName) {
             if((currentUserData.coins || 0) < cost) return;
             await addCoins(-cost);
             let giftMessage = `🎁 ${currentUserData.username} подарил(а) ${giftName}! 🎁`;
             let msg = { text: giftMessage, senderId: currentUser.uid, senderName: currentUserData.username, senderRole: currentUserData?.role||'user', timestamp: Date.now(), isGift: true, giftType: giftType, giftValue: cost };
-            await db.ref(`messages/${currentChatId}`).push(msg);
+            await db.ref(`messages/${targetChatId}`).push(msg);
             let giftRecord = { from: currentUser.uid, fromName: currentUserData.username, type: giftType, name: giftName, value: cost, timestamp: Date.now() };
-            await db.ref(`users/${currentChatOtherId}/gifts`).push(giftRecord);
+            await db.ref(`users/${targetUserId}/gifts`).push(giftRecord);
         }
         
         async function showGiftHistory() {
-            if(!currentChatOtherId) { if(window.innerWidth <= 768) alert('Сначала откройте чат'); return; }
+            if(!currentChatOtherId) { 
+                if(window.innerWidth <= 768) alert('Сначала откройте чат');
+                return; 
+            }
             let snap = await db.ref(`users/${currentChatOtherId}/gifts`).once('value');
             let gifts = snap.val()||{};
             let list = Object.values(gifts).sort((a,b)=>b.timestamp-a.timestamp);
@@ -382,7 +384,9 @@
             document.getElementById('giftHistoryModal').classList.remove('hidden');
         }
         
-        function showGiftShop() {
+        // Для ПК: отправка сразу в текущий чат
+        function showGiftShopDesktop() {
+            if(!currentChatOtherId) { alert('Сначала откройте чат'); return; }
             let container = document.getElementById('giftShopList');
             container.innerHTML = `
                 <div class="gift-option" data-gift="sweet" data-cost="300" data-name="Sweet Candy 🍬">
@@ -395,18 +399,63 @@
                 </div>
             `;
             document.getElementById('giftShopModal').classList.remove('hidden');
-            document.querySelectorAll('.gift-option').forEach(el => {
-                el.onclick = () => { sendGift(el.dataset.gift, parseInt(el.dataset.cost), el.dataset.name); document.getElementById('giftShopModal').classList.add('hidden'); };
+            document.querySelectorAll('#giftShopList .gift-option').forEach(el => {
+                el.onclick = () => { 
+                    sendGiftToUser(currentChatOtherId, currentChatId, el.dataset.gift, parseInt(el.dataset.cost), el.dataset.name);
+                    document.getElementById('giftShopModal').classList.add('hidden');
+                };
+            });
+        }
+        
+        // Для телефона: сначала выбор чата, потом подарок
+        function showGiftShopMobile() {
+            if(chats.length === 0) { alert('У вас нет чатов'); return; }
+            let container = document.getElementById('selectChatList');
+            container.innerHTML = chats.map(c => `
+                <div class="chat-option" data-chat-id="${c.id}" data-user-id="${c.userId}" data-user-name="${escapeHtml(c.name)}">
+                    <span>@${escapeHtml(c.name)}</span>
+                    <span style="font-size:0.7rem;">${c.roleBadge}</span>
+                </div>
+            `).join('');
+            document.getElementById('selectChatModal').classList.remove('hidden');
+            
+            document.querySelectorAll('#selectChatList .chat-option').forEach(el => {
+                el.onclick = () => {
+                    let chatId = el.dataset.chatId;
+                    let userId = el.dataset.userId;
+                    let userName = el.dataset.userName;
+                    document.getElementById('selectChatModal').classList.add('hidden');
+                    
+                    // Показываем выбор подарка
+                    let giftContainer = document.getElementById('giftShopList');
+                    giftContainer.innerHTML = `
+                        <div class="gift-option" data-gift="sweet" data-cost="300" data-name="Sweet Candy 🍬">
+                            <span>🍬 Sweet Candy</span>
+                            <span style="color:#FFD966;">300 🪙</span>
+                        </div>
+                        <div class="gift-option" data-gift="surprise" data-cost="50" data-name="Gift Surprise 🎁">
+                            <span>🎁 Gift Surprise</span>
+                            <span style="color:#FFD966;">50 🪙</span>
+                        </div>
+                    `;
+                    document.getElementById('giftShopModal').classList.remove('hidden');
+                    document.querySelectorAll('#giftShopList .gift-option').forEach(giftEl => {
+                        giftEl.onclick = () => {
+                            sendGiftToUser(userId, chatId, giftEl.dataset.gift, parseInt(giftEl.dataset.cost), giftEl.dataset.name);
+                            document.getElementById('giftShopModal').classList.add('hidden');
+                        };
+                    });
+                };
             });
         }
         
         async function createNewChat() { 
             let username = document.getElementById('chatUsernameInput').value.trim(); 
-            if(!username){if(window.innerWidth <= 768) alert('Введите username'); return;} 
+            if(!username){alert('Введите username'); return;} 
             let found = await findUserByUsername(username); 
-            if(!found){if(window.innerWidth <= 768) alert('Не найден'); return;} 
-            if(found.uid===currentUser.uid){if(window.innerWidth <= 768) alert('Сам с собой нельзя'); return;} 
-            if(found.banned){if(window.innerWidth <= 768) alert('Заблокирован'); return;} 
+            if(!found){alert('Не найден'); return;} 
+            if(found.uid===currentUser.uid){alert('Сам с собой нельзя'); return;} 
+            if(found.banned){alert('Заблокирован'); return;} 
             let existing = chats.find(c=>c.userId===found.uid); 
             if(existing){ 
                 openChat(existing.id, existing.name, existing.userId); 
@@ -431,7 +480,6 @@
         
         async function logout(){ detachMessages(); await auth.signOut(); window.location.href='login.html'; }
 
-        // Фокус на поле ввода мобилки — скроллим к последнему сообщению
         document.getElementById('mobileMessageInput')?.addEventListener('focus', () => scrollToBottom(true));
         document.getElementById('mobileMessageInput')?.addEventListener('click', () => scrollToBottom(true));
 
@@ -490,13 +538,16 @@
         document.getElementById('changeUsernameBtn').onclick = async()=>{ await changeUsername(document.getElementById('newUsername').value.trim()); document.getElementById('newUsername').value=''; alert('Username изменён'); };
         document.getElementById('changePasswordBtn').onclick = async()=>{ let ok = await changePassword(document.getElementById('currentPassword').value, document.getElementById('newPassword').value, document.getElementById('confirmPassword').value); if(ok) alert('Пароль изменён'); };
         
+        // Подарки: ПК и телефон по-разному
         document.getElementById('giftChatBtnDesktop').onclick = () => showGiftHistory();
         document.getElementById('mobileChatGiftBtn').onclick = () => showGiftHistory();
-        document.getElementById('giftShopBtnDesktop').onclick = () => showGiftShop();
-        document.getElementById('mobileGiftShopBtn').onclick = () => showGiftShop();
+        document.getElementById('giftShopBtnDesktop').onclick = () => showGiftShopDesktop();
+        document.getElementById('mobileGiftShopBtn').onclick = () => showGiftShopMobile();
         document.getElementById('closeGiftHistoryBtn').onclick = ()=>document.getElementById('giftHistoryModal').classList.add('hidden');
         document.getElementById('closeGiftShopBtn').onclick = ()=>document.getElementById('giftShopModal').classList.add('hidden');
+        document.getElementById('closeSelectChatBtn').onclick = ()=>document.getElementById('selectChatModal').classList.add('hidden');
         
+        // Админка
         async function refreshAdminPanel() {
             if(currentUserData?.role !== 'admin') return;
             let users = (await db.ref('users').once('value')).val()||{}; 
