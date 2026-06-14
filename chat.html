@@ -47,6 +47,7 @@
         .icon-delete { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='#da3633' viewBox='0 0 24 24'%3E%3Cpath d='M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z'/%3E%3C/svg%3E"); }
         .icon-reply { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z'/%3E%3C/svg%3E"); }
         .icon-copy { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z'/%3E%3C/svg%3E"); }
+        .icon-trash { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='#da3633' viewBox='0 0 24 24'%3E%3Cpath d='M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z'/%3E%3C/svg%3E"); }
 
         .menu-bar { width: 72px; background: #161b22; border-right: 1px solid #30363d; display: flex; flex-direction: column; align-items: center; padding: 1rem 0; gap: 0.5rem; flex-shrink: 0; }
         .menu-icon { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 10px; cursor: pointer; transition: all 0.2s; }
@@ -66,7 +67,7 @@
         .logout-btn { width: 100%; margin-top: 0.5rem; padding: 0.5rem; background: #da3633; border: none; border-radius: 6px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
         .new-chat-btn { margin: 0.5rem; padding: 0.5rem; background: #21262d; border: 1px solid #30363d; border-radius: 6px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
         .chats-list { flex: 1; overflow-y: auto; padding: 0.5rem; }
-        .chat-item { padding: 0.75rem; border-radius: 6px; cursor: pointer; margin-bottom: 0.25rem; display: flex; justify-content: space-between; align-items: center; }
+        .chat-item { padding: 0.75rem; border-radius: 6px; cursor: pointer; margin-bottom: 0.25rem; display: flex; justify-content: space-between; align-items: center; position: relative; }
         .chat-item:hover { background: #21262d; }
         .chat-item.active { background: #2f81f7; color: white; }
         .chat-name { font-size: 0.85rem; font-weight: 500; display: flex; align-items: center; gap: 0.25rem; flex-wrap: wrap; }
@@ -113,6 +114,70 @@
         .context-menu-item { padding: 8px 16px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 0.85rem; }
         .context-menu-item:hover { background: #2f81f7; }
         .context-menu-item.danger:hover { background: #da3633; }
+        
+        .gift-card-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            animation: fadeIn 0.2s ease;
+        }
+        .gift-card {
+            background: #1e1e2e;
+            border-radius: 32px;
+            padding: 32px 28px;
+            text-align: center;
+            max-width: 280px;
+            width: 80%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: slideUp 0.3s ease;
+        }
+        .gift-card-icon {
+            font-size: 80px;
+            margin-bottom: 16px;
+        }
+        .gift-card-name {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #FFD966;
+        }
+        .gift-card-price {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 18px;
+            color: #c9d1d9;
+            margin-bottom: 20px;
+        }
+        .gift-card-close {
+            background: #2f81f7;
+            border: none;
+            border-radius: 40px;
+            padding: 12px 24px;
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            width: 100%;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
         
         .admin-panel { 
             position: fixed; 
@@ -300,7 +365,9 @@
                 border-bottom: 0.5px solid #30363d;
                 cursor: pointer;
                 display: block;
+                transition: background 0.1s;
             }
+            .mobile-chat-item:active { background: #21262d; }
             .mobile-chat-name {
                 font-weight: 500;
                 font-size: 1rem;
@@ -528,7 +595,6 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
-        // ПРОВЕРКА АВТОРИЗАЦИИ
         auth.onAuthStateChanged((user) => {
             if (!user) {
                 window.location.href = 'index.html';
@@ -663,16 +729,168 @@
             chats = newChats; renderChatsDesktop(); renderChatsMobile();
         }
         
+        // Функция удаления чата
+        async function deleteChat(chatId, otherUserId) {
+            if(!confirm('Удалить этот чат? Сообщения будут удалены у вас, но останутся у собеседника.')) return;
+            
+            // Удаляем чат у текущего пользователя
+            await db.ref(`users/${currentUser.uid}/chats/${chatId}`).remove();
+            
+            // Удаляем все сообщения этого чата у текущего пользователя (локально из БД они останутся у другого)
+            // Но чтобы не засорять, удаляем всю ветку сообщений
+            await db.ref(`messages/${chatId}`).remove();
+            
+            // Если удаляемый чат сейчас открыт - закрываем его
+            if(currentChatId === chatId) {
+                if(messageListeners[chatId]) detachMessages(chatId);
+                currentChatId = null;
+                currentChatOtherId = null;
+                document.getElementById('chatTitleDesktop').innerHTML = 'Выберите чат';
+                document.getElementById('messageAreaDesktop').style.display = 'none';
+                document.getElementById('giftChatBtnDesktop').style.display = 'none';
+                document.getElementById('messagesListDesktop').innerHTML = '<div class="empty-state">Нажмите + чтобы начать новый чат</div>';
+                
+                // Для мобилки
+                if(document.getElementById('mobileChatScreen').classList.contains('show')) {
+                    document.getElementById('mobileChatScreen').classList.remove('show');
+                    document.getElementById('mobileChatsScreen').classList.remove('hide');
+                }
+            }
+            
+            // Обновляем список чатов
+            await loadChats();
+        }
+        
+        function showChatContextMenu(e, chatId, chatName, otherUserId) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            let existing = document.querySelector('.context-menu');
+            if(existing) existing.remove();
+            
+            let menu = document.createElement('div');
+            menu.className = 'context-menu';
+            menu.style.left = e.clientX + 'px';
+            menu.style.top = e.clientY + 'px';
+            
+            let deleteItem = document.createElement('div');
+            deleteItem.className = 'context-menu-item danger';
+            deleteItem.innerHTML = '<span class="icon icon-trash" style="width:16px;height:16px;"></span> Удалить чат';
+            deleteItem.onclick = () => {
+                deleteChat(chatId, otherUserId);
+                menu.remove();
+            };
+            menu.appendChild(deleteItem);
+            
+            document.body.appendChild(menu);
+            setTimeout(() => {
+                document.addEventListener('click', function removeMenu() {
+                    if(menu && menu.remove) menu.remove();
+                    document.removeEventListener('click', removeMenu);
+                });
+            }, 10);
+        }
+        
+        function showMobileChatContextMenu(chatId, otherUserId, event) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            let existing = document.querySelector('.context-menu');
+            if(existing) existing.remove();
+            
+            let menu = document.createElement('div');
+            menu.className = 'context-menu';
+            menu.style.left = (event.touches[0].clientX) + 'px';
+            menu.style.top = (event.touches[0].clientY - 50) + 'px';
+            
+            let deleteItem = document.createElement('div');
+            deleteItem.className = 'context-menu-item danger';
+            deleteItem.innerHTML = '<span class="icon icon-trash" style="width:16px;height:16px;"></span> Удалить чат';
+            deleteItem.onclick = () => {
+                deleteChat(chatId, otherUserId);
+                menu.remove();
+            };
+            menu.appendChild(deleteItem);
+            
+            document.body.appendChild(menu);
+            setTimeout(() => {
+                document.addEventListener('click', function removeMenu() {
+                    if(menu && menu.remove) menu.remove();
+                    document.removeEventListener('click', removeMenu);
+                });
+            }, 10);
+        }
+        
         function renderChatsDesktop() { 
             let container = document.getElementById('chatsListDesktop'); if(!container) return; 
-            container.innerHTML = chats.map(c=>`<div class="chat-item ${currentChatId===c.id?'active':''}" data-id="${c.id}" data-name="${escapeHtml(c.name)}" data-uid="${c.userId}"><div class="chat-name">@${escapeHtml(c.name)} ${c.roleBadge}<span class="online-status ${allUsersCache[c.userId]?.online?'online':'offline'}" style="width:6px;height:6px;"></span></div><div class="chat-preview">${escapeHtml(c.lastMessage.slice(0,40))}</div></div>`).join('')||'<div style="padding:1rem;text-align:center;">Нет чатов</div>'; 
-            document.querySelectorAll('#chatsListDesktop .chat-item').forEach(el=>{ el.onclick = ()=>openChat(el.dataset.id, el.dataset.name, el.dataset.uid); }); 
+            container.innerHTML = chats.map(c => `
+                <div class="chat-item ${currentChatId===c.id?'active':''}" data-id="${c.id}" data-name="${escapeHtml(c.name)}" data-uid="${c.userId}">
+                    <div>
+                        <div class="chat-name">@${escapeHtml(c.name)} ${c.roleBadge}<span class="online-status ${allUsersCache[c.userId]?.online?'online':'offline'}" style="width:6px;height:6px;"></span></div>
+                        <div class="chat-preview">${escapeHtml(c.lastMessage.slice(0,40))}</div>
+                    </div>
+                </div>
+            `).join('') || '<div style="padding:1rem;text-align:center;">Нет чатов</div>';
+            
+            // Добавляем обработчики ПКМ и кликов
+            document.querySelectorAll('#chatsListDesktop .chat-item').forEach(el => {
+                let chatId = el.dataset.id;
+                let chatName = el.dataset.name;
+                let otherUid = el.dataset.uid;
+                let chat = chats.find(c => c.id === chatId);
+                
+                // ПКМ для удаления чата
+                el.addEventListener('contextmenu', (e) => {
+                    showChatContextMenu(e, chatId, chatName, otherUid);
+                });
+                
+                // Левый клик для открытия чата
+                el.onclick = (e) => {
+                    if(e.button === 0) {
+                        openChat(chatId, chatName, otherUid);
+                    }
+                };
+            }); 
         }
         
         function renderChatsMobile() { 
             let container = document.getElementById('mobileChatsList'); if(!container) return; 
-            container.innerHTML = chats.map(c=>`<div class="mobile-chat-item" data-id="${c.id}" data-name="${escapeHtml(c.name)}" data-uid="${c.userId}"><div class="mobile-chat-name">@${escapeHtml(c.name)} ${c.roleBadge}<span class="online-status ${allUsersCache[c.userId]?.online?'online':'offline'}" style="width:6px;height:6px;"></span></div><div class="mobile-chat-preview">${escapeHtml(c.lastMessage.slice(0,40))}</div></div>`).join('')||'<div class="mobile-empty">Нет чатов. Нажмите +</div>'; 
-            document.querySelectorAll('#mobileChatsList .mobile-chat-item').forEach(el=>{ el.onclick = ()=>{ openChatMobile(el.dataset.id, el.dataset.name, el.dataset.uid); }; }); 
+            container.innerHTML = chats.map(c => `
+                <div class="mobile-chat-item" data-id="${c.id}" data-name="${escapeHtml(c.name)}" data-uid="${c.userId}">
+                    <div class="mobile-chat-name">@${escapeHtml(c.name)} ${c.roleBadge}<span class="online-status ${allUsersCache[c.userId]?.online?'online':'offline'}" style="width:6px;height:6px;"></span></div>
+                    <div class="mobile-chat-preview">${escapeHtml(c.lastMessage.slice(0,40))}</div>
+                </div>
+            `).join('') || '<div class="mobile-empty">Нет чатов. Нажмите +</div>';
+            
+            // Добавляем обработчики для мобильных чатов
+            document.querySelectorAll('#mobileChatsList .mobile-chat-item').forEach(el => {
+                let chatId = el.dataset.id;
+                let chatName = el.dataset.name;
+                let otherUid = el.dataset.uid;
+                let touchTimer;
+                
+                // Долгое нажатие (500 мс) для удаления чата
+                el.addEventListener('touchstart', (e) => {
+                    touchTimer = setTimeout(() => {
+                        showMobileChatContextMenu(chatId, otherUid, e);
+                    }, 500);
+                });
+                el.addEventListener('touchend', () => {
+                    clearTimeout(touchTimer);
+                });
+                el.addEventListener('touchmove', () => {
+                    clearTimeout(touchTimer);
+                });
+                el.addEventListener('touchcancel', () => {
+                    clearTimeout(touchTimer);
+                });
+                
+                // Короткое нажатие для открытия чата
+                el.addEventListener('click', (e) => {
+                    clearTimeout(touchTimer);
+                    openChatMobile(chatId, chatName, otherUid);
+                });
+            }); 
         }
 
         function detachMessages(chatId) {
@@ -721,10 +939,10 @@
         function attachMessageEvents(el, msgId, msgText, isOwn, isMobile) {
             if(!el) return;
             if(!isMobile) {
-                el.addEventListener('contextmenu', (e) => { e.preventDefault(); showContextMenu(e.clientX, e.clientY, msgId, msgText, isOwn); });
+                el.addEventListener('contextmenu', (e) => { e.preventDefault(); showMessageContextMenu(e.clientX, e.clientY, msgId, msgText, isOwn); });
             } else {
                 let touchTimer;
-                el.addEventListener('touchstart', (e) => { touchTimer = setTimeout(() => { showContextMenuMobile(e.touches[0].clientX, e.touches[0].clientY, msgId, msgText, isOwn); }, 500); });
+                el.addEventListener('touchstart', (e) => { touchTimer = setTimeout(() => { showMessageContextMenuMobile(e.touches[0].clientX, e.touches[0].clientY, msgId, msgText, isOwn); }, 500); });
                 el.addEventListener('touchend', () => clearTimeout(touchTimer));
                 el.addEventListener('touchmove', () => clearTimeout(touchTimer));
             }
@@ -732,7 +950,7 @@
         
         async function copyToClipboard(text) { try { await navigator.clipboard.writeText(text); } catch(e) {} }
         
-        function showContextMenu(x, y, msgId, msgText, isOwn) {
+        function showMessageContextMenu(x, y, msgId, msgText, isOwn) {
             let existing = document.querySelector('.context-menu');
             if(existing) existing.remove();
             let menu = document.createElement('div');
@@ -753,7 +971,7 @@
             setTimeout(() => { document.addEventListener('click', function removeMenu() { if(menu && menu.remove) menu.remove(); document.removeEventListener('click', removeMenu); }); }, 10);
         }
         
-        function showContextMenuMobile(x, y, msgId, msgText, isOwn) {
+        function showMessageContextMenuMobile(x, y, msgId, msgText, isOwn) {
             let existing = document.querySelector('.context-menu');
             if(existing) existing.remove();
             let menu = document.createElement('div');
@@ -893,6 +1111,26 @@
             if(isMobile) scrollToBottom(true); else input.focus();
         }
         
+        function showGiftCard(giftName, giftPrice, giftEmoji) {
+            let overlay = document.createElement('div');
+            overlay.className = 'gift-card-overlay';
+            overlay.innerHTML = `
+                <div class="gift-card">
+                    <div class="gift-card-icon">${giftEmoji}</div>
+                    <div class="gift-card-name">${giftName}</div>
+                    <div class="gift-card-price">
+                        <span class="icon icon-coin" style="width:24px;height:24px;"></span> ${giftPrice}
+                    </div>
+                    <button class="gift-card-close">Закрыть</button>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            overlay.querySelector('.gift-card-close').onclick = () => overlay.remove();
+            setTimeout(() => {
+                overlay.onclick = (e) => { if(e.target === overlay) overlay.remove(); };
+            }, 0);
+        }
+        
         async function sendGiftToUser(targetUserId, targetChatId, giftId, giftName, giftPrice, giftEmoji) {
             if((currentUserData.coins || 0) < giftPrice) {
                 alert(`Недостаточно монет! Нужно ${giftPrice} 🪙`);
@@ -903,7 +1141,9 @@
             let msg = { text: giftMessage, senderId: currentUser.uid, senderName: currentUserData.username, senderRole: currentUserData?.role||'user', timestamp: Date.now(), isGift: true, read: false };
             await db.ref(`messages/${targetChatId}`).push(msg);
             await db.ref(`users/${targetUserId}/gifts`).push({ from: currentUser.uid, fromName: currentUserData.username, type: giftId, name: giftName, emoji: giftEmoji, value: giftPrice, timestamp: Date.now() });
-            alert(`🎉 Подарок "${giftName}" отправлен!`);
+            
+            // Показываем красивую карточку подарка
+            showGiftCard(giftName, giftPrice, giftEmoji);
         }
         
         async function showGiftHistory() { 
@@ -1032,7 +1272,6 @@
             if(ban && uid === currentUser.uid) setTimeout(() => logout(), 500);
         };
 
-        // ОСНОВНАЯ ИНИЦИАЛИЗАЦИЯ
         auth.onAuthStateChanged(async (user) => {
             if (!user) return;
             
