@@ -186,6 +186,7 @@
         .btn-user { background: #6e7681; border: none; padding: 6px 12px; border-radius: 6px; color: white; cursor: pointer; font-size: 0.75rem; }
         .btn-ban { background: #da3633; border: none; padding: 6px 12px; border-radius: 6px; color: white; cursor: pointer; font-size: 0.75rem; }
         .btn-unban { background: #2f81f7; border: none; padding: 6px 12px; border-radius: 6px; color: white; cursor: pointer; font-size: 0.75rem; }
+        .btn-disabled { background: #30363d; border: none; padding: 6px 12px; border-radius: 6px; color: #6e7681; cursor: not-allowed; font-size: 0.75rem; }
         
         .gift-icon-sweet { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FF69B4'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='white' font-size='10' font-weight='bold'%3E🍬%3C/text%3E%3C/svg%3E"); }
         .gift-icon-surprise { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FFA500'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='white' font-size='10'%3E🎁%3C/text%3E%3C/svg%3E"); }
@@ -242,7 +243,6 @@
             .context-menu { position: fixed; background: #1f2429; border-radius: 12px; padding: 8px 0; min-width: 180px; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.5); border: 1px solid #30363d; }
             .admin-panel { width: 100%; }
             .admin-panel .close-admin-btn { margin: 12px; margin-top: 8px; margin-bottom: max(12px, env(safe-area-inset-bottom)); padding: 12px 16px; border-radius: 6px; }
-            #mobileAdminBtn { display: none !important; }
             .modal-content { max-width: 95%; }
             .gift-option { padding: 10px 12px; }
             .gift-icon { width: 32px; height: 32px; }
@@ -295,6 +295,7 @@
                 <div class="mobile-header-title">📩 Trailless</div>
                 <div class="mobile-header-icons">
                     <div class="mobile-icon-btn" id="mobileGiftShopBtn"><span class="icon icon-gift" style="width:18px;height:18px;"></span></div>
+                    <div class="mobile-icon-btn" id="mobileAdminBtn" style="display: none;"><span class="icon icon-admin" style="width:18px;height:18px;"></span></div>
                     <div class="mobile-icon-btn" id="mobileSettingsBtn"><span class="icon icon-settings" style="width:18px;height:18px;"></span></div>
                     <div class="mobile-new-chat" id="mobileNewChatBtn"><span class="icon icon-plus" style="width:18px;height:18px;"></span></div>
                 </div>
@@ -345,7 +346,21 @@
         let onlineInterval = null;
         let messageListeners = {};
 
-        // Список подарков
+        // Функция проверки доступа к админке (Admin или Creator)
+        function hasAdminAccess(role) {
+            return role === 'admin' || role === 'creator';
+        }
+
+        // Функция проверки может ли пользователь банить цель
+        function canBan(actorRole, targetRole) {
+            if (actorRole === 'creator') return true; // Creator может банить всех
+            if (actorRole === 'admin') {
+                // Admin не может банить Creator и других Admin
+                return targetRole !== 'creator' && targetRole !== 'admin';
+            }
+            return false; // Tester и User не могут банить
+        }
+
         const giftsList = [
             { id: 'sweet', name: 'Sweet Candy', emoji: '🍬', price: 300, iconClass: 'gift-icon-sweet' },
             { id: 'surprise', name: 'Gift Surprise', emoji: '🎁', price: 50, iconClass: 'gift-icon-surprise' },
@@ -762,13 +777,34 @@
         async function changePassword(oldP,newP,conf){ if(newP!==conf){alert('Пароли не совпадают');return false;} if(newP.length<6){alert('Мин 6 символов');return false;} let cred = firebase.auth.EmailAuthProvider.credential(currentUser.email, oldP); try{ await currentUser.reauthenticateWithCredential(cred); await currentUser.updatePassword(newP); await db.ref(`users/${currentUser.uid}`).update({defaultPassword:null}); document.getElementById('changePasswordWarningDesktop')?.setAttribute('style','display:none'); document.getElementById('mobileChangePwdWarning')?.setAttribute('style','display:none'); return true; }catch(e){alert('Неверный текущий пароль');return false;} }
         async function logout(){ if(currentChatId) detachMessages(currentChatId); if(onlineInterval) clearInterval(onlineInterval); if(currentUser) await db.ref(`/status/${currentUser.uid}`).set({ online: false, lastSeen: Date.now() }); await auth.signOut(); window.location.href='login.html'; }
 
+        // Функция для бана с проверкой прав
+        window.toggleBan = async (uid, ban) => {
+            if(!hasAdminAccess(currentUserData?.role)) {
+                alert('Нет доступа');
+                return;
+            }
+            const targetUser = allUsersCache[uid];
+            if(!targetUser) return;
+            
+            if(!canBan(currentUserData.role, targetUser.role)) {
+                alert(`Нельзя заблокировать пользователя с ролью ${targetUser.role}`);
+                return;
+            }
+            
+            await db.ref(`users/${uid}`).update({banned: ban});
+            await loadAllUsers();
+            await loadChats();
+            await refreshAdminPanel();
+            if(ban && uid === currentUser.uid) setTimeout(() => logout(), 500);
+        };
+
         auth.onAuthStateChanged(async (user)=>{ 
             if(!user){ window.location.href='login.html'; return; } 
             if(!user.emailVerified && !user.providerData.some(p=>p.providerId==='google.com')){ await auth.signOut(); alert('Подтвердите email'); window.location.href='login.html'; return; } 
             currentUser=user; 
             let snap = await db.ref(`users/${user.uid}`).once('value'); 
             currentUserData=snap.val(); 
-            if(!currentUserData){ let uname = (user.displayName||user.email.split('@')[0]).toLowerCase(); await db.ref(`users/${user.uid}`).set({email:user.email, username:uname, role:user.email==='imbatop49@gmail.com'?'admin':'user', verified:user.emailVerified, banned:false, hasPassword:true, coins:100}); await db.ref(`usernames/${uname}`).set(user.uid); currentUserData = (await db.ref(`users/${user.uid}`).once('value')).val(); } 
+            if(!currentUserData){ let uname = (user.displayName||user.email.split('@')[0]).toLowerCase(); await db.ref(`users/${user.uid}`).set({email:user.email, username:uname, role:'user', verified:user.emailVerified, banned:false, hasPassword:true, coins:100}); await db.ref(`usernames/${uname}`).set(user.uid); currentUserData = (await db.ref(`users/${user.uid}`).once('value')).val(); } 
             if(currentUserData.coins === undefined) await db.ref(`users/${user.uid}`).update({coins:100});
             currentUserData.coins = currentUserData.coins || 0;
             if(currentUserData.banned){ await auth.signOut(); alert('Аккаунт заблокирован'); window.location.href='login.html'; return; } 
@@ -778,7 +814,11 @@
             let badgeHtml = getRoleBadge(currentUserData.role);
             document.getElementById('userBadgeDesktop').innerHTML = badgeHtml; document.getElementById('mobileUserBadge').innerHTML = badgeHtml;
             if(currentUserData.defaultPassword==='12345678'){ document.getElementById('changePasswordWarningDesktop').style.display='block'; document.getElementById('mobileChangePwdWarning').style.display='block'; } 
-            if(currentUserData.role === 'admin'){ document.getElementById('adminBtnDesktop').style.display='flex'; }
+            // Показываем кнопку админки для Admin и Creator
+            if(hasAdminAccess(currentUserData.role)){ 
+                document.getElementById('adminBtnDesktop').style.display = 'flex';
+                document.getElementById('mobileAdminBtn').style.display = 'flex';
+            }
             await loadAllUsers(); 
             await loadChats(); 
             loadFontSize(); 
@@ -811,18 +851,24 @@
         document.getElementById('closeSelectChatBtn').onclick = ()=>document.getElementById('selectChatModal').classList.add('hidden');
         
         async function refreshAdminPanel() { 
-            if(currentUserData?.role !== 'admin') return; 
+            if(!hasAdminAccess(currentUserData?.role)) return; 
             let users = (await db.ref('users').once('value')).val()||{}; 
             let usersList = document.getElementById('adminUsersList');
             if(usersList) {
-                usersList.innerHTML = Object.entries(users).map(([uid,d])=>`<div class="admin-user"><div><strong>@${escapeHtml(d.username)}</strong> ${getRoleBadge(d.role)}<br><span style="font-size:0.7rem;">${escapeHtml(d.email)}</span><br><span style="font-size:0.7rem;">🪙 ${d.coins || 0} монет</span></div><div class="admin-user-buttons"><button class="btn-tester" onclick="window.setRole('${uid}','tester')">Тестер</button><button class="btn-creator" onclick="window.setRole('${uid}','creator')">Creator</button><button class="btn-user" onclick="window.setRole('${uid}','user')">Юзер</button><button class="${d.banned?'btn-unban':'btn-ban'}" onclick="window.toggleBan('${uid}',${!d.banned})">${d.banned?'Разбан':'Бан'}</button><button class="btn-tester" onclick="window.addCoinsAdmin('${uid}')">+100 🪙</button></div></div>`).join('');
+                usersList.innerHTML = Object.entries(users).map(([uid,d])=>{
+                    const canBanUser = canBan(currentUserData.role, d.role);
+                    const banButton = d.banned ? 
+                        `<button class="btn-unban" onclick="window.toggleBan('${uid}',false)" ${!canBanUser ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>Разбан</button>` :
+                        `<button class="btn-ban" onclick="window.toggleBan('${uid}',true)" ${!canBanUser ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>Бан</button>`;
+                    return `<div class="admin-user"><div><strong>@${escapeHtml(d.username)}</strong> ${getRoleBadge(d.role)}<br><span style="font-size:0.7rem;">${escapeHtml(d.email)}</span><br><span style="font-size:0.7rem;">🪙 ${d.coins || 0} монет</span></div><div class="admin-user-buttons"><button class="btn-tester" onclick="window.setRole('${uid}','tester')">Тестер</button><button class="btn-creator" onclick="window.setRole('${uid}','creator')">Creator</button><button class="btn-user" onclick="window.setRole('${uid}','user')">Юзер</button>${banButton}<button class="btn-tester" onclick="window.addCoinsAdmin('${uid}')">+100 🪙</button></div></div>`;
+                }).join('');
             }
         }
-        window.addCoinsAdmin = async (uid) => { if(currentUserData?.role !== 'admin') return; let userSnap = await db.ref(`users/${uid}`).once('value'); let userData = userSnap.val(); let newCoins = (userData.coins || 0) + 100; await db.ref(`users/${uid}`).update({ coins: newCoins }); await refreshAdminPanel(); };
-        document.getElementById('adminBtnDesktop').onclick = async()=>{ if(currentUserData?.role!=='admin')return; await refreshAdminPanel(); document.getElementById('adminPanel').classList.remove('hidden'); document.getElementById('adminPanel').classList.add('open'); };
+        window.addCoinsAdmin = async (uid) => { if(!hasAdminAccess(currentUserData?.role)) return; let userSnap = await db.ref(`users/${uid}`).once('value'); let userData = userSnap.val(); let newCoins = (userData.coins || 0) + 100; await db.ref(`users/${uid}`).update({ coins: newCoins }); await refreshAdminPanel(); };
+        document.getElementById('adminBtnDesktop').onclick = async()=>{ if(!hasAdminAccess(currentUserData?.role)) return; await refreshAdminPanel(); document.getElementById('adminPanel').classList.remove('hidden'); document.getElementById('adminPanel').classList.add('open'); };
+        document.getElementById('mobileAdminBtn').onclick = ()=>document.getElementById('adminBtnDesktop').onclick();
         document.getElementById('closeAdminBtn').onclick = ()=>{document.getElementById('adminPanel').classList.remove('open'); document.getElementById('adminPanel').classList.add('hidden');};
-        window.setRole = async (uid,role)=>{ if(currentUserData?.role!=='admin') return; await db.ref(`users/${uid}`).update({role}); await loadAllUsers(); await loadChats(); await refreshAdminPanel(); };
-        window.toggleBan = async (uid,ban)=>{ if(currentUserData?.role!=='admin') return; await db.ref(`users/${uid}`).update({banned:ban}); await loadAllUsers(); await loadChats(); await refreshAdminPanel(); if(ban && uid===currentUser.uid) setTimeout(()=>logout(), 500); };
+        window.setRole = async (uid,role)=>{ if(!hasAdminAccess(currentUserData?.role)) return; await db.ref(`users/${uid}`).update({role}); await loadAllUsers(); await loadChats(); await refreshAdminPanel(); };
         window.cancelReplyDesktop = cancelReplyDesktop; window.cancelReplyMobile = cancelReplyMobile;
     </script>
 </body>
