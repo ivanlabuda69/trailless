@@ -43,6 +43,7 @@
             100% { transform: translateY(0px); }
         }
 
+        /* Спиннер на 0.5 сек для красоты */
         .loader-overlay {
             position: fixed;
             top: 0;
@@ -54,6 +55,15 @@
             align-items: center;
             justify-content: center;
             z-index: 1000;
+            animation: fadeOut 0.5s ease-out forwards;
+            animation-delay: 0.5s;
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                visibility: hidden;
+            }
         }
 
         .spinner {
@@ -73,7 +83,8 @@
             max-width: 1280px;
             margin: 0 auto;
             padding: 0 32px;
-            animation: fadeIn 0.4s ease-out;
+            animation: fadeIn 0.6s ease-out;
+            opacity: 1;
         }
 
         /* Header */
@@ -114,6 +125,7 @@
             font-size: 14px;
             font-weight: 500;
             transition: all 0.2s;
+            cursor: pointer;
         }
 
         .nav-link-primary {
@@ -129,6 +141,7 @@
         .nav-link-secondary {
             border: 1px solid rgba(255, 255, 255, 0.18);
             color: #ffffff;
+            background: transparent;
         }
 
         .nav-link-secondary:hover {
@@ -400,147 +413,116 @@
     </style>
 </head>
 <body>
-    <div id="loader" class="loader-overlay">
+    <!-- Красивый спиннер на 0.5 секунды -->
+    <div class="loader-overlay" id="loader">
         <div class="spinner"></div>
     </div>
 
-    <div id="mainContent" style="display: none;">
-        <div class="container">
-            <div class="header">
-                <a href="index.html" class="logo">trailless<span>/chat</span></a>
-                <div class="nav">
-                    <a href="login.html" class="nav-link nav-link-secondary">Вход</a>
-                    <a href="register.html" class="nav-link nav-link-primary">Регистрация</a>
-                </div>
+    <div class="container" id="mainContent">
+        <div class="header">
+            <a href="index.html" class="logo">trailless<span>/chat</span></a>
+            <div class="nav">
+                <a href="login.html" class="nav-link nav-link-secondary">Вход</a>
+                <a href="register.html" class="nav-link nav-link-primary">Регистрация</a>
             </div>
+        </div>
 
-            <div class="hero">
-                <div class="hero-left">
-                    <h1>Чат Trailless<br>в новом стиле</h1>
-                    <p>Регистрация по email, личные чаты по username, группы и подарки. Простота и доступность в элегантном оформлении.</p>
-                    <div class="hero-buttons">
-                        <a href="register.html" class="hero-btn hero-btn-primary">
-                            <i class="fa-solid fa-rocket"></i> Создать аккаунт
-                        </a>
-                        <a href="login.html" class="hero-btn hero-btn-secondary">
-                            <i class="fa-solid fa-key"></i> Войти
-                        </a>
-                    </div>
-                </div>
-                <div class="hero-right">
-                    <div class="hero-right-title">
-                        <i class="fa-solid fa-terminal"></i> особенности платформы
-                    </div>
-                    <div class="feature-list">
-                        <div class="feature-item">
-                            <div class="feature-icon"><i class="fa-solid fa-envelope"></i></div>
-                            <div class="feature-text">
-                                Регистрация по email
-                                <small>Быстрая верификация</small>
-                            </div>
-                        </div>
-                        <div class="feature-item">
-                            <div class="feature-icon"><i class="fa-solid fa-comments"></i></div>
-                            <div class="feature-text">
-                                Личные чаты по username
-                                <small>Как в Telegram, но легче</small>
-                            </div>
-                        </div>
-                        <div class="feature-item">
-                            <div class="feature-icon"><i class="fa-solid fa-bolt"></i></div>
-                            <div class="feature-text">
-                                Мгновенная доставка
-                                <small>Firebase Realtime</small>
-                            </div>
-                        </div>
-                        <div class="feature-item">
-                            <div class="feature-icon"><i class="fa-solid fa-gift"></i></div>
-                            <div class="feature-text">
-                                Подарки и монеты
-                                <small>🎁 Система поощрений</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="features-section">
-                <h2 class="section-title">Всё, что нужно для общения</h2>
-                <div class="features-grid">
-                    <div class="feature-card">
-                        <div class="feature-card-icon"><i class="fa-regular fa-message"></i></div>
-                        <h3>Чаты 1v1</h3>
-                        <p>Общайтесь в личных диалогах по username. Никаких лишних сложностей — просто введите @username и начинайте.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-card-icon"><i class="fa-solid fa-users"></i></div>
-                        <h3>Групповые чаты</h3>
-                        <p>Создавайте группы, приглашайте участников, общайтесь с командой или друзьями в удобном формате.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-card-icon"><i class="fa-regular fa-star"></i></div>
-                        <h3>Избранное</h3>
-                        <p>Сохраняйте важные сообщения в Избранном — как Telegram Saved Messages, всегда под рукой.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="cta-section">
-                <h2>Готовы начать?</h2>
-                <p>Присоединяйтесь к trailless уже сегодня и откройте для себя новый уровень общения</p>
-                <div class="cta-buttons">
+        <div class="hero">
+            <div class="hero-left">
+                <h1>Чат Trailless<br>в новом стиле</h1>
+                <p>Регистрация по email, личные чаты по username, группы и подарки. Простота и доступность в элегантном оформлении.</p>
+                <div class="hero-buttons">
                     <a href="register.html" class="hero-btn hero-btn-primary">
-                        <i class="fa-solid fa-user-plus"></i> Регистрация
+                        <i class="fa-solid fa-rocket"></i> Создать аккаунт
                     </a>
                     <a href="login.html" class="hero-btn hero-btn-secondary">
-                        <i class="fa-solid fa-arrow-right-to-bracket"></i> Вход
+                        <i class="fa-solid fa-key"></i> Войти
                     </a>
                 </div>
             </div>
-
-            <div class="footer">
-                <p>trailless — чат как Telegram, но легче и стильнее</p>
-                <p style="margin-top: 8px; font-size: 11px;">© 2026 trailless. Все права защищены.</p>
+            <div class="hero-right">
+                <div class="hero-right-title">
+                    <i class="fa-solid fa-terminal"></i> особенности платформы
+                </div>
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <div class="feature-icon"><i class="fa-solid fa-envelope"></i></div>
+                        <div class="feature-text">
+                            Регистрация по email
+                            <small>Быстрая верификация</small>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon"><i class="fa-solid fa-comments"></i></div>
+                        <div class="feature-text">
+                            Личные чаты по username
+                            <small>Как в Telegram, но легче</small>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon"><i class="fa-solid fa-bolt"></i></div>
+                        <div class="feature-text">
+                            Мгновенная доставка
+                            <small>Firebase Realtime</small>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon"><i class="fa-solid fa-gift"></i></div>
+                        <div class="feature-text">
+                            Подарки и монеты
+                            <small>🎁 Система поощрений</small>
+                        </div>
+                    </div>
+                </div>
             </div>
+        </div>
+
+        <div class="features-section">
+            <h2 class="section-title">Всё, что нужно для общения</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-card-icon"><i class="fa-regular fa-message"></i></div>
+                    <h3>Чаты 1v1</h3>
+                    <p>Общайтесь в личных диалогах по username. Никаких лишних сложностей — просто введите @username и начинайте.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-card-icon"><i class="fa-solid fa-users"></i></div>
+                    <h3>Групповые чаты</h3>
+                    <p>Создавайте группы, приглашайте участников, общайтесь с командой или друзьями в удобном формате.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-card-icon"><i class="fa-regular fa-star"></i></div>
+                    <h3>Избранное</h3>
+                    <p>Сохраняйте важные сообщения в Избранном — как Telegram Saved Messages, всегда под рукой.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="cta-section">
+            <h2>Готовы начать?</h2>
+            <p>Присоединяйтесь к trailless уже сегодня и откройте для себя новый уровень общения</p>
+            <div class="cta-buttons">
+                <a href="register.html" class="hero-btn hero-btn-primary">
+                    <i class="fa-solid fa-user-plus"></i> Регистрация
+                </a>
+                <a href="login.html" class="hero-btn hero-btn-secondary">
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i> Вход
+                </a>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>trailless — чат как Telegram, но легче и стильнее</p>
+            <p style="margin-top: 8px; font-size: 11px;">© 2026 trailless. Все права защищены.</p>
         </div>
     </div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyD7c2eq_Z9v_XjxSafPYJuBV3kDa82Eg9w",
-            authDomain: "trailless-chat.firebaseapp.com",
-            databaseURL: "https://trailless-chat-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "trailless-chat",
-            storageBucket: "trailless-chat.firebasestorage.app",
-            messagingSenderId: "175122288335",
-            appId: "1:175122288335:web:f68cb31bb12631cc6ff1ba"
-        };
-        
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-
-        // Таймаут на всякий случай — если Firebase тупит, убираем спиннер через 2 секунды
-        let timeout = setTimeout(() => {
+        // Просто убираем спиннер через 0.6 секунды для красоты
+        setTimeout(() => {
             const loader = document.getElementById('loader');
-            const mainContent = document.getElementById('mainContent');
-            if (loader && loader.style.display !== 'none') {
-                loader.style.display = 'none';
-                if (mainContent) mainContent.style.display = 'block';
-            }
-        }, 2000);
-
-        auth.onAuthStateChanged((user) => {
-            clearTimeout(timeout);
-            const loader = document.getElementById('loader');
-            const mainContent = document.getElementById('mainContent');
-            
-            if (user) {
-                window.location.href = 'chat.html';
-            } else {
-                if (loader) loader.style.display = 'none';
-                if (mainContent) mainContent.style.display = 'block';
-            }
-        });
+            if (loader) loader.style.display = 'none';
+        }, 600);
     </script>
 </body>
 </html>
