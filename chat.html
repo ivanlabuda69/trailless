@@ -2,8 +2,8 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Trailless · Подарки и чат</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Trailless · Чат с подарками</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230d1117'/%3E%3Crect x='20' y='25' width='60' height='45' rx='8' fill='%232f81f7'/%3E%3Cpath d='M35 55 L25 65 L45 65 L35 55Z' fill='%232f81f7'/%3E%3Ccircle cx='40' cy='45' r='3' fill='white'/%3E%3Ccircle cx='60' cy='45' r='3' fill='white'/%3E%3C/svg%3E">
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -19,11 +19,7 @@
         }
 
         /* ========== ДЕСКТОПНАЯ ВЕРСИЯ ========== */
-        .desktop-layout {
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
+        .desktop-layout { display: flex; height: 100vh; overflow: hidden; }
         .icon { width: 20px; height: 20px; display: inline-block; background-size: contain; background-repeat: no-repeat; background-position: center; vertical-align: middle; }
         .icon-home { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z'/%3E%3C/svg%3E"); }
         .icon-settings { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M19.14 12.94c.04-.3.06-.61.06-.94 0-.33-.02-.64-.06-.94l2.02-1.58c.18-.14.23-.38.12-.56l-1.89-3.28c-.12-.19-.36-.26-.56-.18l-2.38.96c-.5-.38-1.06-.68-1.66-.88L14.45 3.5c-.04-.2-.2-.34-.4-.34h-3.78c-.2 0-.36.14-.4.34l-.3 2.52c-.6.2-1.16.5-1.66.88l-2.38-.96c-.2-.08-.44-.01-.56.18l-1.89 3.28c-.12.19-.07.42.12.56l2.02 1.58c-.04.3-.06.61-.06.94 0 .33.02.64.06.94l-2.02 1.58c-.18.14-.23.38-.12.56l1.89 3.28c.12.19.36.26.56.18l2.38-.96c.5.38 1.06.68 1.66.88l.3 2.52c.04.2.2.34.4.34h3.78c.2 0 .36-.14.4-.34l.3-2.52c.6-.2 1.16-.5 1.66-.88l2.38.96c.2.08.44.01.56-.18l1.89-3.28c.12-.19.07-.42-.12-.56l-2.02-1.58zM12 15c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z'/%3E%3C/svg%3E"); }
@@ -32,84 +28,75 @@
         .icon-logout { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z'/%3E%3C/svg%3E"); }
         .icon-admin { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E"); }
         .icon-gift { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M20 6h-2.18c.11-.31.18-.65.18-1a2.996 2.996 0 0 0-5.5-1.65l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76l1-1.36 1 1.36L15.38 12 17 10.83 14.92 8H20v6z'/%3E%3C/svg%3E"); }
-        .icon-coin { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='#FFD966' viewBox='0 0 24 24'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z'/%3E%3Ccircle cx='12' cy='12' r='5' fill='%23FFD966'/%3E%3C/svg%3E"); }
-        
-        .menu-bar {
-            width: 72px;
-            background: #161b22;
-            border-right: 1px solid #30363d;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 1rem 0;
-            gap: 0.5rem;
-            flex-shrink: 0;
-        }
-        .menu-icon {
-            width: 48px;
-            height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
-        }
+        .icon-coin { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23FFD966' viewBox='0 0 24 24'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z'/%3E%3Ccircle cx='12' cy='12' r='5' fill='%23FFD966'/%3E%3C/svg%3E"); }
+        .icon-close { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z'/%3E%3C/svg%3E"); }
+        .icon-arrow-back { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z'/%3E%3C/svg%3E"); }
+        .icon-check { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E"); }
+
+        .menu-bar { width: 72px; background: #161b22; border-right: 1px solid #30363d; display: flex; flex-direction: column; align-items: center; padding: 1rem 0; gap: 0.5rem; flex-shrink: 0; }
+        .menu-icon { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 10px; cursor: pointer; transition: all 0.2s; }
         .menu-icon:hover { background: #21262d; }
-        .sidebar {
-            width: 300px;
-            background: #161b22;
-            border-right: 1px solid #30363d;
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-            overflow: hidden;
-        }
+        .sidebar { width: 300px; background: #161b22; border-right: 1px solid #30363d; display: flex; flex-direction: column; flex-shrink: 0; overflow: hidden; }
         .sidebar-header { padding: 1rem; border-bottom: 1px solid #30363d; flex-shrink: 0; }
-        .user-info {
-            background: #21262d;
-            border-radius: 6px;
-            padding: 0.75rem;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-        .user-name { font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 0.25rem; }
+        .user-info { background: #21262d; border-radius: 6px; padding: 0.75rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+        .user-name { font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 0.25rem; flex-wrap: wrap; }
         .user-email { font-size: 0.7rem; color: #6e7681; }
-        .coin-display { display: flex; align-items: center; gap: 6px; background: #21262d; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; color: #FFD966; }
         .admin-badge { background: #2f81f7; color: white; border-radius: 20px; padding: 0.1rem 0.4rem; font-size: 0.6rem; }
         .tester-badge { background: #238636; color: white; border-radius: 20px; padding: 0.1rem 0.4rem; font-size: 0.6rem; }
+        .coin-display { display: flex; align-items: center; gap: 4px; background: #1a1f26; padding: 2px 8px; border-radius: 20px; font-size: 0.75rem; }
         .logout-btn { width: 100%; margin-top: 0.5rem; padding: 0.5rem; background: #da3633; border: none; border-radius: 6px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
         .new-chat-btn { margin: 0.5rem; padding: 0.5rem; background: #21262d; border: 1px solid #30363d; border-radius: 6px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-shrink: 0; }
+        .new-chat-btn:hover { background: #30363d; }
         .chats-list { flex: 1; overflow-y: auto; padding: 0.5rem; }
         .chat-item { padding: 0.75rem; border-radius: 6px; cursor: pointer; margin-bottom: 0.25rem; }
         .chat-item:hover { background: #21262d; }
         .chat-item.active { background: #2f81f7; color: white; }
         .chat-name { font-size: 0.85rem; font-weight: 500; display: flex; align-items: center; gap: 0.25rem; }
         .chat-preview { font-size: 0.65rem; color: #6e7681; margin-top: 0.2rem; }
+        .chat-item.active .chat-preview { color: rgba(255,255,255,0.7); }
         .chat-main { flex: 1; display: flex; flex-direction: column; min-width: 0; height: 100vh; overflow: hidden; }
         .chat-panel { display: flex; flex: 1; flex-direction: column; min-width: 0; height: 100%; overflow: hidden; }
+        .chat-panel.hide { display: none; }
         .chat-header { flex-shrink: 0; padding: 1rem; border-bottom: 1px solid #30363d; background: #161b22; display: flex; justify-content: space-between; align-items: center; }
         .chat-title { font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
         .gift-chat-btn { background: #21262d; border: none; border-radius: 20px; padding: 5px 12px; color: white; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.75rem; }
+        .gift-chat-btn:hover { background: #30363d; }
         .messages { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; min-height: 0; }
-        .message { max-width: 70%; padding: 0.5rem 0.75rem; border-radius: 8px; font-size: 0.85rem; position: relative; }
+        .messages::-webkit-scrollbar { width: 8px; }
+        .messages::-webkit-scrollbar-track { background: #161b22; }
+        .messages::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
+        .message { max-width: 70%; padding: 0.5rem 0.75rem; border-radius: 8px; font-size: 0.85rem; }
         .message.outgoing { align-self: flex-end; background: #2f81f7; color: white; }
         .message.incoming { align-self: flex-start; background: #21262d; }
+        .message-gift { background: linear-gradient(135deg, #2a2050, #1a1a3a); border-left: 3px solid #FFD966; }
         .message-sender { font-size: 0.7rem; font-weight: 600; margin-bottom: 0.2rem; opacity: 0.8; display: flex; align-items: center; gap: 0.25rem; flex-wrap: wrap; }
-        .gift-icon-inline { width: 14px; height: 14px; display: inline-block; background-size: contain; background-repeat: no-repeat; vertical-align: middle; margin-left: 4px; }
+        .message-text { word-wrap: break-word; }
+        .message-time { font-size: 0.6rem; margin-top: 0.2rem; opacity: 0.6; text-align: right; }
         .message-input-area { flex-shrink: 0; padding: 1rem; border-top: 1px solid #30363d; background: #161b22; display: flex; gap: 0.5rem; }
         .message-input { flex: 1; padding: 0.5rem 0.75rem; background: #0d1117; border: 1px solid #30363d; border-radius: 6px; color: #c9d1d9; outline: none; }
+        .message-input:focus { border-color: #2f81f7; }
+        .send-btn { padding: 0.5rem 1rem; background: #2f81f7; border: none; border-radius: 6px; color: white; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; }
+        .empty-state { text-align: center; padding: 2rem; color: #6e7681; }
+        .home-panel { display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; height: 100%; }
+        .home-panel.show { display: flex; }
+        .return-btn { margin-top: 2rem; padding: 0.75rem 1.5rem; background: #2f81f7; border: none; border-radius: 8px; color: white; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; }
+        .warning-banner { background: #e3b34120; border-left: 3px solid #e3b341; padding: 0.5rem; margin-bottom: 0.5rem; font-size: 0.7rem; color: #e3b341; }
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .modal-content { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 1.5rem; width: 90%; max-width: 400px; }
-        .gift-option { display: flex; justify-content: space-between; align-items: center; padding: 12px; margin: 8px 0; background: #21262d; border-radius: 12px; cursor: pointer; }
-        .gift-option:hover { background: #30363d; }
-        .admin-panel { position: fixed; right: 0; top: 0; width: 320px; height: 100vh; background: #161b22; border-left: 1px solid #30363d; z-index: 1000; padding: 1rem; overflow-y: auto; transform: translateX(100%); transition: transform 0.3s; }
-        .admin-panel.open { transform: translateX(0); }
+        .modal-content { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 1.5rem; width: 90%; max-width: 400px; max-height: 80vh; overflow-y: auto; }
+        .modal-content input, .modal-content select { width: 100%; padding: 0.5rem; background: #0d1117; border: 1px solid #30363d; border-radius: 6px; color: white; margin: 0.5rem 0; }
+        .modal-content button { padding: 0.5rem 1rem; background: #2f81f7; border: none; border-radius: 6px; color: white; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
+        .modal-content .danger-btn { background: #da3633; }
         .hidden { display: none; }
+        .admin-panel { position: fixed; right: 0; top: 0; width: 350px; height: 100vh; background: #161b22; border-left: 1px solid #30363d; z-index: 1000; padding: 1rem; overflow-y: auto; transform: translateX(100%); transition: transform 0.3s; }
+        .admin-panel.open { transform: translateX(0); }
+        .admin-panel.hidden { display: none; }
+        .settings-group { margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #30363d; }
+        .gift-option { display: flex; justify-content: space-between; align-items: center; padding: 12px; margin: 8px 0; background: #21262d; border-radius: 12px; cursor: pointer; transition: all 0.2s; }
+        .gift-option:hover { background: #30363d; transform: scale(1.01); }
+        .gift-history-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid #30363d; }
+        .gift-icon-small { width: 28px; height: 28px; background-size: contain; background-repeat: no-repeat; background-position: center; }
+        .gift-sweet-icon { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23FF69B4' viewBox='0 0 24 24'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z'/%3E%3Ccircle cx='12' cy='12' r='4' fill='%23FF69B4'/%3E%3C/svg%3E"); }
+        .gift-surprise-icon { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23FFA500' viewBox='0 0 24 24'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z'/%3E%3Cpolygon points='12,7 14,11 18,11 15,14 16,18 12,16 8,18 9,14 6,11 10,11' fill='%23FFA500'/%3E%3C/svg%3E"); }
         
         /* ========== МОБИЛЬНАЯ ВЕРСИЯ ========== */
         @media (max-width: 768px) {
@@ -119,81 +106,121 @@
             .mobile-chats-screen { transform: translateX(0); z-index: 1; }
             .mobile-chat-screen { transform: translateX(100%); z-index: 2; background: #0d1117; }
             .mobile-chat-screen.open { transform: translateX(0); }
-            .mobile-header { background: #161b22; padding: 10px 12px; display: flex; align-items: center; gap: 12px; border-bottom: 0.5px solid #30363d; flex-shrink: 0; }
-            .mobile-header-icons { display: flex; gap: 12px; margin-left: auto; }
-            .mobile-icon-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: #21262d; border-radius: 8px; cursor: pointer; }
+            .mobile-header { background: #161b22; padding: 12px 16px; display: flex; align-items: center; gap: 12px; border-bottom: 0.5px solid #30363d; flex-shrink: 0; }
             .mobile-back-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 8px; background: #21262d; }
-            .mobile-header-title { font-weight: 600; font-size: 1rem; flex: 1; }
+            .mobile-header-title { font-weight: 600; font-size: 1.1rem; flex: 1; }
+            .mobile-gift-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: #21262d; border-radius: 8px; cursor: pointer; }
             .mobile-new-chat { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: #2f81f7; border-radius: 8px; cursor: pointer; }
-            .mobile-user-row { padding: 12px 16px; background: #161b22; border-bottom: 0.5px solid #30363d; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
-            .mobile-coin { display: flex; align-items: center; gap: 6px; background: #21262d; padding: 4px 8px; border-radius: 20px; }
+            .mobile-user-row { padding: 12px 16px; background: #161b22; border-bottom: 0.5px solid #30363d; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; flex-wrap: wrap; gap: 8px; }
+            .mobile-user-info { display: flex; flex-direction: column; gap: 4px; }
+            .mobile-username { font-weight: 600; font-size: 1rem; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+            .mobile-useremail { font-size: 0.7rem; color: #6e7681; }
+            .mobile-coin { display: flex; align-items: center; gap: 4px; background: #21262d; padding: 4px 10px; border-radius: 20px; }
+            .mobile-logout-btn { background: #da3633; border: none; padding: 6px 12px; border-radius: 20px; color: white; font-size: 0.75rem; cursor: pointer; }
+            .mobile-chats-list { flex: 1; overflow-y: auto; padding: 8px 0; }
+            .mobile-chat-item { padding: 12px 16px; border-bottom: 0.5px solid #30363d; cursor: pointer; display: flex; flex-direction: column; gap: 4px; }
+            .mobile-chat-name { font-weight: 500; font-size: 1rem; }
+            .mobile-chat-preview { font-size: 0.75rem; color: #6e7681; }
             .mobile-messages { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
             .mobile-input-area { padding: 10px 12px; border-top: 0.5px solid #30363d; background: #161b22; display: flex; gap: 8px; flex-shrink: 0; }
             .mobile-input { flex: 1; padding: 10px 12px; background: #0d1117; border: 0.5px solid #30363d; border-radius: 24px; color: white; font-size: 0.9rem; outline: none; }
             .mobile-send { background: #2f81f7; border: none; width: 42px; height: 42px; border-radius: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+            .mobile-empty { text-align: center; padding: 2rem; color: #6e7681; font-size: 0.9rem; }
+            .warning-banner-mobile { background: #e3b34120; padding: 8px 12px; font-size: 0.7rem; color: #e3b341; text-align: center; }
         }
         @media (min-width: 769px) { .mobile-layout { display: none; } }
-        .warning-banner { background: #e3b34120; border-left: 3px solid #e3b341; padding: 0.5rem; margin-bottom: 0.5rem; font-size: 0.7rem; color: #e3b341; }
     </style>
 </head>
 <body>
+    <!-- ДЕСКТОП -->
     <div class="desktop-layout" id="desktopLayout">
         <div class="menu-bar">
             <div class="menu-icon" id="newChatBtnDesktop"><span class="icon icon-plus"></span></div>
             <div class="menu-icon" id="adminBtnDesktop" style="display: none;"><span class="icon icon-admin"></span></div>
-            <div class="menu-icon" id="giftsBtnDesktop"><span class="icon icon-gift"></span></div>
-            <div class="menu-icon" id="settingsBtnDesktop"><span class="icon icon-settings"></span></div>
             <div class="menu-icon" id="homeBtnDesktop"><span class="icon icon-home"></span></div>
+            <div class="menu-icon" id="settingsBtnDesktop"><span class="icon icon-settings"></span></div>
         </div>
         <div class="sidebar" id="sidebarDesktop">
-            <div class="sidebar-header"><div class="user-info"><div class="user-name"><span id="userNameTextDesktop">Загрузка...</span><span id="userBadgeDesktop"></span><span class="coin-display" id="coinDisplayDesktop"><span class="icon icon-coin" style="width:16px;height:16px;"></span> <span id="coinAmountDesktop">0</span></span></div><div class="user-email" id="userEmailDesktop"></div></div><div id="changePasswordWarningDesktop" class="warning-banner" style="display: none;">⚠️ Стандартный пароль! Смените.</div><button id="logoutBtnDesktop" class="logout-btn"><span class="icon icon-logout"></span> Выйти</button></div>
+            <div class="sidebar-header">
+                <div class="user-info">
+                    <div class="user-name"><span id="userNameTextDesktop">Загрузка...</span><span id="userBadgeDesktop"></span><span class="coin-display"><span class="icon icon-coin" style="width:14px;height:14px;"></span> <span id="coinAmountDesktop">0</span></span></div>
+                    <div class="user-email" id="userEmailDesktop"></div>
+                </div>
+                <div id="changePasswordWarningDesktop" class="warning-banner" style="display: none;">⚠️ Стандартный пароль! Смените.</div>
+                <button id="logoutBtnDesktop" class="logout-btn"><span class="icon icon-logout"></span> Выйти</button>
+            </div>
             <button id="newChatSidebarBtnDesktop" class="new-chat-btn"><span class="icon icon-plus"></span> Новый чат</button>
             <div class="chats-list" id="chatsListDesktop"></div>
         </div>
-        <div class="chat-main"><div class="chat-panel" id="chatPanelDesktop"><div class="chat-header"><div class="chat-title" id="chatTitleDesktop">Выберите чат</div><button id="sendGiftInChatDesktop" class="gift-chat-btn" style="display:none;"><span class="icon icon-gift" style="width:16px;height:16px;"></span> Подарок</button></div><div class="messages" id="messagesListDesktop"><div class="empty-state">Нажмите + чтобы начать новый чат</div></div><div class="message-input-area" id="messageAreaDesktop" style="display: none;"><input type="text" id="messageInputDesktop" class="message-input" placeholder="Введите сообщение..."><button id="sendBtnDesktop" class="send-btn"><span class="icon icon-send"></span> Отправить</button></div></div><div class="home-panel" id="homePanelDesktop" style="display:none;"><h2>Trailless</h2><p style="color:#8b949e;">Мгновенный чат + подарки</p><button id="returnToChatBtnDesktop" class="return-btn"><span class="icon icon-arrow-back"></span> Вернуться в чат</button></div></div>
+        <div class="chat-main">
+            <div class="chat-panel" id="chatPanelDesktop">
+                <div class="chat-header">
+                    <div class="chat-title" id="chatTitleDesktop">Выберите чат</div>
+                    <button id="giftChatBtnDesktop" class="gift-chat-btn" style="display: none;"><span class="icon icon-gift" style="width:16px;height:16px;"></span> Подарки</button>
+                </div>
+                <div class="messages" id="messagesListDesktop"><div class="empty-state">Нажмите + чтобы начать новый чат</div></div>
+                <div class="message-input-area" id="messageAreaDesktop" style="display: none;">
+                    <input type="text" id="messageInputDesktop" class="message-input" placeholder="Введите сообщение...">
+                    <button id="sendBtnDesktop" class="send-btn"><span class="icon icon-send"></span> Отправить</button>
+                </div>
+            </div>
+            <div class="home-panel" id="homePanelDesktop"><h2>Trailless</h2><p style="color:#8b949e;">Мгновенный чат без следа</p><button id="returnToChatBtnDesktop" class="return-btn"><span class="icon icon-arrow-back"></span> Вернуться в чат</button></div>
+        </div>
     </div>
 
+    <!-- МОБИЛЬНЫЙ ИНТЕРФЕЙС -->
     <div class="mobile-layout" id="mobileLayout">
         <div class="mobile-chats-screen" id="mobileChatsScreen">
-            <div class="mobile-header"><div class="mobile-header-title">Trailless</div><div class="mobile-header-icons"><div class="mobile-icon-btn" id="mobileGiftsBtn"><span class="icon icon-gift" style="width:18px;height:18px;"></span></div><div class="mobile-icon-btn" id="mobileSettingsBtn"><span class="icon icon-settings" style="width:18px;height:18px;"></span></div><div class="mobile-icon-btn" id="mobileAdminBtn" style="display:none;"><span class="icon icon-admin" style="width:18px;height:18px;"></span></div><div class="mobile-new-chat" id="mobileNewChatBtn"><span class="icon icon-plus" style="width:18px;height:18px;"></span></div></div></div>
-            <div class="mobile-user-row"><div class="mobile-user-info"><div class="mobile-username" id="mobileUserName">Загрузка...</div><div class="mobile-useremail" id="mobileUserEmail"></div></div><div class="mobile-coin"><span class="icon icon-coin" style="width:16px;height:16px;"></span><span id="mobileCoinAmount">0</span><button class="mobile-logout-btn" id="mobileLogoutBtn" style="margin-left:8px;">Выйти</button></div></div>
-            <div id="mobileChangePwdWarning" class="warning-banner" style="display: none; margin:8px;">⚠️ Стандартный пароль! Смените.</div>
+            <div class="mobile-header">
+                <div class="mobile-header-title">📩 Trailless</div>
+                <div class="mobile-new-chat" id="mobileNewChatBtn"><span class="icon icon-plus" style="width:18px;height:18px;"></span></div>
+            </div>
+            <div class="mobile-user-row">
+                <div class="mobile-user-info">
+                    <div class="mobile-username" id="mobileUserName">Загрузка...<span id="mobileUserBadge"></span></div>
+                    <div class="mobile-useremail" id="mobileUserEmail"></div>
+                </div>
+                <div class="mobile-coin"><span class="icon icon-coin" style="width:14px;height:14px;"></span> <span id="mobileCoinAmount">0</span><button class="mobile-logout-btn" id="mobileLogoutBtn" style="margin-left:8px;">Выйти</button></div>
+            </div>
+            <div id="mobileChangePwdWarning" class="warning-banner-mobile" style="display: none;">⚠️ Стандартный пароль! Смените в настройках.</div>
             <div class="mobile-chats-list" id="mobileChatsList"><div class="mobile-empty">Нет чатов. Нажмите +</div></div>
         </div>
-        <div class="mobile-chat-screen" id="mobileChatScreen"><div class="mobile-header"><div class="mobile-back-btn" id="mobileBackBtn"><span class="icon icon-arrow-back" style="width:18px;height:18px;"></span></div><div class="mobile-header-title" id="mobileChatTitle">Чат</div><div class="mobile-icon-btn" id="mobileChatGiftBtn"><span class="icon icon-gift" style="width:18px;height:18px;"></span></div></div><div class="mobile-messages" id="mobileMessagesList"><div class="mobile-empty">Выберите чат</div></div><div class="mobile-input-area"><input type="text" id="mobileMessageInput" class="mobile-input" placeholder="Сообщение..."><button id="mobileSendBtn" class="mobile-send"><span class="icon icon-send" style="width:18px;height:18px;"></span></button></div></div>
+        <div class="mobile-chat-screen" id="mobileChatScreen">
+            <div class="mobile-header">
+                <div class="mobile-back-btn" id="mobileBackBtn"><span class="icon icon-arrow-back" style="width:18px;height:18px;"></span></div>
+                <div class="mobile-header-title" id="mobileChatTitle">Чат</div>
+                <div class="mobile-gift-btn" id="mobileGiftBtn"><span class="icon icon-gift" style="width:18px;height:18px;"></span></div>
+            </div>
+            <div class="mobile-messages" id="mobileMessagesList"><div class="mobile-empty">Выберите чат</div></div>
+            <div class="mobile-input-area">
+                <input type="text" id="mobileMessageInput" class="mobile-input" placeholder="Сообщение...">
+                <button id="mobileSendBtn" class="mobile-send"><span class="icon icon-send" style="width:18px;height:18px;"></span></button>
+            </div>
+        </div>
     </div>
 
+    <!-- Модальные окна -->
     <div id="settingsModal" class="modal hidden"><div class="modal-content"><h3>Настройки</h3><div class="settings-group"><label>Размер шрифта</label><select id="fontSizeSelect"><option value="small">Маленький</option><option value="medium" selected>Средний</option><option value="large">Большой</option></select></div><div class="settings-group"><label>Сменить username</label><input type="text" id="newUsername" placeholder="5-15 символов"><button id="changeUsernameBtn">Сменить</button></div><div class="settings-group"><label>Сменить пароль</label><input type="password" id="currentPassword" placeholder="Текущий"><input type="password" id="newPassword" placeholder="Новый (мин 6)"><input type="password" id="confirmPassword" placeholder="Повторите"><button id="changePasswordBtn">Сменить</button></div><button id="closeSettingsBtn">Закрыть</button></div></div>
     <div id="newChatModal" class="modal hidden"><div class="modal-content"><h3>Новый чат</h3><input type="text" id="chatUsernameInput" placeholder="Username собеседника"><button id="createChatBtn">Начать</button><button id="cancelChatBtn">Отмена</button></div></div>
-    <div id="giftsModal" class="modal hidden"><div class="modal-content"><h3>🎁 Выбери подарок</h3><div id="giftsList"></div><button id="closeGiftsBtn">Закрыть</button></div></div>
+    <div id="giftShopModal" class="modal hidden"><div class="modal-content"><h3>🎁 Магазин подарков</h3><div id="giftShopList"></div><button id="closeGiftShopBtn">Закрыть</button></div></div>
+    <div id="giftHistoryModal" class="modal hidden"><div class="modal-content"><h3>📦 Полученные подарки</h3><div id="giftHistoryList"></div><button id="closeGiftHistoryBtn">Закрыть</button></div></div>
     <div id="adminPanel" class="admin-panel hidden"><h3>Админ панель</h3><div id="adminUsersList"></div><button id="closeAdminBtn">Закрыть</button></div>
 
     <script>
         const firebaseConfig = { apiKey: "AIzaSyD7c2eq_Z9v_XjxSafPYJuBV3kDa82Eg9w", authDomain: "trailless-chat.firebaseapp.com", databaseURL: "https://trailless-chat-default-rtdb.europe-west1.firebasedatabase.app", projectId: "trailless-chat", storageBucket: "trailless-chat.firebasestorage.app", messagingSenderId: "175122288335", appId: "1:175122288335:web:f68cb31bb12631cc6ff1ba" };
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth(), db = firebase.database();
-        let currentUser = null, currentUserData = null, currentChatId = null, currentChatOtherId = null, chats = [], messagesUnsubscribe = null;
+        let currentUser = null, currentUserData = null, currentChatId = null, currentChatOtherId = null, chats = [], messagesUnsubscribe = null, allUsersCache = null;
 
         function validateUsername(u) { return /^[a-zA-Z0-9]{5,15}$/.test(u); }
         function setFontSize(s) { let f = s==='small'?'12px':s==='medium'?'14px':'16px'; document.body.style.fontSize = f; localStorage.setItem('trailless_font_size', s); }
+        function loadFontSize() { let s = localStorage.getItem('trailless_font_size'); if(s){ document.getElementById('fontSizeSelect').value = s; setFontSize(s); } }
         
         async function updateCoinsUI() { if(!currentUserData) return; document.getElementById('coinAmountDesktop').innerText = currentUserData.coins || 0; document.getElementById('mobileCoinAmount').innerText = currentUserData.coins || 0; }
         async function addCoins(amount) { if(!currentUser) return; let newCoins = (currentUserData.coins || 0) + amount; await db.ref(`users/${currentUser.uid}`).update({ coins: newCoins }); currentUserData.coins = newCoins; updateCoinsUI(); }
-        
-        async function sendGiftToUser(receiverId, giftType, cost) {
-            if((currentUserData.coins || 0) < cost) { alert(`Недостаточно монет! Нужно ${cost} 🪙`); return false; }
-            await addCoins(-cost);
-            let giftRecord = { from: currentUser.uid, fromName: currentUserData.username, type: giftType, timestamp: Date.now() };
-            await db.ref(`users/${receiverId}/gifts`).push(giftRecord);
-            let chatPartner = chats.find(c => c.userId === receiverId);
-            if(chatPartner) { let msg = { text: `🎁 Подарил(а) ${giftType === 'sweet' ? '🍬 Sweet Candy' : '🎁 Gift Surprise'}!`, senderId: currentUser.uid, senderName: currentUserData.username, senderRole: currentUserData.role, timestamp: Date.now(), isGiftNotification: true };
-                await db.ref(`messages/${chatPartner.id}`).push(msg); }
-            alert(`Подарок отправлен! -${cost} 🪙`);
-            return true;
-        }
-        
-        async function loadAllUsers() { let snap = await db.ref('users').once('value'); window.allUsersCache = Object.entries(snap.val()||{}).map(([uid,d])=>({uid, username:(d.username||'').toLowerCase(), email:d.email, banned:d.banned, role:d.role})); }
-        async function findUserByUsername(u) { if(!window.allUsersCache) await loadAllUsers(); return window.allUsersCache.find(x=>x.username === u.toLowerCase()); }
+
+        async function loadAllUsers() { let snap = await db.ref('users').once('value'); let users = snap.val()||{}; allUsersCache = Object.entries(users).map(([uid,d])=>({uid, username:(d.username||'').toLowerCase(), email:d.email, banned:d.banned, role:d.role})); }
+        async function findUserByUsername(u) { if(!allUsersCache) await loadAllUsers(); return allUsersCache.find(x=>x.username === u.toLowerCase()); }
 
         function escapeHtml(s) { return s?.replace(/[&<>]/g, m=>({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m]))||''; }
 
@@ -202,58 +229,257 @@
             for(let [cid,info] of Object.entries(data)){ let other = await db.ref(`users/${info.with}`).once('value'), otherData = other.val(); let last = await db.ref(`messages/${cid}`).orderByKey().limitToLast(1).once('value'); let lastMsg=''; last.forEach(m=>lastMsg=m.val().text); newChats.push({id:cid, name:otherData?.username||'Unknown', userId:info.with, lastMessage:lastMsg||'Нет сообщений'}); }
             chats = newChats; renderChatsDesktop(); renderChatsMobile();
         }
-        function renderChatsDesktop() { let container = document.getElementById('chatsListDesktop'); if(!container) return; container.innerHTML = chats.map(c=>`<div class="chat-item ${currentChatId===c.id?'active':''}" data-id="${c.id}" data-name="${escapeHtml(c.name)}" data-uid="${c.userId}"><div class="chat-name">@${escapeHtml(c.name)}</div><div class="chat-preview">${escapeHtml(c.lastMessage.slice(0,40))}</div></div>`).join('')||'<div style="padding:1rem;text-align:center;">Нет чатов</div>'; attachChatClicksDesktop(); }
-        function attachChatClicksDesktop() { document.querySelectorAll('#chatsListDesktop .chat-item').forEach(el=>{ el.onclick = ()=>openChat(el.dataset.id, el.dataset.name, el.dataset.uid); }); }
+        function renderChatsDesktop() { let container = document.getElementById('chatsListDesktop'); if(!container) return; container.innerHTML = chats.map(c=>`<div class="chat-item ${currentChatId===c.id?'active':''}" data-id="${c.id}" data-name="${escapeHtml(c.name)}" data-uid="${c.userId}"><div class="chat-name">@${escapeHtml(c.name)}</div><div class="chat-preview">${escapeHtml(c.lastMessage.slice(0,40))}</div></div>`).join('')||'<div style="padding:1rem;text-align:center;">Нет чатов</div>'; document.querySelectorAll('#chatsListDesktop .chat-item').forEach(el=>{ el.onclick = ()=>openChat(el.dataset.id, el.dataset.name, el.dataset.uid); }); }
         function renderChatsMobile() { let container = document.getElementById('mobileChatsList'); if(!container) return; container.innerHTML = chats.map(c=>`<div class="mobile-chat-item" data-id="${c.id}" data-name="${escapeHtml(c.name)}" data-uid="${c.userId}"><div class="mobile-chat-name">@${escapeHtml(c.name)}</div><div class="mobile-chat-preview">${escapeHtml(c.lastMessage.slice(0,40))}</div></div>`).join('')||'<div class="mobile-empty">Нет чатов. Нажмите +</div>'; document.querySelectorAll('#mobileChatsList .mobile-chat-item').forEach(el=>{ el.onclick = ()=>{ openChatMobile(el.dataset.id, el.dataset.name, el.dataset.uid); }; }); }
 
         function detachMessages() { if(messagesUnsubscribe && currentChatId) db.ref(`messages/${currentChatId}`).off('child_added', messagesUnsubscribe); }
-        function addMessageToUI(msg, isMobile=false) { let container = isMobile?document.getElementById('mobileMessagesList'):document.getElementById('messagesListDesktop'); if(!container) return; if(container.querySelector('.empty-state') && container.children.length===1) container.innerHTML=''; let div = document.createElement('div'); let isOut = msg.senderId === currentUser.uid; div.className = `message ${isOut?'outgoing':'incoming'}`; let time = new Date(msg.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); let badge = msg.senderRole==='admin'?'<span class="admin-badge">Admin</span>':(msg.senderRole==='tester'?'<span class="tester-badge">Tester</span>':''); let giftHtml = msg.isGiftNotification ? '<span class="gift-icon-inline icon-gift" style="width:14px;height:14px;display:inline-block;"></span> ' : ''; div.innerHTML = `<div class="message-sender">${escapeHtml(msg.senderName)} ${badge} ${isOut?'(вы)':''}</div><div class="message-text">${giftHtml}${escapeHtml(msg.text)}</div><div class="message-time">${time}</div>`; container.appendChild(div); container.scrollTop = container.scrollHeight; }
+        
+        function addMessageToUI(msg, msgId, isMobile=false) { 
+            let container = isMobile?document.getElementById('mobileMessagesList'):document.getElementById('messagesListDesktop'); 
+            if(!container) return; 
+            if(container.querySelector('.empty-state') && container.children.length===1) container.innerHTML=''; 
+            let div = document.createElement('div'); 
+            let isOut = msg.senderId === currentUser.uid; 
+            let isGift = msg.isGift === true;
+            div.className = `message ${isOut?'outgoing':'incoming'} ${isGift?'message-gift':''}`; 
+            let time = new Date(msg.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); 
+            let badge = msg.senderRole==='admin'?'<span class="admin-badge">Admin</span>':(msg.senderRole==='tester'?'<span class="tester-badge">Tester</span>':''); 
+            let giftIcon = isGift ? '<span class="icon icon-gift" style="width:14px;height:14px;margin-right:4px;"></span>' : '';
+            div.innerHTML = `<div class="message-sender">${escapeHtml(msg.senderName)} ${badge} ${isOut?'(вы)':''}</div><div class="message-text">${giftIcon}${escapeHtml(msg.text)}</div><div class="message-time">${time}</div>`; 
+            container.appendChild(div); 
+            container.scrollTop = container.scrollHeight; 
+        }
 
-        async function openChat(chatId, otherName, otherUid) { detachMessages(); currentChatId=chatId; currentChatOtherId=otherUid; document.getElementById('chatTitleDesktop').innerHTML = `@${escapeHtml(otherName)}`; document.getElementById('messageAreaDesktop').style.display='flex'; document.getElementById('sendGiftInChatDesktop').style.display='flex'; let container = document.getElementById('messagesListDesktop'); container.innerHTML = '<div class="empty-state">Загрузка...</div>'; let snap = await db.ref(`messages/${chatId}`).once('value'); let msgs = snap.val()||{}; container.innerHTML=''; Object.values(msgs).sort((a,b)=>a.timestamp-b.timestamp).forEach(m=>addMessageToUI(m, false)); if(Object.keys(msgs).length===0) container.innerHTML='<div class="empty-state">Нет сообщений</div>'; messagesUnsubscribe = db.ref(`messages/${chatId}`).on('child_added', (s)=>{ addMessageToUI(s.val(), false); }); renderChatsDesktop(); setTimeout(()=>container.scrollTop=container.scrollHeight,100); }
-        async function openChatMobile(chatId, otherName, otherUid) { detachMessages(); currentChatId=chatId; currentChatOtherId=otherUid; document.getElementById('mobileChatTitle').innerHTML = `@${escapeHtml(otherName)}`; let container = document.getElementById('mobileMessagesList'); container.innerHTML = '<div class="mobile-empty">Загрузка...</div>'; let snap = await db.ref(`messages/${chatId}`).once('value'); let msgs = snap.val()||{}; container.innerHTML=''; Object.values(msgs).sort((a,b)=>a.timestamp-b.timestamp).forEach(m=>addMessageToUI(m, true)); if(Object.keys(msgs).length===0) container.innerHTML='<div class="mobile-empty">Нет сообщений</div>'; messagesUnsubscribe = db.ref(`messages/${chatId}`).on('child_added', (s)=>{ addMessageToUI(s.val(), true); }); document.getElementById('mobileChatScreen').classList.add('open'); setTimeout(()=>container.scrollTop=container.scrollHeight,100); renderChatsMobile(); }
+        async function openChat(chatId, otherName, otherUid) { 
+            detachMessages(); 
+            currentChatId=chatId; 
+            currentChatOtherId=otherUid; 
+            document.getElementById('chatTitleDesktop').innerHTML = `@${escapeHtml(otherName)}`; 
+            document.getElementById('messageAreaDesktop').style.display='flex'; 
+            document.getElementById('giftChatBtnDesktop').style.display='flex';
+            let container = document.getElementById('messagesListDesktop'); 
+            container.innerHTML = '<div class="empty-state">Загрузка...</div>'; 
+            let snap = await db.ref(`messages/${chatId}`).once('value'); 
+            let msgs = snap.val()||{}; 
+            container.innerHTML=''; 
+            Object.values(msgs).sort((a,b)=>a.timestamp-b.timestamp).forEach(m=>addMessageToUI(m, null, false)); 
+            if(Object.keys(msgs).length===0) container.innerHTML='<div class="empty-state">Нет сообщений</div>'; 
+            messagesUnsubscribe = db.ref(`messages/${chatId}`).on('child_added', (s)=>{ addMessageToUI(s.val(), s.key, false); }); 
+            renderChatsDesktop(); 
+            setTimeout(()=>container.scrollTop=container.scrollHeight,100); 
+        }
         
-        async function sendMessage(text, isMobile) { if(!text||!currentChatId) return; let msg = {text, senderId:currentUser.uid, senderName:currentUserData?.username, senderRole:currentUserData?.role||'user', timestamp:Date.now()}; await db.ref(`messages/${currentChatId}`).push(msg); await addCoins(1); let chat = chats.find(c=>c.id===currentChatId); if(chat) chat.lastMessage=text; if(isMobile) renderChatsMobile(); else renderChatsDesktop(); }
+        async function openChatMobile(chatId, otherName, otherUid) { 
+            detachMessages(); 
+            currentChatId=chatId; 
+            currentChatOtherId=otherUid; 
+            document.getElementById('mobileChatTitle').innerHTML = `@${escapeHtml(otherName)}`; 
+            let container = document.getElementById('mobileMessagesList'); 
+            container.innerHTML = '<div class="mobile-empty">Загрузка...</div>'; 
+            let snap = await db.ref(`messages/${chatId}`).once('value'); 
+            let msgs = snap.val()||{}; 
+            container.innerHTML=''; 
+            Object.values(msgs).sort((a,b)=>a.timestamp-b.timestamp).forEach(m=>addMessageToUI(m, null, true)); 
+            if(Object.keys(msgs).length===0) container.innerHTML='<div class="mobile-empty">Нет сообщений</div>'; 
+            messagesUnsubscribe = db.ref(`messages/${chatId}`).on('child_added', (s)=>{ addMessageToUI(s.val(), s.key, true); }); 
+            document.getElementById('mobileChatScreen').classList.add('open'); 
+            setTimeout(()=>container.scrollTop=container.scrollHeight,100); 
+            renderChatsMobile(); 
+        }
         
-        async function createNewChat() { let username = document.getElementById('chatUsernameInput').value.trim(); if(!username){alert('Введите username');return;} let found = await findUserByUsername(username); if(!found){alert('Не найден');return;} if(found.uid===currentUser.uid){alert('Сам с собой нельзя');return;} if(found.banned){alert('Заблокирован');return;} let existing = chats.find(c=>c.userId===found.uid); if(existing){ openChat(existing.id, existing.name, existing.userId); if(window.innerWidth<=768) openChatMobile(existing.id, existing.name, existing.userId); document.getElementById('newChatModal').classList.add('hidden'); document.getElementById('chatUsernameInput').value=''; return; } let chatId = Date.now().toString(); await db.ref(`users/${currentUser.uid}/chats/${chatId}`).set({with:found.uid, name:found.username, createdAt:Date.now()}); await db.ref(`users/${found.uid}/chats/${chatId}`).set({with:currentUser.uid, name:currentUserData?.username, createdAt:Date.now()}); document.getElementById('newChatModal').classList.add('hidden'); document.getElementById('chatUsernameInput').value=''; await loadChats(); openChat(chatId, found.username, found.uid); if(window.innerWidth<=768) openChatMobile(chatId, found.username, found.uid); }
+        async function sendMessageDesktop() { 
+            let input = document.getElementById('messageInputDesktop'), text = input.value.trim(); 
+            if(!text||!currentChatId) return; 
+            let msg = {text, senderId:currentUser.uid, senderName:currentUserData?.username, senderRole:currentUserData?.role||'user', timestamp:Date.now()}; 
+            await db.ref(`messages/${currentChatId}`).push(msg); 
+            await addCoins(1);
+            let chat = chats.find(c=>c.id===currentChatId); 
+            if(chat) chat.lastMessage=text; 
+            renderChatsDesktop(); 
+            input.value=''; 
+            input.focus(); 
+        }
         
-        async function changeUsername(newU) { newU = newU.toLowerCase(); if(!validateUsername(newU)){alert('5-15 англ/цифры');return false;} let exist = await findUserByUsername(newU); if(exist && exist.uid!==currentUser.uid){alert('Занят');return false;} await db.ref(`usernames/${currentUserData.username}`).remove(); await db.ref(`usernames/${newU}`).set(currentUser.uid); await db.ref(`users/${currentUser.uid}`).update({username:newU}); await currentUser.updateProfile({displayName:newU}); currentUserData.username=newU; document.getElementById('userNameTextDesktop').innerText=newU; document.getElementById('mobileUserName').innerText=newU; await loadAllUsers(); await loadChats(); return true; }
+        async function sendMessageMobile() { 
+            let input = document.getElementById('mobileMessageInput'), text = input.value.trim(); 
+            if(!text||!currentChatId) return; 
+            let msg = {text, senderId:currentUser.uid, senderName:currentUserData?.username, senderRole:currentUserData?.role||'user', timestamp:Date.now()}; 
+            await db.ref(`messages/${currentChatId}`).push(msg); 
+            await addCoins(1);
+            let chat = chats.find(c=>c.id===currentChatId); 
+            if(chat) chat.lastMessage=text; 
+            renderChatsMobile(); 
+            input.value=''; 
+        }
+        
+        async function sendGift(giftType, cost, giftName) {
+            if(!currentChatOtherId) { alert('Откройте чат'); return; }
+            if((currentUserData.coins || 0) < cost) { alert(`Недостаточно монет! Нужно ${cost} 🪙`); return; }
+            await addCoins(-cost);
+            let giftMessage = `🎁 ${currentUserData.username} подарил(а) ${giftName}! 🎁`;
+            let msg = { text: giftMessage, senderId: currentUser.uid, senderName: currentUserData.username, senderRole: currentUserData?.role||'user', timestamp: Date.now(), isGift: true, giftType: giftType, giftValue: cost };
+            await db.ref(`messages/${currentChatId}`).push(msg);
+            let giftRecord = { from: currentUser.uid, fromName: currentUserData.username, type: giftType, name: giftName, value: cost, timestamp: Date.now() };
+            await db.ref(`users/${currentChatOtherId}/gifts`).push(giftRecord);
+            alert(`Подарок отправлен! -${cost} 🪙`);
+        }
+        
+        async function showGiftHistory() {
+            if(!currentChatOtherId) { alert('Откройте чат'); return; }
+            let snap = await db.ref(`users/${currentChatOtherId}/gifts`).once('value');
+            let gifts = snap.val()||{};
+            let list = Object.values(gifts).sort((a,b)=>b.timestamp-a.timestamp);
+            let container = document.getElementById('giftHistoryList');
+            if(list.length === 0) { container.innerHTML = '<div style="text-align:center;padding:1rem;">Нет подарков</div>'; }
+            else {
+                container.innerHTML = list.map(g => `
+                    <div class="gift-history-item">
+                        <div class="gift-icon-small ${g.type === 'sweet' ? 'gift-sweet-icon' : 'gift-surprise-icon'}"></div>
+                        <div style="flex:1;"><strong>${escapeHtml(g.name)}</strong><br><span style="font-size:0.7rem;color:#8b949e;">от ${escapeHtml(g.fromName)} • ${g.value} 🪙</span></div>
+                        <div style="font-size:0.7rem;">${new Date(g.timestamp).toLocaleDateString()}</div>
+                    </div>
+                `).join('');
+            }
+            document.getElementById('giftHistoryModal').classList.remove('hidden');
+        }
+        
+        function showGiftShop() {
+            let container = document.getElementById('giftShopList');
+            container.innerHTML = `
+                <div class="gift-option" data-gift="sweet" data-cost="300" data-name="Sweet Candy 🍬">
+                    <span>🍬 Sweet Candy</span>
+                    <span style="color:#FFD966;">300 🪙</span>
+                </div>
+                <div class="gift-option" data-gift="surprise" data-cost="50" data-name="Gift Surprise 🎁">
+                    <span>🎁 Gift Surprise</span>
+                    <span style="color:#FFD966;">50 🪙</span>
+                </div>
+            `;
+            document.getElementById('giftShopModal').classList.remove('hidden');
+            document.querySelectorAll('.gift-option').forEach(el => {
+                el.onclick = () => sendGift(el.dataset.gift, parseInt(el.dataset.cost), el.dataset.name);
+            });
+        }
+        
+        async function createNewChat() { 
+            let username = document.getElementById('chatUsernameInput').value.trim(); 
+            if(!username){alert('Введите username');return;} 
+            let found = await findUserByUsername(username); 
+            if(!found){alert('Не найден');return;} 
+            if(found.uid===currentUser.uid){alert('Сам с собой нельзя');return;} 
+            if(found.banned){alert('Заблокирован');return;} 
+            let existing = chats.find(c=>c.userId===found.uid); 
+            if(existing){ 
+                openChat(existing.id, existing.name, existing.userId); 
+                if(window.innerWidth<=768) openChatMobile(existing.id, existing.name, existing.userId); 
+                document.getElementById('newChatModal').classList.add('hidden'); 
+                document.getElementById('chatUsernameInput').value=''; 
+                return; 
+            } 
+            let chatId = Date.now().toString(); 
+            await db.ref(`users/${currentUser.uid}/chats/${chatId}`).set({with:found.uid, name:found.username, createdAt:Date.now()}); 
+            await db.ref(`users/${found.uid}/chats/${chatId}`).set({with:currentUser.uid, name:currentUserData?.username, createdAt:Date.now()}); 
+            document.getElementById('newChatModal').classList.add('hidden'); 
+            document.getElementById('chatUsernameInput').value=''; 
+            await loadChats(); 
+            openChat(chatId, found.username, found.uid); 
+            if(window.innerWidth<=768) openChatMobile(chatId, found.username, found.uid); 
+        }
+        
+        async function changeUsername(newU) { newU = newU.toLowerCase(); if(!validateUsername(newU)){alert('5-15 англ/цифры');return false;} let exist = await findUserByUsername(newU); if(exist && exist.uid!==currentUser.uid){alert('Занят');return false;} await db.ref(`usernames/${currentUserData.username}`).remove(); await db.ref(`usernames/${newU}`).set(currentUser.uid); await db.ref(`users/${currentUser.uid}`).update({username:newU}); await currentUser.updateProfile({displayName:newU}); currentUserData.username=newU; document.getElementById('userNameTextDesktop').innerText=newU; document.getElementById('mobileUserName').innerHTML=newU+'<span id="mobileUserBadge"></span>'; await loadAllUsers(); await loadChats(); return true; }
         
         async function changePassword(oldP,newP,conf){ if(newP!==conf){alert('Пароли не совпадают');return false;} if(newP.length<6){alert('Мин 6 символов');return false;} let cred = firebase.auth.EmailAuthProvider.credential(currentUser.email, oldP); try{ await currentUser.reauthenticateWithCredential(cred); await currentUser.updatePassword(newP); await db.ref(`users/${currentUser.uid}`).update({defaultPassword:null}); document.getElementById('changePasswordWarningDesktop')?.setAttribute('style','display:none'); document.getElementById('mobileChangePwdWarning')?.setAttribute('style','display:none'); return true; }catch(e){alert('Неверный текущий пароль');return false;} }
         
-        function showGiftModal(targetUserId, targetName) { let container = document.getElementById('giftsList'); container.innerHTML = `<div class="gift-option" data-gift="sweet" data-cost="300">🍬 Sweet Candy <span style="color:#FFD966;">300 🪙</span></div><div class="gift-option" data-gift="surprise" data-cost="50">🎁 Gift Surprise <span style="color:#FFD966;">50 🪙</span></div>`; document.getElementById('giftsModal').classList.remove('hidden'); document.querySelectorAll('.gift-option').forEach(el=>{ el.onclick = async ()=>{ let gift = el.dataset.gift, cost = parseInt(el.dataset.cost); await sendGiftToUser(targetUserId, gift, cost); document.getElementById('giftsModal').classList.add('hidden'); }; }); }
-        
-        auth.onAuthStateChanged(async (user)=>{ if(!user){ window.location.href='login.html'; return; } if(!user.emailVerified && !user.providerData.some(p=>p.providerId==='google.com')){ await auth.signOut(); alert('Подтвердите email'); window.location.href='login.html'; return; } currentUser=user; let snap = await db.ref(`users/${user.uid}`).once('value'); currentUserData=snap.val(); if(!currentUserData){ let uname = (user.displayName||user.email.split('@')[0]).toLowerCase(); await db.ref(`users/${user.uid}`).set({email:user.email, username:uname, role:user.email==='imbatop49@gmail.com'?'admin':'user', verified:user.emailVerified, banned:false, hasPassword:true, coins:0}); await db.ref(`usernames/${uname}`).set(user.uid); currentUserData = (await db.ref(`users/${user.uid}`).once('value')).val(); } if(currentUserData.banned){ await auth.signOut(); alert('Аккаунт заблокирован'); window.location.href='login.html'; return; } if(!currentUserData.coins && currentUserData.coins !== 0) await db.ref(`users/${user.uid}`).update({coins:0}); currentUserData.coins = currentUserData.coins || 0; document.getElementById('userNameTextDesktop').innerText = currentUserData.username; document.getElementById('userEmailDesktop').innerText = user.email; document.getElementById('mobileUserName').innerText = currentUserData.username; document.getElementById('mobileUserEmail').innerText = user.email; updateCoinsUI(); if(currentUserData.defaultPassword==='12345678'){ document.getElementById('changePasswordWarningDesktop').style.display='block'; document.getElementById('mobileChangePwdWarning').style.display='block'; } if(currentUserData.role==='admin'){ document.getElementById('adminBtnDesktop').style.display='flex'; document.getElementById('mobileAdminBtn').style.display='flex'; } await loadAllUsers(); await loadChats(); setFontSize(localStorage.getItem('trailless_font_size')||'medium'); });
+        async function logout(){ detachMessages(); await auth.signOut(); window.location.href='login.html'; }
 
-        document.getElementById('sendBtnDesktop').onclick = ()=>sendMessage(document.getElementById('messageInputDesktop').value, false);
-        document.getElementById('mobileSendBtn').onclick = ()=>sendMessage(document.getElementById('mobileMessageInput').value, true);
-        document.getElementById('messageInputDesktop').onkeypress = e=>{if(e.key==='Enter') sendMessage(e.target.value, false);};
-        document.getElementById('mobileMessageInput').onkeypress = e=>{if(e.key==='Enter') sendMessage(e.target.value, true);};
-        document.getElementById('logoutBtnDesktop').onclick = ()=>{ detachMessages(); auth.signOut(); };
-        document.getElementById('mobileLogoutBtn').onclick = ()=>{ detachMessages(); auth.signOut(); };
+        auth.onAuthStateChanged(async (user)=>{ 
+            if(!user){ window.location.href='login.html'; return; } 
+            if(!user.emailVerified && !user.providerData.some(p=>p.providerId==='google.com')){ await auth.signOut(); alert('Подтвердите email'); window.location.href='login.html'; return; } 
+            currentUser=user; 
+            let snap = await db.ref(`users/${user.uid}`).once('value'); 
+            currentUserData=snap.val(); 
+            if(!currentUserData){ 
+                let uname = (user.displayName||user.email.split('@')[0]).toLowerCase(); 
+                await db.ref(`users/${user.uid}`).set({email:user.email, username:uname, role:user.email==='imbatop49@gmail.com'?'admin':'user', verified:user.emailVerified, banned:false, hasPassword:true, coins:0}); 
+                await db.ref(`usernames/${uname}`).set(user.uid); 
+                currentUserData = (await db.ref(`users/${user.uid}`).once('value')).val(); 
+            } 
+            if(!currentUserData.coins && currentUserData.coins !== 0) await db.ref(`users/${user.uid}`).update({coins:0});
+            currentUserData.coins = currentUserData.coins || 0;
+            if(currentUserData.banned){ await auth.signOut(); alert('Аккаунт заблокирован'); window.location.href='login.html'; return; } 
+            document.getElementById('userNameTextDesktop').innerText = currentUserData.username; 
+            document.getElementById('userEmailDesktop').innerText = user.email; 
+            document.getElementById('mobileUserName').innerHTML = currentUserData.username+'<span id="mobileUserBadge"></span>'; 
+            document.getElementById('mobileUserEmail').innerText = user.email; 
+            updateCoinsUI();
+            let badgeHtml = currentUserData.role==='admin'?'<span class="admin-badge">Admin</span>':(currentUserData.role==='tester'?'<span class="tester-badge">Tester</span>':'');
+            document.getElementById('userBadgeDesktop').innerHTML = badgeHtml;
+            document.getElementById('mobileUserBadge').innerHTML = badgeHtml;
+            if(currentUserData.defaultPassword==='12345678'){ document.getElementById('changePasswordWarningDesktop').style.display='block'; document.getElementById('mobileChangePwdWarning').style.display='block'; } 
+            if(currentUserData.role==='admin'){ document.getElementById('adminBtnDesktop').style.display='flex'; } 
+            await loadAllUsers(); 
+            await loadChats(); 
+            loadFontSize(); 
+        });
+
+        // Event listeners
         document.getElementById('newChatBtnDesktop').onclick = ()=>document.getElementById('newChatModal').classList.remove('hidden');
         document.getElementById('newChatSidebarBtnDesktop').onclick = ()=>document.getElementById('newChatModal').classList.remove('hidden');
         document.getElementById('mobileNewChatBtn').onclick = ()=>document.getElementById('newChatModal').classList.remove('hidden');
         document.getElementById('createChatBtn').onclick = createNewChat;
         document.getElementById('cancelChatBtn').onclick = ()=>{document.getElementById('newChatModal').classList.add('hidden'); document.getElementById('chatUsernameInput').value='';};
+        document.getElementById('logoutBtnDesktop').onclick = logout;
+        document.getElementById('mobileLogoutBtn').onclick = logout;
+        document.getElementById('sendBtnDesktop').onclick = sendMessageDesktop;
+        document.getElementById('mobileSendBtn').onclick = sendMessageMobile;
+        document.getElementById('messageInputDesktop').onkeypress = e=>{if(e.key==='Enter') sendMessageDesktop();};
+        document.getElementById('mobileMessageInput').onkeypress = e=>{if(e.key==='Enter') sendMessageMobile();};
         document.getElementById('mobileBackBtn').onclick = ()=>{ document.getElementById('mobileChatScreen').classList.remove('open'); detachMessages(); currentChatId=null; };
-        document.getElementById('homeBtnDesktop').onclick = ()=>{ document.getElementById('homePanelDesktop').style.display='flex'; document.getElementById('chatPanelDesktop').style.display='none'; };
-        document.getElementById('returnToChatBtnDesktop').onclick = ()=>{ document.getElementById('homePanelDesktop').style.display='none'; document.getElementById('chatPanelDesktop').style.display='flex'; };
+        document.getElementById('homeBtnDesktop').onclick = ()=>document.getElementById('homePanelDesktop').classList.add('show');
+        document.getElementById('returnToChatBtnDesktop').onclick = ()=>document.getElementById('homePanelDesktop').classList.remove('show');
         document.getElementById('settingsBtnDesktop').onclick = ()=>document.getElementById('settingsModal').classList.remove('hidden');
-        document.getElementById('mobileSettingsBtn').onclick = ()=>document.getElementById('settingsModal').classList.remove('hidden');
         document.getElementById('closeSettingsBtn').onclick = ()=>document.getElementById('settingsModal').classList.add('hidden');
         document.getElementById('fontSizeSelect').onchange = e=>setFontSize(e.target.value);
         document.getElementById('changeUsernameBtn').onclick = async()=>{ await changeUsername(document.getElementById('newUsername').value.trim()); document.getElementById('newUsername').value=''; alert('Username изменён'); };
         document.getElementById('changePasswordBtn').onclick = async()=>{ let ok = await changePassword(document.getElementById('currentPassword').value, document.getElementById('newPassword').value, document.getElementById('confirmPassword').value); if(ok) alert('Пароль изменён'); };
-        document.getElementById('giftsBtnDesktop').onclick = ()=>{ if(currentChatOtherId) showGiftModal(currentChatOtherId, ''); else alert('Откройте чат, чтобы отправить подарок'); };
-        document.getElementById('mobileGiftsBtn').onclick = ()=>{ if(currentChatOtherId) showGiftModal(currentChatOtherId, ''); else alert('Откройте чат, чтобы отправить подарок'); };
-        document.getElementById('sendGiftInChatDesktop').onclick = ()=>{ if(currentChatOtherId) showGiftModal(currentChatOtherId, ''); };
-        document.getElementById('mobileChatGiftBtn').onclick = ()=>{ if(currentChatOtherId) showGiftModal(currentChatOtherId, ''); };
-        document.getElementById('closeGiftsBtn').onclick = ()=>document.getElementById('giftsModal').classList.add('hidden');
-        document.getElementById('adminBtnDesktop').onclick = async()=>{ if(currentUserData?.role!=='admin')return; let users = (await db.ref('users').once('value')).val()||{}; let container = document.getElementById('adminUsersList'); container.innerHTML = Object.entries(users).map(([uid,d])=>`<div style="margin-bottom:12px;"><div><strong>@${escapeHtml(d.username)}</strong> 🪙 ${d.coins||0}<br>${d.email}</div><div><button onclick="window.setRoleUser('${uid}','tester')">Тестер</button><button onclick="window.setRoleUser('${uid}','user')">Юзер</button><button onclick="window.toggleBanUser('${uid}',${!d.banned})">${d.banned?'Разбан':'Бан'}</button></div></div>`).join(''); document.getElementById('adminPanel').classList.remove('hidden'); document.getElementById('adminPanel').classList.add('open'); };
-        document.getElementById('mobileAdminBtn').onclick = ()=>document.getElementById('adminBtnDesktop').onclick();
+        
+        // Подарки
+        document.getElementById('giftChatBtnDesktop').onclick = () => showGiftHistory();
+        document.getElementById('mobileGiftBtn').onclick = () => showGiftHistory();
+        document.getElementById('closeGiftHistoryBtn').onclick = ()=>document.getElementById('giftHistoryModal').classList.add('hidden');
+        document.getElementById('closeGiftShopBtn').onclick = ()=>document.getElementById('giftShopModal').classList.add('hidden');
+        
+        // Кнопка магазина подарков - добавим в меню ПК и в мобильную шапку
+        // Создаем иконку подарка в меню ПК для магазина
+        let giftShopIcon = document.createElement('div');
+        giftShopIcon.className = 'menu-icon';
+        giftShopIcon.innerHTML = '<span class="icon icon-gift"></span>';
+        giftShopIcon.onclick = () => showGiftShop();
+        let menuBar = document.querySelector('.menu-bar');
+        let adminBtn = document.getElementById('adminBtnDesktop');
+        if(adminBtn) menuBar.insertBefore(giftShopIcon, adminBtn.nextSibling);
+        
+        // На мобилку добавим кнопку магазина в шапку чатов
+        let mobileHeader = document.querySelector('.mobile-header');
+        let mobileGiftShopBtn = document.createElement('div');
+        mobileGiftShopBtn.className = 'mobile-icon-btn';
+        mobileGiftShopBtn.innerHTML = '<span class="icon icon-gift" style="width:18px;height:18px;"></span>';
+        mobileGiftShopBtn.onclick = () => showGiftShop();
+        let mobileNewChat = document.getElementById('mobileNewChatBtn');
+        if(mobileNewChat) mobileHeader.insertBefore(mobileGiftShopBtn, mobileNewChat);
+        
+        // Админка (старая, рабочая)
+        document.getElementById('adminBtnDesktop').onclick = async()=>{ 
+            if(currentUserData?.role!=='admin')return; 
+            let users = (await db.ref('users').once('value')).val()||{}; 
+            let container = document.getElementById('adminUsersList'); 
+            container.innerHTML = Object.entries(users).map(([uid,d])=>`<div class="admin-user"><div><strong>@${escapeHtml(d.username)}</strong><br>${d.email} ${d.role==='admin'?'<span class="admin-badge">Admin</span>':''}</div><div><button onclick="window.setRoleUser('${uid}','tester')">Тестер</button><button onclick="window.setRoleUser('${uid}','user')">Юзер</button><button onclick="window.toggleBanUser('${uid}',${!d.banned})">${d.banned?'Разбан':'Бан'}</button></div></div>`).join(''); 
+            document.getElementById('adminPanel').classList.remove('hidden'); 
+            document.getElementById('adminPanel').classList.add('open'); 
+        };
         document.getElementById('closeAdminBtn').onclick = ()=>{document.getElementById('adminPanel').classList.remove('open'); document.getElementById('adminPanel').classList.add('hidden');};
         window.setRoleUser = async (uid,role)=>{ if(currentUserData?.role!=='admin') return; await db.ref(`users/${uid}`).update({role}); await loadAllUsers(); };
-        window.toggleBanUser = async (uid,ban)=>{ if(currentUserData?.role!=='admin') return; await db.ref(`users/${uid}`).update({banned:ban}); await loadAllUsers(); if(ban && uid===currentUser.uid) await auth.signOut(); };
+        window.toggleBanUser = async (uid,ban)=>{ if(currentUserData?.role!=='admin') return; await db.ref(`users/${uid}`).update({banned:ban}); await loadAllUsers(); if(ban && uid===currentUser.uid) await logout(); };
     </script>
 </body>
 </html>
