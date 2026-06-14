@@ -77,7 +77,7 @@
         .typing-indicator { font-size: 0.7rem; color: #8b949e; margin-left: 0.5rem; font-style: italic; }
         .gift-chat-btn { background: #21262d; border: none; border-radius: 20px; padding: 5px 12px; color: white; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.75rem; }
         .messages { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
-        .message { max-width: 70%; padding: 0.5rem 0.75rem; border-radius: 8px; font-size: 0.85rem; position: relative; }
+        .message { max-width: 70%; padding: 0.5rem 0.75rem; border-radius: 8px; font-size: 0.85rem; position: relative; transition: all 0.2s ease; }
         .message.outgoing { align-self: flex-end; background: #2f81f7; color: white; }
         .message.incoming { align-self: flex-start; background: #21262d; }
         .message-gift { background: linear-gradient(135deg, #2a2050, #1a1a3a); border-left: 3px solid #FFD966; }
@@ -357,9 +357,11 @@
         
         function markAsRead(msgId) { if(!currentChatId || !msgId) return; db.ref(`messages/${currentChatId}/${msgId}/read`).set(true); }
         
+        // Optimized renderMessage with direct DOM updates
         function renderMessage(msg, msgId, isMobile) {
             let container = isMobile ? document.getElementById('mobileMessagesList') : document.getElementById('messagesListDesktop');
             if(!container) return;
+            
             let existing = container.querySelector(`.message[data-msg-id="${msgId}"]`);
             let isOut = msg.senderId === currentUser.uid;
             let time = new Date(msg.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
@@ -375,6 +377,7 @@
             let html = `<div class="message-sender">${escapeHtml(msg.senderName)} ${badge} ${isOut?'(вы)':''}</div>${replyHtml}<div class="message-text">${giftIcon}${linkedText} ${editedHtml}</div><div class="message-footer"><span>${time}</span>${statusHtml}</div>`;
             
             if(existing) {
+                // Update existing message instantly
                 existing.innerHTML = html;
             } else {
                 let div = document.createElement('div');
@@ -458,11 +461,32 @@
         async function editMessage(msgId, oldText) {
             let newText = prompt('Редактировать сообщение:', oldText);
             if(!newText || newText === oldText) return;
+            // Update locally immediately for better UX
+            let msgElement = document.querySelector(`.message[data-msg-id="${msgId}"]`);
+            if(msgElement) {
+                let textDiv = msgElement.querySelector('.message-text');
+                if(textDiv) {
+                    let giftIcon = textDiv.querySelector('.icon-gift') ? '<span class="icon icon-gift" style="width:14px;height:14px;margin-right:4px;"></span>' : '';
+                    textDiv.innerHTML = `${giftIcon}${linkify(escapeHtml(newText))} <span class="edited-mark">(ред.)</span>`;
+                }
+            }
+            // Update in database
             await db.ref(`messages/${currentChatId}/${msgId}`).update({ text: newText, edited: true });
         }
         
         async function deleteMessage(msgId) {
-            if(confirm('Удалить сообщение?')) await db.ref(`messages/${currentChatId}/${msgId}`).remove();
+            if(confirm('Удалить сообщение?')) {
+                // Remove from DOM immediately
+                let msgElement = document.querySelector(`.message[data-msg-id="${msgId}"]`);
+                if(msgElement) msgElement.remove();
+                // Remove from database
+                await db.ref(`messages/${currentChatId}/${msgId}`).remove();
+                // Check if container is empty
+                let container = document.getElementById('messagesListDesktop');
+                let containerMobile = document.getElementById('mobileMessagesList');
+                if(container && container.children.length === 0) container.innerHTML = '<div class="empty-state">Нет сообщений</div>';
+                if(containerMobile && containerMobile.children.length === 0) containerMobile.innerHTML = '<div class="mobile-empty">Нет сообщений</div>';
+            }
         }
         
         async function setupMessagesListener(chatId, isMobile) {
