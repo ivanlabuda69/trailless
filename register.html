@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trailless · Регистрация</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background: #0d1117;
+            color: #c9d1d9;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 450px;
+        }
+        h1 { font-size: 1.5rem; margin-bottom: 0.5rem; text-align: center; }
+        .sub { color: #8b949e; font-size: 0.85rem; margin-bottom: 1.5rem; text-align: center; }
+        .choice-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .choice-btn {
+            flex: 1;
+            padding: 0.75rem;
+            background: #21262d;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+        .choice-btn:hover { background: #30363d; }
+        .email-form, .google-form { display: none; }
+        .email-form.show, .google-form.show { display: block; }
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            color: white;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+        input:focus { outline: none; border-color: #2f81f7; }
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background: #2f81f7;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        button:hover { background: #1f6feb; }
+        .error { color: #da3633; font-size: 0.8rem; margin-top: 0.5rem; text-align: center; }
+        .footer { text-align: center; margin-top: 1rem; font-size: 0.75rem; color: #6e7681; }
+        a { color: #2f81f7; text-decoration: none; }
+        .back-btn { background: #21262d; margin-bottom: 1rem; }
+        .back-btn:hover { background: #30363d; }
+        .password-box {
+            background: #21262d;
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin: 0.5rem 0;
+            font-family: monospace;
+            font-size: 1.1rem;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        .icon { width: 18px; height: 18px; display: inline-block; background-size: contain; background-repeat: no-repeat; background-position: center; vertical-align: middle; }
+        .icon-email { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z'/%3E%3C/svg%3E"); }
+        .icon-google { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath fill='%23FFC107' d='M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z'/%3E%3Cpath fill='%23FF3D00' d='M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z'/%3E%3Cpath fill='%234CAF50' d='M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0 1 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z'/%3E%3Cpath fill='%231976D2' d='M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z'/%3E%3C/svg%3E"); }
+        .icon-arrow { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z'/%3E%3C/svg%3E"); }
+        .icon-check { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E"); }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Создать аккаунт</h1>
+        <div class="sub">Выберите способ регистрации</div>
+        <div class="choice-buttons" id="choiceButtons">
+            <button class="choice-btn" id="emailChoiceBtn">
+                <span class="icon icon-email"></span> Почта
+            </button>
+            <button class="choice-btn" id="googleChoiceBtn">
+                <span class="icon icon-google"></span> Google
+            </button>
+        </div>
+        <div id="emailForm" class="email-form">
+            <button id="backToChoiceBtn1" class="back-btn">
+                <span class="icon icon-arrow"></span> Назад
+            </button>
+            <input type="email" id="email" placeholder="Email">
+            <input type="text" id="usernameEmail" placeholder="Username (только англ/цифры, 5-15 символов)" maxlength="15">
+            <input type="password" id="password" placeholder="Пароль (минимум 6 символов)">
+            <button id="registerBtn">
+                <span class="icon icon-email"></span> Зарегистрироваться
+            </button>
+            <div id="emailMessage" class="error"></div>
+        </div>
+        <div id="googleForm" class="google-form">
+            <button id="backToChoiceBtn2" class="back-btn">
+                <span class="icon icon-arrow"></span> Назад
+            </button>
+            <input type="text" id="usernameGoogle" placeholder="Username (только англ/цифры, 5-15 символов)" maxlength="15">
+            <button id="continueGoogleBtn">
+                <span class="icon icon-google"></span> Продолжить с Google
+            </button>
+            <div id="googleMessage" class="error"></div>
+        </div>
+        <div class="footer">Уже есть аккаунт? <a href="login.html">Войти</a></div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyD7c2eq_Z9v_XjxSafPYJuBV3kDa82Eg9w",
+            authDomain: "trailless-chat.firebaseapp.com",
+            databaseURL: "https://trailless-chat-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "trailless-chat",
+            storageBucket: "trailless-chat.firebasestorage.app",
+            messagingSenderId: "175122288335",
+            appId: "1:175122288335:web:f68cb31bb12631cc6ff1ba"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        function validateUsername(username) {
+            const regex = /^[a-zA-Z0-9]{5,15}$/;
+            if (!username) return false;
+            if (username.length < 5) return false;
+            if (username.length > 15) return false;
+            if (!regex.test(username)) return false;
+            return true;
+        }
+
+        document.getElementById('emailChoiceBtn').onclick = () => {
+            document.getElementById('choiceButtons').style.display = 'none';
+            document.getElementById('emailForm').classList.add('show');
+        };
+        document.getElementById('googleChoiceBtn').onclick = () => {
+            document.getElementById('choiceButtons').style.display = 'none';
+            document.getElementById('googleForm').classList.add('show');
+        };
+        document.getElementById('backToChoiceBtn1').onclick = () => {
+            document.getElementById('choiceButtons').style.display = 'flex';
+            document.getElementById('emailForm').classList.remove('show');
+            document.getElementById('emailMessage').textContent = '';
+            document.getElementById('email').value = '';
+            document.getElementById('usernameEmail').value = '';
+            document.getElementById('password').value = '';
+        };
+        document.getElementById('backToChoiceBtn2').onclick = () => {
+            document.getElementById('choiceButtons').style.display = 'flex';
+            document.getElementById('googleForm').classList.remove('show');
+            document.getElementById('googleMessage').textContent = '';
+            document.getElementById('usernameGoogle').value = '';
+        };
+
+        document.getElementById('registerBtn').onclick = async () => {
+            const email = document.getElementById('email').value.trim();
+            const username = document.getElementById('usernameEmail').value.trim();
+            const password = document.getElementById('password').value;
+            const msgDiv = document.getElementById('emailMessage');
+            if (!email || !username || !password) {
+                msgDiv.textContent = 'Заполните все поля';
+                msgDiv.style.color = '#da3633';
+                return;
+            }
+            if (!validateUsername(username)) {
+                msgDiv.textContent = 'Username: только англ/цифры, 5-15 символов';
+                msgDiv.style.color = '#da3633';
+                return;
+            }
+            if (password.length < 6) {
+                msgDiv.textContent = 'Пароль должен быть минимум 6 символов';
+                msgDiv.style.color = '#da3633';
+                return;
+            }
+            try {
+                const usernameCheck = await database.ref(`usernames/${username.toLowerCase()}`).once('value');
+                if (usernameCheck.exists()) {
+                    msgDiv.textContent = 'Этот username уже занят';
+                    msgDiv.style.color = '#da3633';
+                    return;
+                }
+                const userCred = await auth.createUserWithEmailAndPassword(email, password);
+                const user = userCred.user;
+                await user.updateProfile({ displayName: username });
+                await user.sendEmailVerification();
+                await database.ref(`users/${user.uid}`).set({
+                    email: email,
+                    username: username.toLowerCase(),
+                    role: email === 'imbatop49@gmail.com' ? 'admin' : 'user',
+                    verified: false,
+                    banned: false,
+                    hasPassword: true,
+                    createdAt: Date.now()
+                });
+                await database.ref(`usernames/${username.toLowerCase()}`).set(user.uid);
+                await auth.signOut();
+                msgDiv.textContent = '✅ Регистрация успешна! На почту отправлена ссылка для подтверждения. Подтвердите email и войдите.';
+                msgDiv.style.color = '#238636';
+                setTimeout(() => { window.location.href = 'login.html'; }, 4000);
+            } catch (error) {
+                if (error.code === 'auth/email-already-in-use') {
+                    msgDiv.textContent = 'Этот email уже зарегистрирован';
+                } else {
+                    msgDiv.textContent = error.message;
+                }
+                msgDiv.style.color = '#da3633';
+            }
+        };
+
+        document.getElementById('continueGoogleBtn').onclick = async () => {
+            const username = document.getElementById('usernameGoogle').value.trim();
+            const msgDiv = document.getElementById('googleMessage');
+            if (!username) {
+                msgDiv.textContent = 'Введите username';
+                msgDiv.style.color = '#da3633';
+                return;
+            }
+            if (!validateUsername(username)) {
+                msgDiv.textContent = 'Username: только англ/цифры, 5-15 символов';
+                msgDiv.style.color = '#da3633';
+                return;
+            }
+            try {
+                const usernameCheck = await database.ref(`usernames/${username.toLowerCase()}`).once('value');
+                if (usernameCheck.exists()) {
+                    msgDiv.textContent = 'Этот username уже занят';
+                    msgDiv.style.color = '#da3633';
+                    return;
+                }
+                const provider = new firebase.auth.GoogleAuthProvider();
+                const result = await auth.signInWithPopup(provider);
+                const user = result.user;
+                const existingUserSnap = await database.ref(`users/${user.uid}`).once('value');
+                if (existingUserSnap.exists()) {
+                    msgDiv.textContent = 'Этот Google аккаунт уже зарегистрирован';
+                    msgDiv.style.color = '#da3633';
+                    await auth.signOut();
+                    return;
+                }
+                const defaultPassword = '12345678';
+                try {
+                    const emailCred = firebase.auth.EmailAuthProvider.credential(user.email, defaultPassword);
+                    await user.linkWithCredential(emailCred);
+                } catch (linkError) { console.log('Link error:', linkError); }
+                await user.updateProfile({ displayName: username });
+                await database.ref(`users/${user.uid}`).set({
+                    email: user.email,
+                    username: username.toLowerCase(),
+                    role: user.email === 'imbatop49@gmail.com' ? 'admin' : 'user',
+                    verified: true,
+                    banned: false,
+                    hasPassword: true,
+                    defaultPassword: defaultPassword,
+                    createdAt: Date.now()
+                });
+                await database.ref(`usernames/${username.toLowerCase()}`).set(user.uid);
+                msgDiv.innerHTML = `<div style="background:#21262d; padding:0.75rem; border-radius:8px; margin-top:0.5rem;"><div style="color:#238636; margin-bottom:0.5rem;">✅ Аккаунт создан!</div><div style="font-size:0.8rem;">📧 Email: ${user.email}</div><div style="font-size:0.8rem;">🔑 Временный пароль: <strong style="font-size:1rem; letter-spacing:1px;">${defaultPassword}</strong></div><div style="font-size:0.7rem; color:#e3b341; margin-top:0.5rem;">⚠️ Обязательно смените пароль в настройках чата!</div></div>`;
+                msgDiv.style.color = '#238636';
+                setTimeout(() => { window.location.href = 'chat.html'; }, 5000);
+            } catch (error) {
+                msgDiv.textContent = error.message;
+                msgDiv.style.color = '#da3633';
+            }
+        };
+    </script>
+</body>
+</html>
