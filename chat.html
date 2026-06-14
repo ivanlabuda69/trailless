@@ -249,10 +249,46 @@
         @media (min-width: 769px) { .mobile-layout { display: none; } }
         
         .gift-history-item { display: flex; align-items: center; gap: 12px; padding: 10px; border-bottom: 1px solid #30363d; }
+        
+        /* Лоадер сессии */
+        .session-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0d1117;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+        .session-loader .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #30363d;
+            border-top-color: #2f81f7;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .session-loader p {
+            margin-top: 1rem;
+            color: #8b949e;
+        }
     </style>
 </head>
 <body>
-    <div class="desktop-layout" id="desktopLayout">
+    <!-- Лоадер сессии -->
+    <div id="sessionLoader" class="session-loader">
+        <div class="spinner"></div>
+        <p>Проверка сессии...</p>
+    </div>
+
+    <div class="desktop-layout" id="desktopLayout" style="display: none;">
         <div class="menu-bar">
             <div class="menu-icon" id="newChatBtnDesktop"><span class="icon icon-plus"></span></div>
             <div class="menu-icon" id="giftShopBtnDesktop"><span class="icon icon-gift"></span></div>
@@ -288,7 +324,7 @@
         </div>
     </div>
 
-    <div class="mobile-layout" id="mobileLayout">
+    <div class="mobile-layout" id="mobileLayout" style="display: none;">
         <div class="mobile-chats-screen" id="mobileChatsScreen">
             <div class="mobile-header">
                 <div class="mobile-header-title">📩 Trailless</div>
@@ -344,10 +380,165 @@
         let typingTimeout = null;
         let onlineInterval = null;
         let messageListeners = {};
+        let currentSessionId = null;
 
-        // ID бота (ВАШ UID)
-        const BOT_USER_ID = "QWWaOVsm2WMF52ThlTid8Ln7hCF2";
-        const BOT_USERNAME = "TesterBase";
+        // ВИРТУАЛЬНЫЙ БОТ INFO (не существует в базе)
+        const INFO_BOT_ID = "info_bot_virtual";
+        const INFO_BOT_NAME = "Info";
+        const INFO_BOT_USERNAME = "info";
+
+        // ID бота TesterBase (ваш UID из базы)
+        const TESTER_BOT_ID = "QWWaOVsm2WMF52ThlTid8Ln7hCF2";
+        const TESTER_BOT_NAME = "TesterBase";
+
+        // Функция для генерации уникального ID сессии
+        function generateSessionId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2) + navigator.userAgent.length;
+        }
+
+        // Функция для получения информации о браузере, IP и стране
+        async function getDeviceInfo() {
+            const userAgent = navigator.userAgent;
+            let browser = 'Неизвестный';
+            if (userAgent.indexOf('Chrome') > -1) browser = 'Chrome';
+            else if (userAgent.indexOf('Firefox') > -1) browser = 'Firefox';
+            else if (userAgent.indexOf('Safari') > -1) browser = 'Safari';
+            else if (userAgent.indexOf('Edge') > -1) browser = 'Edge';
+            else if (userAgent.indexOf('Opera') > -1) browser = 'Opera';
+            
+            let ip = 'Не определен';
+            let country = 'Не определена';
+            
+            try {
+                const response = await fetch('https://ipapi.co/json/');
+                const data = await response.json();
+                ip = data.ip || 'Не определен';
+                country = data.country_name || data.country || 'Не определена';
+            } catch(e) {
+                console.log('Не удалось получить IP/страну');
+            }
+            
+            return { browser, ip, country, userAgent };
+        }
+
+        // Функция отправки сообщения от виртуального бота Info
+        async function sendInfoBotMessage(text, targetUserId, targetChatId) {
+            const msgData = {
+                text: text,
+                senderId: INFO_BOT_ID,
+                senderName: INFO_BOT_NAME,
+                senderRole: 'bot',
+                timestamp: Date.now(),
+                read: false,
+                isInfoBot: true
+            };
+            await db.ref(`messages/${targetChatId}`).push(msgData);
+        }
+
+        // Функция уведомления о новом входе (отправляется в чат с Info ботом)
+        async function sendLoginNotification(deviceInfo) {
+            const userChatId = `info_chat_${currentUser.uid}`;
+            
+            // Создаем чат с Info ботом если его нет
+            let userChats = await db.ref(`users/${currentUser.uid}/chats`).once('value');
+            let chatsData = userChats.val() || {};
+            let hasInfoChat = false;
+            
+            for(let [cid, info] of Object.entries(chatsData)) {
+                if(info.with === INFO_BOT_ID) {
+                    hasInfoChat = true;
+                    break;
+                }
+            }
+            
+            if(!hasInfoChat) {
+                await db.ref(`users/${currentUser.uid}/chats/${userChatId}`).set({
+                    with: INFO_BOT_ID,
+                    name: INFO_BOT_NAME,
+                    createdAt: Date.now(),
+                    isInfoChat: true
+                });
+            }
+            
+            const message = `🔐 **Новый вход в аккаунт**\n\n🕐 Время: ${new Date().toLocaleString()}\n🌍 IP: ${deviceInfo.ip}\n📍 Страна: ${deviceInfo.country}\n💻 Браузер: ${deviceInfo.browser}\n\nЕсли это не вы - немедленно смените пароль!`;
+            await sendInfoBotMessage(message, currentUser.uid, userChatId);
+        }
+
+        // Функция для кика всех сессий (кроме текущей)
+        async function kickOtherSessions() {
+            // Сохраняем текущую сессию
+            const currentSession = currentSessionId;
+            
+            // Получаем все активные сессии пользователя
+            const sessionsSnap = await db.ref(`sessions/${currentUser.uid}`).once('value');
+            const sessions = sessionsSnap.val() || {};
+            
+            // Удаляем все сессии кроме текущей
+            for(const [sessionId, sessionData] of Object.entries(sessions)) {
+                if(sessionId !== currentSession) {
+                    await db.ref(`sessions/${currentUser.uid}/${sessionId}`).remove();
+                }
+            }
+            
+            // Отправляем сообщение об успешном кике
+            const userChatId = `info_chat_${currentUser.uid}`;
+            await sendInfoBotMessage(`✅ **Команда /kick выполнена**\n\nВсе другие сессии были завершены. Только текущее устройство осталось активным.`, currentUser.uid, userChatId);
+        }
+
+        // Регистрация сессии
+        async function registerSession() {
+            if(!currentUser) return;
+            currentSessionId = generateSessionId();
+            
+            const deviceInfo = await getDeviceInfo();
+            
+            await db.ref(`sessions/${currentUser.uid}/${currentSessionId}`).set({
+                sessionId: currentSessionId,
+                browser: deviceInfo.browser,
+                ip: deviceInfo.ip,
+                country: deviceInfo.country,
+                userAgent: deviceInfo.userAgent,
+                    timestamp: Date.now(),
+                lastActive: Date.now()
+            });
+            
+            // Проверяем, был ли уже вход с этого устройства
+            const sessionsSnap = await db.ref(`sessions/${currentUser.uid}`).once('value');
+            const sessions = sessionsSnap.val() || {};
+            let isNewDevice = true;
+            
+            for(const [sid, session] of Object.entries(sessions)) {
+                if(sid !== currentSessionId && session.browser === deviceInfo.browser && session.ip === deviceInfo.ip) {
+                    isNewDevice = false;
+                    break;
+                }
+            }
+            
+            // Если новое устройство - отправляем уведомление
+            if(isNewDevice && Object.keys(sessions).length > 1) {
+                await sendLoginNotification(deviceInfo);
+            }
+        }
+
+        // Обновление активности сессии
+        function updateSessionActivity() {
+            if(!currentUser || !currentSessionId) return;
+            db.ref(`sessions/${currentUser.uid}/${currentSessionId}/lastActive`).set(Date.now());
+        }
+
+        // Проверка сессии при каждом действии
+        async function checkSession() {
+            if(!currentUser || !currentSessionId) return true;
+            
+            const sessionSnap = await db.ref(`sessions/${currentUser.uid}/${currentSessionId}`).once('value');
+            if(!sessionSnap.exists()) {
+                // Сессия была удалена (кикнута)
+                alert('Ваша сессия была завершена администратором. Вы будете перенаправлены на страницу входа.');
+                await logout();
+                return false;
+            }
+            return true;
+        }
 
         const giftsList = [
             { id: 'sweet', name: 'Sweet Candy', emoji: '🍬', price: 300, iconClass: 'gift-icon-sweet' },
@@ -413,13 +604,21 @@
             for(let [uid, d] of Object.entries(users)) {
                 allUsersCache[uid] = {uid, username:(d.username||'').toLowerCase(), email:d.email, banned:d.banned, role:d.role, isBot: d.role === 'bot'};
             }
+            // Добавляем виртуального бота Info в кэш
+            allUsersCache[INFO_BOT_ID] = {
+                uid: INFO_BOT_ID,
+                username: INFO_BOT_USERNAME,
+                role: 'bot',
+                isBot: true,
+                virtual: true
+            };
         }
         
         async function updateOnlineStatuses() {
             let statusSnap = await db.ref('status').once('value');
             let statuses = statusSnap.val()||{};
             for(let uid in statuses) {
-                if(allUsersCache[uid]) allUsersCache[uid].online = statuses[uid]?.online === true;
+                if(allUsersCache[uid] && !allUsersCache[uid].virtual) allUsersCache[uid].online = statuses[uid]?.online === true;
             }
             let onlineStatus = (allUsersCache[currentChatOtherId]?.online === true);
             let desktopSpan = document.getElementById('onlineStatusDesktop');
@@ -458,12 +657,39 @@
         function escapeHtml(s) { return s?.replace(/[&<>]/g, m=>({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m]))||''; }
         function scrollToBottom(isMobile) { setTimeout(() => { let container = isMobile ? document.getElementById('mobileMessagesList') : document.getElementById('messagesListDesktop'); if(container) container.scrollTop = container.scrollHeight; }, 100); }
 
-        async function ensureBotChat() {
+        // Функция для добавления чата с Info ботом (виртуальным)
+        async function ensureInfoBotChat() {
+            if(!currentUser) return;
+            
+            const userChatId = `info_chat_${currentUser.uid}`;
+            let userChats = await db.ref(`users/${currentUser.uid}/chats`).once('value');
+            let chatsData = userChats.val() || {};
+            let hasInfoChat = false;
+            
+            for(let [cid, info] of Object.entries(chatsData)) {
+                if(info.with === INFO_BOT_ID) {
+                    hasInfoChat = true;
+                    break;
+                }
+            }
+            
+            if(!hasInfoChat) {
+                await db.ref(`users/${currentUser.uid}/chats/${userChatId}`).set({
+                    with: INFO_BOT_ID,
+                    name: INFO_BOT_NAME,
+                    createdAt: Date.now(),
+                    isInfoChat: true
+                });
+            }
+        }
+
+        // Функция для добавления чата с TesterBase ботом
+        async function ensureTesterBotChat() {
             if(!currentUser) return;
             const canHaveBot = currentUserData.role === 'creator' || currentUserData.role === 'tester';
             if(!canHaveBot) return;
             
-            const botUser = allUsersCache[BOT_USER_ID];
+            const botUser = allUsersCache[TESTER_BOT_ID];
             if(!botUser) return;
             
             let userChats = await db.ref(`users/${currentUser.uid}/chats`).once('value');
@@ -471,37 +697,38 @@
             let hasBotChat = false;
             
             for(let [cid, info] of Object.entries(chatsData)) {
-                if(info.with === BOT_USER_ID) {
+                if(info.with === TESTER_BOT_ID) {
                     hasBotChat = true;
                     break;
                 }
             }
             
             if(!hasBotChat) {
-                const newChatId = `bot_chat_${currentUser.uid}`;
+                const newChatId = `tester_bot_chat_${currentUser.uid}`;
                 await db.ref(`users/${currentUser.uid}/chats/${newChatId}`).set({
-                    with: BOT_USER_ID,
-                    name: BOT_USERNAME,
+                    with: TESTER_BOT_ID,
+                    name: TESTER_BOT_NAME,
                     createdAt: Date.now(),
-                    isBotChat: true
+                    isTesterBotChat: true
                 });
             }
         }
         
-        async function sendBotMessage(text, replyToMsgData) {
-            if(!currentChatOtherId || currentChatOtherId !== BOT_USER_ID) return false;
+        // Отправка сообщения через бота TesterBase
+        async function sendTesterBotMessage(text, replyToMsgData) {
+            if(!currentChatOtherId || currentChatOtherId !== TESTER_BOT_ID) return false;
             
             const isCreator = currentUserData.role === 'creator';
             const isTester = currentUserData.role === 'tester';
             
             if(isCreator) {
                 const allUsers = Object.values(allUsersCache);
-                const testers = allUsers.filter(u => u.role === 'tester' && u.uid !== currentUser.uid);
+                const testers = allUsers.filter(u => u.role === 'tester' && u.uid !== currentUser.uid && !u.virtual);
                 
                 const msgData = {
                     text: text,
-                    senderId: BOT_USER_ID,
-                    senderName: BOT_USERNAME,
+                    senderId: TESTER_BOT_ID,
+                    senderName: TESTER_BOT_NAME,
                     senderRole: 'bot',
                     timestamp: Date.now(),
                     read: false,
@@ -517,20 +744,20 @@
                 await db.ref(`messages/${currentChatId}`).push(msgData);
                 
                 for(const tester of testers) {
-                    const testerChatId = `bot_chat_${tester.uid}`;
+                    const testerChatId = `tester_bot_chat_${tester.uid}`;
                     await db.ref(`messages/${testerChatId}`).push(msgData);
                 }
                 return true;
             }
             
             if(isTester) {
-                const creator = Object.values(allUsersCache).find(u => u.role === 'creator');
+                const creator = Object.values(allUsersCache).find(u => u.role === 'creator' && !u.virtual);
                 if(creator) {
-                    const creatorChatId = `bot_chat_${creator.uid}`;
+                    const creatorChatId = `tester_bot_chat_${creator.uid}`;
                     const msgData = {
                         text: text,
-                        senderId: BOT_USER_ID,
-                        senderName: BOT_USERNAME,
+                        senderId: TESTER_BOT_ID,
+                        senderName: TESTER_BOT_NAME,
                         senderRole: 'bot',
                         timestamp: Date.now(),
                         read: false,
@@ -560,7 +787,8 @@
                 let lastSnap = await db.ref(`messages/${cid}`).orderByKey().limitToLast(1).once('value'); 
                 let lastMsg=''; lastSnap.forEach(m=>lastMsg=m.val().text);
                 let roleBadge = getRoleBadge(otherData.role);
-                newChats.push({id:cid, name: otherData.role === 'bot' ? BOT_USERNAME : otherData.username, userId:info.with, lastMessage:lastMsg||'Нет сообщений', roleBadge, isBot: otherData.role === 'bot'});
+                let displayName = otherData.role === 'bot' ? (otherData.virtual ? INFO_BOT_NAME : TESTER_BOT_NAME) : otherData.username;
+                newChats.push({id:cid, name: displayName, userId:info.with, lastMessage:lastMsg||'Нет сообщений', roleBadge, isBot: otherData.role === 'bot'});
             }
             chats = newChats; renderChatsDesktop(); renderChatsMobile();
         }
@@ -758,25 +986,28 @@
         }
         
         async function openChat(chatId, otherName, otherUid) { 
+            if(!await checkSession()) return;
             if(currentChatId) detachMessages(currentChatId);
             currentChatId = chatId; 
             currentChatOtherId = otherUid; 
-            document.getElementById('chatTitleDesktop').innerHTML = `${otherUid === BOT_USER_ID ? '🤖 ' : '@'}${escapeHtml(otherName)}`; 
+            document.getElementById('chatTitleDesktop').innerHTML = `${otherUid === TESTER_BOT_ID || otherUid === INFO_BOT_ID ? '🤖 ' : '@'}${escapeHtml(otherName)}`; 
             document.getElementById('messageAreaDesktop').style.display = 'flex'; 
-            document.getElementById('giftChatBtnDesktop').style.display = otherUid !== BOT_USER_ID ? 'flex' : 'none';
+            document.getElementById('giftChatBtnDesktop').style.display = (otherUid !== TESTER_BOT_ID && otherUid !== INFO_BOT_ID) ? 'flex' : 'none';
             replyToMsg = null; cancelReplyDesktop();
             await setupMessagesListener(chatId, false);
             renderChatsDesktop(); 
             scrollToBottom(false);
             updateOnlineStatuses();
             setupTyping();
+            updateSessionActivity();
         }
         
         async function openChatMobile(chatId, otherName, otherUid) { 
+            if(!await checkSession()) return;
             if(currentChatId) detachMessages(currentChatId);
             currentChatId = chatId; 
             currentChatOtherId = otherUid; 
-            document.getElementById('mobileChatTitle').innerHTML = `${otherUid === BOT_USER_ID ? '🤖 ' : '@'}${escapeHtml(otherName)}`; 
+            document.getElementById('mobileChatTitle').innerHTML = `${otherUid === TESTER_BOT_ID || otherUid === INFO_BOT_ID ? '🤖 ' : '@'}${escapeHtml(otherName)}`; 
             replyToMsg = null; cancelReplyMobile();
             await setupMessagesListener(chatId, true);
             document.getElementById('mobileChatScreen').classList.add('open'); 
@@ -784,15 +1015,29 @@
             renderChatsMobile();
             updateOnlineStatuses();
             setupTyping();
+            updateSessionActivity();
         }
         
         async function sendMessage(isMobile) {
+            if(!await checkSession()) return;
             let input = isMobile ? document.getElementById('mobileMessageInput') : document.getElementById('messageInputDesktop');
             let text = input.value.trim();
             if(!text || !currentChatId) return;
             
-            if(currentChatOtherId === BOT_USER_ID) {
-                const success = await sendBotMessage(text, replyToMsg);
+            // Обработка команды /kick
+            if(text.trim().toLowerCase() === '/kick' && currentChatOtherId === INFO_BOT_ID) {
+                await kickOtherSessions();
+                input.value = '';
+                if(replyToMsg) {
+                    replyToMsg = null;
+                    if(isMobile) cancelReplyMobile(); else cancelReplyDesktop();
+                }
+                return;
+            }
+            
+            // Чат с TesterBase ботом
+            if(currentChatOtherId === TESTER_BOT_ID) {
+                const success = await sendTesterBotMessage(text, replyToMsg);
                 if(success) {
                     input.value = '';
                     if(replyToMsg) {
@@ -801,6 +1046,12 @@
                     }
                     if(isMobile) scrollToBottom(true); else input.focus();
                 }
+                return;
+            }
+            
+            // Чат с Info ботом - только чтение, нельзя писать
+            if(currentChatOtherId === INFO_BOT_ID) {
+                alert('Чат с ботом Info доступен только для чтения. Бот уведомляет о входах в аккаунт.');
                 return;
             }
             
@@ -821,9 +1072,19 @@
             if(isMobile) renderChatsMobile(); else renderChatsDesktop();
             input.value = '';
             if(isMobile) scrollToBottom(true); else input.focus();
+            updateSessionActivity();
         }
         
         async function sendGiftToUser(targetUserId, targetChatId, giftId, giftName, giftPrice, giftEmoji) {
+            if(!await checkSession()) return;
+            
+            // Запрет на отправку подарков ботам
+            const targetUser = allUsersCache[targetUserId];
+            if(targetUser && targetUser.role === 'bot') {
+                alert('❌ Нельзя отправить подарок боту!');
+                return;
+            }
+            
             if((currentUserData.coins || 0) < giftPrice) {
                 alert(`Недостаточно монет! Нужно ${giftPrice} 🪙`);
                 return;
@@ -905,29 +1166,30 @@
         }
         
         async function createNewChat() { 
+            if(!await checkSession()) return;
             let username = document.getElementById('chatUsernameInput').value.trim().toLowerCase(); 
             if(!username){alert('Введите username');return;} 
             
-            // Поиск бота - ТОЛЬКО для Creator и Tester
-            const canFindBot = currentUserData.role === 'creator' || currentUserData.role === 'tester';
-            if(canFindBot && username === BOT_USERNAME.toLowerCase()) {
-                const botData = allUsersCache[BOT_USER_ID];
+            // Поиск бота TesterBase - ТОЛЬКО для Creator и Tester
+            const canFindTesterBot = currentUserData.role === 'creator' || currentUserData.role === 'tester';
+            if(canFindTesterBot && username === TESTER_BOT_NAME.toLowerCase()) {
+                const botData = allUsersCache[TESTER_BOT_ID];
                 if(botData) {
-                    const existingChat = chats.find(c=>c.userId === BOT_USER_ID);
+                    const existingChat = chats.find(c=>c.userId === TESTER_BOT_ID);
                     if(existingChat) {
                         openChat(existingChat.id, existingChat.name, existingChat.userId);
                         if(window.innerWidth<=768) openChatMobile(existingChat.id, existingChat.name, existingChat.userId);
                     } else {
-                        const chatId = `bot_chat_${currentUser.uid}`;
+                        const chatId = `tester_bot_chat_${currentUser.uid}`;
                         await db.ref(`users/${currentUser.uid}/chats/${chatId}`).set({
-                            with: BOT_USER_ID,
-                            name: BOT_USERNAME,
+                            with: TESTER_BOT_ID,
+                            name: TESTER_BOT_NAME,
                             createdAt: Date.now(),
-                            isBotChat: true
+                            isTesterBotChat: true
                         });
                         await loadChats();
-                        openChat(chatId, BOT_USERNAME, BOT_USER_ID);
-                        if(window.innerWidth<=768) openChatMobile(chatId, BOT_USERNAME, BOT_USER_ID);
+                        openChat(chatId, TESTER_BOT_NAME, TESTER_BOT_ID);
+                        if(window.innerWidth<=768) openChatMobile(chatId, TESTER_BOT_NAME, TESTER_BOT_ID);
                     }
                     document.getElementById('newChatModal').classList.add('hidden');
                     document.getElementById('chatUsernameInput').value='';
@@ -935,8 +1197,31 @@
                 }
             }
             
-            // Обычный поиск пользователей (исключая бота)
-            let found = Object.values(allUsersCache).find(u=>u.username === username && u.role !== 'bot');
+            // Поиск бота Info - доступен всем
+            if(username === INFO_BOT_USERNAME) {
+                const existingChat = chats.find(c=>c.userId === INFO_BOT_ID);
+                if(existingChat) {
+                    openChat(existingChat.id, existingChat.name, existingChat.userId);
+                    if(window.innerWidth<=768) openChatMobile(existingChat.id, existingChat.name, existingChat.userId);
+                } else {
+                    const chatId = `info_chat_${currentUser.uid}`;
+                    await db.ref(`users/${currentUser.uid}/chats/${chatId}`).set({
+                        with: INFO_BOT_ID,
+                        name: INFO_BOT_NAME,
+                        createdAt: Date.now(),
+                        isInfoChat: true
+                    });
+                    await loadChats();
+                    openChat(chatId, INFO_BOT_NAME, INFO_BOT_ID);
+                    if(window.innerWidth<=768) openChatMobile(chatId, INFO_BOT_NAME, INFO_BOT_ID);
+                }
+                document.getElementById('newChatModal').classList.add('hidden');
+                document.getElementById('chatUsernameInput').value='';
+                return;
+            }
+            
+            // Обычный поиск пользователей (исключая ботов)
+            let found = Object.values(allUsersCache).find(u=>u.username === username && u.role !== 'bot' && !u.virtual);
             if(!found){alert('Не найден');return;}
             if(found.uid===currentUser.uid){alert('Сам с собой нельзя');return;}
             if(found.banned){alert('Заблокирован');return;}
@@ -958,11 +1243,20 @@
             if(window.innerWidth<=768) openChatMobile(chatId, found.username, found.uid); 
         }
         
-        async function changeUsername(newU) { newU = newU.toLowerCase(); if(!validateUsername(newU)){alert('5-15 англ/цифры');return false;} let exist = Object.values(allUsersCache).find(u=>u.username === newU && u.role !== 'bot'); if(exist && exist.uid!==currentUser.uid){alert('Занят');return false;} await db.ref(`usernames/${currentUserData.username}`).remove(); await db.ref(`usernames/${newU}`).set(currentUser.uid); await db.ref(`users/${currentUser.uid}`).update({username:newU}); await currentUser.updateProfile({displayName:newU}); currentUserData.username=newU; document.getElementById('userNameTextDesktop').innerText=newU; document.getElementById('mobileUserName').innerHTML=newU+'<span id="mobileUserBadge"></span>'; let badgeHtml = getRoleBadge(currentUserData.role); document.getElementById('userBadgeDesktop').innerHTML = badgeHtml; document.getElementById('mobileUserBadge').innerHTML = badgeHtml; await loadAllUsers(); await loadChats(); return true; }
+        async function changeUsername(newU) { newU = newU.toLowerCase(); if(!validateUsername(newU)){alert('5-15 англ/цифры');return false;} let exist = Object.values(allUsersCache).find(u=>u.username === newU && u.role !== 'bot' && !u.virtual); if(exist && exist.uid!==currentUser.uid){alert('Занят');return false;} await db.ref(`usernames/${currentUserData.username}`).remove(); await db.ref(`usernames/${newU}`).set(currentUser.uid); await db.ref(`users/${currentUser.uid}`).update({username:newU}); await currentUser.updateProfile({displayName:newU}); currentUserData.username=newU; document.getElementById('userNameTextDesktop').innerText=newU; document.getElementById('mobileUserName').innerHTML=newU+'<span id="mobileUserBadge"></span>'; let badgeHtml = getRoleBadge(currentUserData.role); document.getElementById('userBadgeDesktop').innerHTML = badgeHtml; document.getElementById('mobileUserBadge').innerHTML = badgeHtml; await loadAllUsers(); await loadChats(); return true; }
         
         async function changePassword(oldP,newP,conf){ if(newP!==conf){alert('Пароли не совпадают');return false;} if(newP.length<6){alert('Мин 6 символов');return false;} let cred = firebase.auth.EmailAuthProvider.credential(currentUser.email, oldP); try{ await currentUser.reauthenticateWithCredential(cred); await currentUser.updatePassword(newP); await db.ref(`users/${currentUser.uid}`).update({defaultPassword:null}); document.getElementById('changePasswordWarningDesktop')?.setAttribute('style','display:none'); document.getElementById('mobileChangePwdWarning')?.setAttribute('style','display:none'); return true; }catch(e){alert('Неверный текущий пароль');return false;} }
         
-        async function logout(){ if(currentChatId) detachMessages(currentChatId); if(onlineInterval) clearInterval(onlineInterval); if(currentUser) await db.ref(`/status/${currentUser.uid}`).set({ online: false, lastSeen: Date.now() }); await auth.signOut(); window.location.href='login.html'; }
+        async function logout(){ 
+            if(currentChatId) detachMessages(currentChatId); 
+            if(onlineInterval) clearInterval(onlineInterval); 
+            if(currentUser && currentSessionId) {
+                await db.ref(`sessions/${currentUser.uid}/${currentSessionId}`).remove();
+                await db.ref(`/status/${currentUser.uid}`).set({ online: false, lastSeen: Date.now() });
+            }
+            await auth.signOut(); 
+            window.location.href = 'login.html';
+        }
 
         window.toggleBan = async (uid, ban) => {
             if(!hasAdminAccess(currentUserData?.role)) {
@@ -971,7 +1265,7 @@
             }
             const targetUser = allUsersCache[uid];
             if(!targetUser) return;
-            if(targetUser.role === 'bot') {
+            if(targetUser.role === 'bot' || targetUser.virtual) {
                 alert('Нельзя заблокировать бота');
                 return;
             }
@@ -986,32 +1280,84 @@
             if(ban && uid === currentUser.uid) setTimeout(() => logout(), 500);
         };
 
+        // Основная инициализация
         auth.onAuthStateChanged(async (user)=>{ 
-            if(!user){ window.location.href='login.html'; return; } 
-            if(!user.emailVerified && !user.providerData.some(p=>p.providerId==='google.com')){ await auth.signOut(); alert('Подтвердите email'); window.location.href='login.html'; return; } 
+            // Скрываем лоадер
+            document.getElementById('sessionLoader').style.display = 'none';
+            
+            if(!user){ 
+                window.location.href = 'login.html'; 
+                return; 
+            }
+            
+            // Сохраняем пользователя в sessionStorage для защиты от потери сессии при нажатии "назад"
+            sessionStorage.setItem('trailless_user_uid', user.uid);
+            sessionStorage.setItem('trailless_user_email', user.email);
+            
+            if(!user.emailVerified && !user.providerData.some(p=>p.providerId==='google.com')){ 
+                await auth.signOut(); 
+                alert('Подтвердите email'); 
+                window.location.href='login.html'; 
+                return; 
+            } 
+            
             currentUser=user; 
             let snap = await db.ref(`users/${user.uid}`).once('value'); 
             currentUserData=snap.val(); 
-            if(!currentUserData){ let uname = (user.displayName||user.email.split('@')[0]).toLowerCase(); await db.ref(`users/${user.uid}`).set({email:user.email, username:uname, role:'user', verified:user.emailVerified, banned:false, hasPassword:true, coins:100}); await db.ref(`usernames/${uname}`).set(user.uid); currentUserData = (await db.ref(`users/${user.uid}`).once('value')).val(); } 
+            if(!currentUserData){ 
+                let uname = (user.displayName||user.email.split('@')[0]).toLowerCase(); 
+                await db.ref(`users/${user.uid}`).set({email:user.email, username:uname, role:'user', verified:user.emailVerified, banned:false, hasPassword:true, coins:100}); 
+                await db.ref(`usernames/${uname}`).set(user.uid); 
+                currentUserData = (await db.ref(`users/${user.uid}`).once('value')).val(); 
+            } 
             if(currentUserData.coins === undefined) await db.ref(`users/${user.uid}`).update({coins:100});
             currentUserData.coins = currentUserData.coins || 0;
-            if(currentUserData.banned){ await auth.signOut(); alert('Аккаунт заблокирован'); window.location.href='login.html'; return; } 
-            document.getElementById('userNameTextDesktop').innerText = currentUserData.username; document.getElementById('userEmailDesktop').innerText = user.email; 
-            document.getElementById('mobileUserName').innerHTML = currentUserData.username+'<span id="mobileUserBadge"></span>'; document.getElementById('mobileUserEmail').innerText = user.email; 
+            if(currentUserData.banned){ 
+                await auth.signOut(); 
+                alert('Аккаунт заблокирован'); 
+                window.location.href='login.html'; 
+                return; 
+            }
+            
+            // Регистрация сессии
+            await registerSession();
+            
+            // Показываем интерфейс
+            document.getElementById('desktopLayout').style.display = 'flex';
+            document.getElementById('mobileLayout').style.display = 'flex';
+            
+            document.getElementById('userNameTextDesktop').innerText = currentUserData.username; 
+            document.getElementById('userEmailDesktop').innerText = user.email; 
+            document.getElementById('mobileUserName').innerHTML = currentUserData.username+'<span id="mobileUserBadge"></span>'; 
+            document.getElementById('mobileUserEmail').innerText = user.email; 
             updateCoinsUI();
             let badgeHtml = getRoleBadge(currentUserData.role);
-            document.getElementById('userBadgeDesktop').innerHTML = badgeHtml; document.getElementById('mobileUserBadge').innerHTML = badgeHtml;
-            if(currentUserData.defaultPassword==='12345678'){ document.getElementById('changePasswordWarningDesktop').style.display='block'; document.getElementById('mobileChangePwdWarning').style.display='block'; } 
+            document.getElementById('userBadgeDesktop').innerHTML = badgeHtml; 
+            document.getElementById('mobileUserBadge').innerHTML = badgeHtml;
+            if(currentUserData.defaultPassword==='12345678'){ 
+                document.getElementById('changePasswordWarningDesktop').style.display='block'; 
+                document.getElementById('mobileChangePwdWarning').style.display='block'; 
+            } 
             if(hasAdminAccess(currentUserData.role)){ 
                 document.getElementById('adminBtnDesktop').style.display = 'flex';
                 document.getElementById('mobileAdminBtn').style.display = 'flex';
             }
             await loadAllUsers(); 
-            await ensureBotChat();
+            await ensureInfoBotChat();
+            await ensureTesterBotChat();
             await loadChats(); 
             loadFontSize(); 
             setupPresence();
             startOnlinePolling();
+            
+            // Отправляем приветственное сообщение от Info бота при первом входе
+            const userChatId = `info_chat_${currentUser.uid}`;
+            const messagesSnap = await db.ref(`messages/${userChatId}`).limitToLast(1).once('value');
+            if(messagesSnap.numChildren() === 0) {
+                const deviceInfo = await getDeviceInfo();
+                const welcomeMessage = `🤖 **Добро пожаловать в Trailless!**\n\nЭто чат с ботом Info. Здесь вы будете получать уведомления о входах в ваш аккаунт.\n\n📱 **Текущее устройство:**\n🌍 IP: ${deviceInfo.ip}\n📍 Страна: ${deviceInfo.country}\n💻 Браузер: ${deviceInfo.browser}\n\n💡 **Команды:**\n• /kick - завершить все другие сессии\n\n⚠️ Если увидите подозрительный вход - немедленно смените пароль!`;
+                await sendInfoBotMessage(welcomeMessage, currentUser.uid, userChatId);
+            }
         });
 
         document.getElementById('sendBtnDesktop').onclick = ()=>sendMessage(false); document.getElementById('mobileSendBtn').onclick = ()=>sendMessage(true);
@@ -1105,6 +1451,27 @@
             await refreshAdminPanel(); 
         };
         window.cancelReplyDesktop = cancelReplyDesktop; window.cancelReplyMobile = cancelReplyMobile;
+        
+        // Защита от потери сессии при нажатии "назад"
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                // Страница загружена из кэша bfcache
+                const storedUid = sessionStorage.getItem('trailless_user_uid');
+                if (storedUid && currentUser && storedUid !== currentUser.uid) {
+                    window.location.reload();
+                }
+            }
+        });
+        
+        // Периодическая проверка сессии (каждые 30 секунд)
+        setInterval(async () => {
+            if(currentUser && currentSessionId) {
+                const sessionExists = await checkSession();
+                if(!sessionExists) {
+                    window.location.href = 'login.html';
+                }
+            }
+        }, 30000);
     </script>
 </body>
 </html>
