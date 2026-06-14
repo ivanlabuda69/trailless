@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Trailless · Чат с подарками</title>
+    <title>Trailless · Продвинутый чат</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230d1117'/%3E%3Crect x='20' y='25' width='60' height='45' rx='8' fill='%232f81f7'/%3E%3Cpath d='M35 55 L25 65 L45 65 L35 55Z' fill='%232f81f7'/%3E%3Ccircle cx='40' cy='45' r='3' fill='white'/%3E%3Ccircle cx='60' cy='45' r='3' fill='white'/%3E%3C/svg%3E">
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -87,7 +87,7 @@
         .message-text a:hover { text-decoration: underline; }
         .message.outgoing .message-text a { color: #ffffff; text-decoration: underline; }
         .message-footer { display: flex; justify-content: flex-end; align-items: center; gap: 4px; margin-top: 0.2rem; font-size: 0.6rem; opacity: 0.7; }
-        .edited-mark { font-size: 0.55rem; opacity: 0.6; }
+        .edited-mark { font-size: 0.55rem; opacity: 0.6; margin-left: 4px; }
         .reply-preview { background: rgba(255,255,255,0.1); border-left: 2px solid #2f81f7; padding: 4px 6px; margin-bottom: 4px; border-radius: 4px; font-size: 0.7rem; }
         .message-input-area { flex-shrink: 0; padding: 1rem; border-top: 1px solid #30363d; background: #161b22; display: flex; flex-direction: column; gap: 8px; }
         .reply-bar { background: #21262d; border-radius: 8px; padding: 6px 10px; display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; }
@@ -198,7 +198,7 @@
                     <div class="input-row"><input type="text" id="messageInputDesktop" class="message-input" placeholder="Введите сообщение..."><button id="sendBtnDesktop" class="send-btn"><span class="icon icon-send"></span> Отправить</button></div>
                 </div>
             </div>
-            <div class="home-panel" id="homePanelDesktop"><h2>Trailless</h2><p style="color:#8b949e;">Чат с подарками и ссылками</p><button id="returnToChatBtnDesktop" class="return-btn"><span class="icon icon-arrow-back"></span> Вернуться в чат</button></div>
+            <div class="home-panel" id="homePanelDesktop"><h2>Trailless</h2><p style="color:#8b949e;">Чат с подарками, ссылками и статусами</p><button id="returnToChatBtnDesktop" class="return-btn"><span class="icon icon-arrow-back"></span> Вернуться в чат</button></div>
         </div>
     </div>
 
@@ -248,10 +248,10 @@
         const firebaseConfig = { apiKey: "AIzaSyD7c2eq_Z9v_XjxSafPYJuBV3kDa82Eg9w", authDomain: "trailless-chat.firebaseapp.com", databaseURL: "https://trailless-chat-default-rtdb.europe-west1.firebasedatabase.app", projectId: "trailless-chat", storageBucket: "trailless-chat.firebasestorage.app", messagingSenderId: "175122288335", appId: "1:175122288335:web:f68cb31bb12631cc6ff1ba" };
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth(), db = firebase.database();
-        let currentUser = null, currentUserData = null, currentChatId = null, currentChatOtherId = null, chats = [], messagesUnsubscribe = null, allUsersCache = null;
+        let currentUser = null, currentUserData = null, currentChatId = null, currentChatOtherId = null, chats = [], messagesListeners = {}, allUsersCache = {};
         let replyToMsg = null;
         let typingTimeout = null;
-        let presenceRef = null;
+        let onlineInterval = null;
 
         function validateUsername(u) { return /^[a-zA-Z0-9]{5,15}$/.test(u); }
         function setFontSize(s) { let f = s==='small'?'12px':s==='medium'?'14px':'16px'; document.body.style.fontSize = f; localStorage.setItem('trailless_font_size', s); }
@@ -270,21 +270,31 @@
 
         async function loadAllUsers() { 
             let snap = await db.ref('users').once('value'); 
+            let users = snap.val()||{}; 
+            for(let [uid, d] of Object.entries(users)) {
+                allUsersCache[uid] = {uid, username:(d.username||'').toLowerCase(), email:d.email, banned:d.banned, role:d.role};
+            }
+        }
+        
+        async function updateOnlineStatuses() {
             let statusSnap = await db.ref('status').once('value');
             let statuses = statusSnap.val()||{};
-            let users = snap.val()||{}; 
-            allUsersCache = Object.entries(users).map(([uid,d])=>({uid, username:(d.username||'').toLowerCase(), email:d.email, banned:d.banned, role:d.role, online: statuses[uid]?.online || false})); 
-        }
-        async function findUserByUsername(u) { if(!allUsersCache) await loadAllUsers(); return allUsersCache.find(x=>x.username === u.toLowerCase()); }
-        
-        function updateOnlineStatus() {
-            if(!currentChatOtherId || !allUsersCache) return;
-            let other = allUsersCache.find(x=>x.uid === currentChatOtherId);
-            let isOnline = other?.online || false;
+            for(let uid in statuses) {
+                if(allUsersCache[uid]) allUsersCache[uid].online = statuses[uid]?.online === true;
+            }
+            let onlineStatus = (allUsersCache[currentChatOtherId]?.online === true);
             let desktopSpan = document.getElementById('onlineStatusDesktop');
             let mobileSpan = document.getElementById('onlineStatusMobile');
-            if(desktopSpan) desktopSpan.className = `online-status ${isOnline ? 'online' : 'offline'}`;
-            if(mobileSpan) mobileSpan.className = `online-status ${isOnline ? 'online' : 'offline'}`;
+            if(desktopSpan) desktopSpan.className = `online-status ${onlineStatus ? 'online' : 'offline'}`;
+            if(mobileSpan) mobileSpan.className = `online-status ${onlineStatus ? 'online' : 'offline'}`;
+            renderChatsDesktop();
+            renderChatsMobile();
+        }
+        
+        function startOnlinePolling() {
+            if(onlineInterval) clearInterval(onlineInterval);
+            updateOnlineStatuses();
+            onlineInterval = setInterval(() => updateOnlineStatuses(), 3000);
         }
         
         function setupPresence() {
@@ -292,9 +302,7 @@
             let userStatusRef = db.ref(`/status/${currentUser.uid}`);
             userStatusRef.onDisconnect().set({ online: false, lastSeen: Date.now() });
             userStatusRef.set({ online: true, lastSeen: Date.now() });
-            presenceRef = userStatusRef;
-            setInterval(() => { if(currentUser) userStatusRef.update({ online: true, lastSeen: Date.now() }); }, 30000);
-            db.ref('/status').on('value', () => { if(allUsersCache) loadAllUsers().then(()=>{ updateOnlineStatus(); renderChatsDesktop(); renderChatsMobile(); }); });
+            setInterval(() => { if(currentUser) userStatusRef.update({ online: true, lastSeen: Date.now() }); }, 15000);
         }
         
         function setupTyping() {
@@ -302,15 +310,10 @@
             let typingRef = db.ref(`/typing/${currentChatId}`);
             let desktopInput = document.getElementById('messageInputDesktop');
             let mobileInput = document.getElementById('mobileMessageInput');
-            if(desktopInput) {
-                desktopInput.removeEventListener('input', () => {});
-                desktopInput.addEventListener('input', () => { typingRef.set({ [currentUser.uid]: true }); clearTimeout(typingTimeout); typingTimeout = setTimeout(() => typingRef.set({ [currentUser.uid]: false }), 1500); });
-            }
-            if(mobileInput) {
-                mobileInput.removeEventListener('input', () => {});
-                mobileInput.addEventListener('input', () => { typingRef.set({ [currentUser.uid]: true }); clearTimeout(typingTimeout); typingTimeout = setTimeout(() => typingRef.set({ [currentUser.uid]: false }), 1500); });
-            }
-            typingRef.on('value', (snap) => { let data = snap.val()||{}; let isTyping = data[currentChatOtherId] === true; let typingHtml = isTyping ? '✏️ печатает...' : ''; document.getElementById('typingStatusDesktop').innerText = typingHtml; document.getElementById('typingStatusMobile').innerText = typingHtml; });
+            let typingHandler = () => { typingRef.set({ [currentUser.uid]: true }); clearTimeout(typingTimeout); typingTimeout = setTimeout(() => typingRef.set({ [currentUser.uid]: false }), 1500); };
+            if(desktopInput) { desktopInput.removeEventListener('input', typingHandler); desktopInput.addEventListener('input', typingHandler); }
+            if(mobileInput) { mobileInput.removeEventListener('input', typingHandler); mobileInput.addEventListener('input', typingHandler); }
+            typingRef.on('value', (snap) => { let data = snap.val()||{}; let isTyping = data[currentChatOtherId] === true; document.getElementById('typingStatusDesktop').innerText = isTyping ? '✏️ печатает...' : ''; document.getElementById('typingStatusMobile').innerText = isTyping ? '✏️ печатает...' : ''; });
         }
 
         function escapeHtml(s) { return s?.replace(/[&<>]/g, m=>({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m]))||''; }
@@ -320,79 +323,93 @@
             if(!currentUser) return;
             let snap = await db.ref(`users/${currentUser.uid}/chats`).once('value'), data = snap.val()||{}, newChats = [];
             for(let [cid,info] of Object.entries(data)){ 
-                let other = await db.ref(`users/${info.with}`).once('value'), otherData = other.val(); 
-                let last = await db.ref(`messages/${cid}`).orderByKey().limitToLast(1).once('value'); 
-                let lastMsg=''; last.forEach(m=>lastMsg=m.val().text);
-                let roleBadge = otherData?.role==='admin'?'<span class="admin-badge">Admin</span>':(otherData?.role==='tester'?'<span class="tester-badge">Tester</span>':'');
-                newChats.push({id:cid, name:otherData?.username||'Unknown', userId:info.with, lastMessage:lastMsg||'Нет сообщений', roleBadge});
+                let otherData = allUsersCache[info.with];
+                if(!otherData) continue;
+                let lastSnap = await db.ref(`messages/${cid}`).orderByKey().limitToLast(1).once('value'); 
+                let lastMsg=''; lastSnap.forEach(m=>lastMsg=m.val().text);
+                let roleBadge = otherData.role==='admin'?'<span class="admin-badge">Admin</span>':(otherData.role==='tester'?'<span class="tester-badge">Tester</span>':'');
+                newChats.push({id:cid, name:otherData.username, userId:info.with, lastMessage:lastMsg||'Нет сообщений', roleBadge});
             }
             chats = newChats; renderChatsDesktop(); renderChatsMobile();
         }
         
         function renderChatsDesktop() { 
             let container = document.getElementById('chatsListDesktop'); if(!container) return; 
-            container.innerHTML = chats.map(c=>`<div class="chat-item ${currentChatId===c.id?'active':''}" data-id="${c.id}" data-name="${escapeHtml(c.name)}" data-uid="${c.userId}"><div class="chat-name">@${escapeHtml(c.name)} ${c.roleBadge}<span class="online-status ${allUsersCache?.find(x=>x.uid===c.userId)?.online?'online':'offline'}" style="width:6px;height:6px;"></span></div><div class="chat-preview">${escapeHtml(c.lastMessage.slice(0,40))}</div></div>`).join('')||'<div style="padding:1rem;text-align:center;">Нет чатов</div>'; 
+            container.innerHTML = chats.map(c=>`<div class="chat-item ${currentChatId===c.id?'active':''}" data-id="${c.id}" data-name="${escapeHtml(c.name)}" data-uid="${c.userId}"><div class="chat-name">@${escapeHtml(c.name)} ${c.roleBadge}<span class="online-status ${allUsersCache[c.userId]?.online?'online':'offline'}" style="width:6px;height:6px;"></span></div><div class="chat-preview">${escapeHtml(c.lastMessage.slice(0,40))}</div></div>`).join('')||'<div style="padding:1rem;text-align:center;">Нет чатов</div>'; 
             document.querySelectorAll('#chatsListDesktop .chat-item').forEach(el=>{ el.onclick = ()=>openChat(el.dataset.id, el.dataset.name, el.dataset.uid); }); 
         }
         
         function renderChatsMobile() { 
             let container = document.getElementById('mobileChatsList'); if(!container) return; 
-            container.innerHTML = chats.map(c=>`<div class="mobile-chat-item" data-id="${c.id}" data-name="${escapeHtml(c.name)}" data-uid="${c.userId}"><div class="mobile-chat-name">@${escapeHtml(c.name)} ${c.roleBadge}<span class="online-status ${allUsersCache?.find(x=>x.uid===c.userId)?.online?'online':'offline'}" style="width:6px;height:6px;"></span></div><div class="mobile-chat-preview">${escapeHtml(c.lastMessage.slice(0,40))}</div></div>`).join('')||'<div class="mobile-empty">Нет чатов. Нажмите +</div>'; 
+            container.innerHTML = chats.map(c=>`<div class="mobile-chat-item" data-id="${c.id}" data-name="${escapeHtml(c.name)}" data-uid="${c.userId}"><div class="mobile-chat-name">@${escapeHtml(c.name)} ${c.roleBadge}<span class="online-status ${allUsersCache[c.userId]?.online?'online':'offline'}" style="width:6px;height:6px;"></span></div><div class="mobile-chat-preview">${escapeHtml(c.lastMessage.slice(0,40))}</div></div>`).join('')||'<div class="mobile-empty">Нет чатов. Нажмите +</div>'; 
             document.querySelectorAll('#mobileChatsList .mobile-chat-item').forEach(el=>{ el.onclick = ()=>{ openChatMobile(el.dataset.id, el.dataset.name, el.dataset.uid); }; }); 
         }
 
-        function detachMessages() { if(messagesUnsubscribe && currentChatId) db.ref(`messages/${currentChatId}`).off('child_added', messagesUnsubscribe); }
+        function detachMessages(chatId) {
+            if(messagesListeners[chatId]) {
+                db.ref(`messages/${chatId}`).off('child_added', messagesListeners[chatId].added);
+                db.ref(`messages/${chatId}`).off('child_changed', messagesListeners[chatId].changed);
+                db.ref(`messages/${chatId}`).off('child_removed', messagesListeners[chatId].removed);
+                delete messagesListeners[chatId];
+            }
+        }
         
         function markAsRead(msgId) { if(!currentChatId || !msgId) return; db.ref(`messages/${currentChatId}/${msgId}/read`).set(true); }
         
-        function addMessageToUI(msg, msgId, isMobile=false) { 
-            let container = isMobile?document.getElementById('mobileMessagesList'):document.getElementById('messagesListDesktop'); 
+        function addMessageToContainer(msg, msgId, isMobile=false, isNew=false) { 
+            let container = isMobile ? document.getElementById('mobileMessagesList') : document.getElementById('messagesListDesktop'); 
             if(!container) return; 
+            let existingMsg = document.querySelector(`.message[data-msg-id="${msgId}"]`);
+            if(existingMsg && !isNew) {
+                // обновляем существующее сообщение (редактирование)
+                let isOut = msg.senderId === currentUser.uid;
+                let badge = msg.senderRole==='admin'?'<span class="admin-badge">Admin</span>':(msg.senderRole==='tester'?'<span class="tester-badge">Tester</span>':'');
+                let giftIcon = msg.isGift ? '<span class="icon icon-gift" style="width:14px;height:14px;margin-right:4px;"></span>' : '';
+                let replyHtml = msg.replyTo ? `<div class="reply-preview">↳ ${escapeHtml(msg.replyToText || '')}</div>` : '';
+                let editedHtml = msg.edited ? '<span class="edited-mark">(ред.)</span>' : '';
+                let linkedText = linkify(escapeHtml(msg.text));
+                let statusHtml = '';
+                if(isOut) statusHtml = msg.read === true ? '<span class="icon icon-double-check" style="width:12px;height:12px;"></span>' : '<span class="icon icon-check" style="width:12px;height:12px;"></span>';
+                existingMsg.innerHTML = `<div class="message-sender">${escapeHtml(msg.senderName)} ${badge} ${isOut?'(вы)':''}</div>${replyHtml}<div class="message-text">${giftIcon}${linkedText} ${editedHtml}</div><div class="message-footer"><span>${new Date(msg.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span>${statusHtml}</div>`;
+                return;
+            }
+            if(existingMsg && isNew) return;
             if(container.querySelector('.empty-state') && container.children.length===1) container.innerHTML=''; 
             let div = document.createElement('div'); 
             let isOut = msg.senderId === currentUser.uid; 
             let isGift = msg.isGift === true;
             div.className = `message ${isOut?'outgoing':'incoming'} ${isGift?'message-gift':''}`; 
-            div.dataset.msgId = msgId;
-            div.dataset.senderId = msg.senderId;
-            div.dataset.text = msg.text;
-            let time = new Date(msg.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); 
+            div.setAttribute('data-msg-id', msgId);
+            let time = new Date(msg.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-minute'}); 
             let badge = msg.senderRole==='admin'?'<span class="admin-badge">Admin</span>':(msg.senderRole==='tester'?'<span class="tester-badge">Tester</span>':''); 
             let giftIcon = isGift ? '<span class="icon icon-gift" style="width:14px;height:14px;margin-right:4px;"></span>' : '';
             let replyHtml = msg.replyTo ? `<div class="reply-preview">↳ ${escapeHtml(msg.replyToText || '')}</div>` : '';
             let editedHtml = msg.edited ? '<span class="edited-mark">(ред.)</span>' : '';
-            let statusHtml = '';
-            if(isOut) {
-                let read = msg.read === true;
-                statusHtml = read ? '<span class="icon icon-double-check" style="width:12px;height:12px;"></span>' : '<span class="icon icon-check" style="width:12px;height:12px;"></span>';
-            }
             let linkedText = linkify(escapeHtml(msg.text));
+            let statusHtml = '';
+            if(isOut) statusHtml = msg.read === true ? '<span class="icon icon-double-check" style="width:12px;height:12px;"></span>' : '<span class="icon icon-check" style="width:12px;height:12px;"></span>';
             div.innerHTML = `<div class="message-sender">${escapeHtml(msg.senderName)} ${badge} ${isOut?'(вы)':''}</div>${replyHtml}<div class="message-text">${giftIcon}${linkedText} ${editedHtml}</div><div class="message-footer"><span>${time}</span>${statusHtml}</div>`; 
             container.appendChild(div); 
             scrollToBottom(isMobile);
-            if(!isOut && msgId) setTimeout(() => markAsRead(msgId), 500);
+            if(!isOut && msgId && !msg.read) setTimeout(() => markAsRead(msgId), 500);
             attachMessageEvents(div, msgId, msg.text, msg.senderId === currentUser.uid, isMobile);
         }
         
         function attachMessageEvents(el, msgId, msgText, isOwn, isMobile) {
             if(!el) return;
+            let newEl = el.cloneNode(true);
+            el.parentNode.replaceChild(newEl, el);
             if(!isMobile) {
-                el.addEventListener('contextmenu', (e) => { e.preventDefault(); showContextMenu(e.clientX, e.clientY, msgId, msgText, isOwn); });
+                newEl.addEventListener('contextmenu', (e) => { e.preventDefault(); showContextMenu(e.clientX, e.clientY, msgId, msgText, isOwn); });
             } else {
                 let touchTimer;
-                el.addEventListener('touchstart', (e) => { touchTimer = setTimeout(() => { showContextMenuMobile(e.touches[0].clientX, e.touches[0].clientY, msgId, msgText, isOwn); }, 500); });
-                el.addEventListener('touchend', () => clearTimeout(touchTimer));
-                el.addEventListener('touchmove', () => clearTimeout(touchTimer));
+                newEl.addEventListener('touchstart', (e) => { touchTimer = setTimeout(() => { showContextMenuMobile(e.touches[0].clientX, e.touches[0].clientY, msgId, msgText, isOwn); }, 500); });
+                newEl.addEventListener('touchend', () => clearTimeout(touchTimer));
+                newEl.addEventListener('touchmove', () => clearTimeout(touchTimer));
             }
         }
         
-        async function copyToClipboard(text) {
-            try {
-                await navigator.clipboard.writeText(text);
-            } catch(e) {
-                console.error('Copy failed', e);
-            }
-        }
+        async function copyToClipboard(text) { try { await navigator.clipboard.writeText(text); } catch(e) {} }
         
         function showContextMenu(x, y, msgId, msgText, isOwn) {
             let existing = document.querySelector('.context-menu');
@@ -401,13 +418,10 @@
             menu.className = 'context-menu';
             menu.style.left = x + 'px';
             menu.style.top = y + 'px';
-            
             let replyItem = document.createElement('div'); replyItem.className = 'context-menu-item'; replyItem.innerHTML = '<span class="icon icon-reply" style="width:16px;height:16px;"></span> Ответить'; replyItem.onclick = () => { setReply(msgId, msgText); menu.remove(); };
             menu.appendChild(replyItem);
-            
             let copyItem = document.createElement('div'); copyItem.className = 'context-menu-item'; copyItem.innerHTML = '<span class="icon icon-copy" style="width:16px;height:16px;"></span> Копировать'; copyItem.onclick = () => { copyToClipboard(msgText); menu.remove(); };
             menu.appendChild(copyItem);
-            
             if(isOwn) {
                 let editItem = document.createElement('div'); editItem.className = 'context-menu-item'; editItem.innerHTML = '<span class="icon icon-edit" style="width:16px;height:16px;"></span> Редактировать'; editItem.onclick = () => { editMessage(msgId, msgText); menu.remove(); };
                 menu.appendChild(editItem);
@@ -415,7 +429,7 @@
                 menu.appendChild(deleteItem);
             }
             document.body.appendChild(menu);
-            setTimeout(() => { document.addEventListener('click', function removeMenu() { menu.remove(); document.removeEventListener('click', removeMenu); }); }, 10);
+            setTimeout(() => { document.addEventListener('click', function removeMenu() { if(menu && menu.remove) menu.remove(); document.removeEventListener('click', removeMenu); }); }, 10);
         }
         
         function showContextMenuMobile(x, y, msgId, msgText, isOwn) {
@@ -425,13 +439,10 @@
             menu.className = 'context-menu';
             menu.style.left = x + 'px';
             menu.style.top = (y - 50) + 'px';
-            
             let replyItem = document.createElement('div'); replyItem.className = 'context-menu-item'; replyItem.innerHTML = '<span class="icon icon-reply" style="width:16px;height:16px;"></span> Ответить'; replyItem.onclick = () => { setReply(msgId, msgText); menu.remove(); };
             menu.appendChild(replyItem);
-            
             let copyItem = document.createElement('div'); copyItem.className = 'context-menu-item'; copyItem.innerHTML = '<span class="icon icon-copy" style="width:16px;height:16px;"></span> Копировать'; copyItem.onclick = () => { copyToClipboard(msgText); menu.remove(); };
             menu.appendChild(copyItem);
-            
             if(isOwn) {
                 let editItem = document.createElement('div'); editItem.className = 'context-menu-item'; editItem.innerHTML = '<span class="icon icon-edit" style="width:16px;height:16px;"></span> Редактировать'; editItem.onclick = () => { editMessage(msgId, msgText); menu.remove(); };
                 menu.appendChild(editItem);
@@ -439,19 +450,15 @@
                 menu.appendChild(deleteItem);
             }
             document.body.appendChild(menu);
-            setTimeout(() => { document.addEventListener('click', function removeMenu() { menu.remove(); document.removeEventListener('click', removeMenu); }); }, 10);
+            setTimeout(() => { document.addEventListener('click', function removeMenu() { if(menu && menu.remove) menu.remove(); document.removeEventListener('click', removeMenu); }); }, 10);
         }
         
         function setReply(msgId, msgText) {
             replyToMsg = { id: msgId, text: msgText };
             let replyBarDesktop = document.getElementById('replyBarDesktop');
             let replyBarMobile = document.getElementById('replyBarMobile');
-            let replyTextDesktop = document.getElementById('replyTextDesktop');
-            let replyTextMobile = document.getElementById('replyTextMobile');
-            if(replyBarDesktop) replyBarDesktop.classList.remove('hidden');
-            if(replyTextDesktop) replyTextDesktop.innerText = `Ответ: ${escapeHtml(msgText.slice(0,50))}`;
-            if(replyBarMobile) replyBarMobile.classList.remove('hidden');
-            if(replyTextMobile) replyTextMobile.innerText = `Ответ: ${escapeHtml(msgText.slice(0,50))}`;
+            if(replyBarDesktop) { replyBarDesktop.classList.remove('hidden'); document.getElementById('replyTextDesktop').innerText = `Ответ: ${escapeHtml(msgText.slice(0,50))}`; }
+            if(replyBarMobile) { replyBarMobile.classList.remove('hidden'); document.getElementById('replyTextMobile').innerText = `Ответ: ${escapeHtml(msgText.slice(0,50))}`; }
         }
         
         function cancelReplyDesktop() { replyToMsg = null; let bar = document.getElementById('replyBarDesktop'); if(bar) bar.classList.add('hidden'); }
@@ -467,46 +474,53 @@
             if(confirm('Удалить сообщение?')) await db.ref(`messages/${currentChatId}/${msgId}`).remove();
         }
         
+        async function setupMessageListener(chatId, isMobile) {
+            if(messagesListeners[chatId]) detachMessages(chatId);
+            let container = isMobile ? document.getElementById('mobileMessagesList') : document.getElementById('messagesListDesktop');
+            if(container) container.innerHTML = '';
+            let initialSnap = await db.ref(`messages/${chatId}`).once('value');
+            let msgs = initialSnap.val()||{};
+            for(let [id, m] of Object.entries(msgs).sort((a,b)=>a[1].timestamp-b[1].timestamp)) {
+                addMessageToContainer(m, id, isMobile, false);
+            }
+            if(Object.keys(msgs).length === 0 && container) container.innerHTML = '<div class="empty-state">Нет сообщений</div>';
+            
+            let addedHandler = (snap) => { addMessageToContainer(snap.val(), snap.key, isMobile, true); };
+            let changedHandler = (snap) => { addMessageToContainer(snap.val(), snap.key, isMobile, false); };
+            let removedHandler = (snap) => { document.querySelector(`.message[data-msg-id="${snap.key}"]`)?.remove(); if(container && container.children.length === 0) container.innerHTML = '<div class="empty-state">Нет сообщений</div>'; };
+            
+            db.ref(`messages/${chatId}`).on('child_added', addedHandler);
+            db.ref(`messages/${chatId}`).on('child_changed', changedHandler);
+            db.ref(`messages/${chatId}`).on('child_removed', removedHandler);
+            messagesListeners[chatId] = { added: addedHandler, changed: changedHandler, removed: removedHandler };
+        }
+        
         async function openChat(chatId, otherName, otherUid) { 
-            detachMessages(); 
+            if(currentChatId) detachMessages(currentChatId);
             currentChatId=chatId; 
             currentChatOtherId=otherUid; 
             document.getElementById('chatTitleDesktop').innerHTML = `@${escapeHtml(otherName)}`; 
             document.getElementById('messageAreaDesktop').style.display='flex'; 
             document.getElementById('giftChatBtnDesktop').style.display='flex';
             replyToMsg = null; cancelReplyDesktop();
-            let container = document.getElementById('messagesListDesktop'); 
-            container.innerHTML = '<div class="empty-state">Загрузка...</div>'; 
-            let snap = await db.ref(`messages/${chatId}`).once('value'); 
-            let msgs = snap.val()||{}; 
-            container.innerHTML=''; 
-            for(let [id, m] of Object.entries(msgs).sort((a,b)=>a[1].timestamp-b[1].timestamp)) addMessageToUI(m, id, false);
-            if(Object.keys(msgs).length===0) container.innerHTML='<div class="empty-state">Нет сообщений</div>'; 
-            messagesUnsubscribe = db.ref(`messages/${chatId}`).on('child_added', (s)=>{ addMessageToUI(s.val(), s.key, false); });
+            await setupMessageListener(chatId, false);
             renderChatsDesktop(); 
             scrollToBottom(false);
-            updateOnlineStatus();
+            updateOnlineStatuses();
             setupTyping();
         }
         
         async function openChatMobile(chatId, otherName, otherUid) { 
-            detachMessages(); 
+            if(currentChatId) detachMessages(currentChatId);
             currentChatId=chatId; 
             currentChatOtherId=otherUid; 
             document.getElementById('mobileChatTitle').innerHTML = `@${escapeHtml(otherName)}`; 
             replyToMsg = null; cancelReplyMobile();
-            let container = document.getElementById('mobileMessagesList'); 
-            container.innerHTML = '<div class="mobile-empty">Загрузка...</div>'; 
-            let snap = await db.ref(`messages/${chatId}`).once('value'); 
-            let msgs = snap.val()||{}; 
-            container.innerHTML=''; 
-            for(let [id, m] of Object.entries(msgs).sort((a,b)=>a[1].timestamp-b[1].timestamp)) addMessageToUI(m, id, true);
-            if(Object.keys(msgs).length===0) container.innerHTML='<div class="mobile-empty">Нет сообщений</div>'; 
-            messagesUnsubscribe = db.ref(`messages/${chatId}`).on('child_added', (s)=>{ addMessageToUI(s.val(), s.key, true); });
+            await setupMessageListener(chatId, true);
             document.getElementById('mobileChatScreen').classList.add('open'); 
             scrollToBottom(true);
             renderChatsMobile();
-            updateOnlineStatus();
+            updateOnlineStatuses();
             setupTyping();
         }
         
@@ -516,7 +530,7 @@
             if(!text||!currentChatId) return;
             let msg = { text, senderId: currentUser.uid, senderName: currentUserData?.username, senderRole: currentUserData?.role||'user', timestamp: Date.now() };
             if(replyToMsg) { msg.replyTo = replyToMsg.id; msg.replyToText = replyToMsg.text; }
-            let newRef = await db.ref(`messages/${currentChatId}`).push(msg);
+            await db.ref(`messages/${currentChatId}`).push(msg);
             await addCoins(1);
             if(replyToMsg) { replyToMsg = null; if(isMobile) cancelReplyMobile(); else cancelReplyDesktop(); }
             let chat = chats.find(c=>c.id===currentChatId);
@@ -539,10 +553,10 @@
         function showGiftShopDesktop() { if(!currentChatOtherId) { alert('Сначала откройте чат'); return; } document.getElementById('giftShopList').innerHTML = `<div class="gift-option" data-gift="sweet" data-cost="300" data-name="Sweet Candy 🍬"><span>🍬 Sweet Candy</span><span style="color:#FFD966;">300 🪙</span></div><div class="gift-option" data-gift="surprise" data-cost="50" data-name="Gift Surprise 🎁"><span>🎁 Gift Surprise</span><span style="color:#FFD966;">50 🪙</span></div>`; document.getElementById('giftShopModal').classList.remove('hidden'); document.querySelectorAll('#giftShopList .gift-option').forEach(el=>{ el.onclick = ()=>{ sendGiftToUser(currentChatOtherId, currentChatId, el.dataset.gift, parseInt(el.dataset.cost), el.dataset.name); document.getElementById('giftShopModal').classList.add('hidden'); }; }); }
         function showGiftShopMobile() { if(chats.length===0){alert('Нет чатов');return;} document.getElementById('selectChatList').innerHTML = chats.map(c=>`<div class="chat-option" data-chat-id="${c.id}" data-user-id="${c.userId}"><span>@${c.name}</span></div>`).join(''); document.getElementById('selectChatModal').classList.remove('hidden'); document.querySelectorAll('#selectChatList .chat-option').forEach(el=>{ el.onclick = ()=>{ let chatId=el.dataset.chatId, userId=el.dataset.userId; document.getElementById('selectChatModal').classList.add('hidden'); document.getElementById('giftShopList').innerHTML = `<div class="gift-option" data-gift="sweet" data-cost="300" data-name="Sweet Candy 🍬"><span>🍬 Sweet Candy</span><span style="color:#FFD966;">300 🪙</span></div><div class="gift-option" data-gift="surprise" data-cost="50" data-name="Gift Surprise 🎁"><span>🎁 Gift Surprise</span><span style="color:#FFD966;">50 🪙</span></div>`; document.getElementById('giftShopModal').classList.remove('hidden'); document.querySelectorAll('#giftShopList .gift-option').forEach(g=>{ g.onclick = ()=>{ sendGiftToUser(userId, chatId, g.dataset.gift, parseInt(g.dataset.cost), g.dataset.name); document.getElementById('giftShopModal').classList.add('hidden'); }; }); }; }); }
         
-        async function createNewChat() { let username = document.getElementById('chatUsernameInput').value.trim(); if(!username){alert('Введите username');return;} let found = await findUserByUsername(username); if(!found){alert('Не найден');return;} if(found.uid===currentUser.uid){alert('Сам с собой нельзя');return;} if(found.banned){alert('Заблокирован');return;} let existing = chats.find(c=>c.userId===found.uid); if(existing){ openChat(existing.id, existing.name, existing.userId); if(window.innerWidth<=768) openChatMobile(existing.id, existing.name, existing.userId); document.getElementById('newChatModal').classList.add('hidden'); document.getElementById('chatUsernameInput').value=''; return; } let chatId = Date.now().toString(); await db.ref(`users/${currentUser.uid}/chats/${chatId}`).set({with:found.uid, name:found.username, createdAt:Date.now()}); await db.ref(`users/${found.uid}/chats/${chatId}`).set({with:currentUser.uid, name:currentUserData?.username, createdAt:Date.now()}); document.getElementById('newChatModal').classList.add('hidden'); document.getElementById('chatUsernameInput').value=''; await loadChats(); openChat(chatId, found.username, found.uid); if(window.innerWidth<=768) openChatMobile(chatId, found.username, found.uid); }
-        async function changeUsername(newU) { newU = newU.toLowerCase(); if(!validateUsername(newU)){alert('5-15 англ/цифры');return false;} let exist = await findUserByUsername(newU); if(exist && exist.uid!==currentUser.uid){alert('Занят');return false;} await db.ref(`usernames/${currentUserData.username}`).remove(); await db.ref(`usernames/${newU}`).set(currentUser.uid); await db.ref(`users/${currentUser.uid}`).update({username:newU}); await currentUser.updateProfile({displayName:newU}); currentUserData.username=newU; document.getElementById('userNameTextDesktop').innerText=newU; document.getElementById('mobileUserName').innerHTML=newU+'<span id="mobileUserBadge"></span>'; let badgeHtml = currentUserData.role==='admin'?'<span class="admin-badge">Admin</span>':(currentUserData.role==='tester'?'<span class="tester-badge">Tester</span>':''); document.getElementById('userBadgeDesktop').innerHTML = badgeHtml; document.getElementById('mobileUserBadge').innerHTML = badgeHtml; await loadAllUsers(); await loadChats(); return true; }
+        async function createNewChat() { let username = document.getElementById('chatUsernameInput').value.trim().toLowerCase(); if(!username){alert('Введите username');return;} let found = Object.values(allUsersCache).find(u=>u.username === username); if(!found){alert('Не найден');return;} if(found.uid===currentUser.uid){alert('Сам с собой нельзя');return;} if(found.banned){alert('Заблокирован');return;} let existing = chats.find(c=>c.userId===found.uid); if(existing){ openChat(existing.id, existing.name, existing.userId); if(window.innerWidth<=768) openChatMobile(existing.id, existing.name, existing.userId); document.getElementById('newChatModal').classList.add('hidden'); document.getElementById('chatUsernameInput').value=''; return; } let chatId = Date.now().toString(); await db.ref(`users/${currentUser.uid}/chats/${chatId}`).set({with:found.uid, name:found.username, createdAt:Date.now()}); await db.ref(`users/${found.uid}/chats/${chatId}`).set({with:currentUser.uid, name:currentUserData?.username, createdAt:Date.now()}); document.getElementById('newChatModal').classList.add('hidden'); document.getElementById('chatUsernameInput').value=''; await loadChats(); openChat(chatId, found.username, found.uid); if(window.innerWidth<=768) openChatMobile(chatId, found.username, found.uid); }
+        async function changeUsername(newU) { newU = newU.toLowerCase(); if(!validateUsername(newU)){alert('5-15 англ/цифры');return false;} let exist = Object.values(allUsersCache).find(u=>u.username === newU); if(exist && exist.uid!==currentUser.uid){alert('Занят');return false;} await db.ref(`usernames/${currentUserData.username}`).remove(); await db.ref(`usernames/${newU}`).set(currentUser.uid); await db.ref(`users/${currentUser.uid}`).update({username:newU}); await currentUser.updateProfile({displayName:newU}); currentUserData.username=newU; document.getElementById('userNameTextDesktop').innerText=newU; document.getElementById('mobileUserName').innerHTML=newU+'<span id="mobileUserBadge"></span>'; let badgeHtml = currentUserData.role==='admin'?'<span class="admin-badge">Admin</span>':(currentUserData.role==='tester'?'<span class="tester-badge">Tester</span>':''); document.getElementById('userBadgeDesktop').innerHTML = badgeHtml; document.getElementById('mobileUserBadge').innerHTML = badgeHtml; await loadAllUsers(); await loadChats(); return true; }
         async function changePassword(oldP,newP,conf){ if(newP!==conf){alert('Пароли не совпадают');return false;} if(newP.length<6){alert('Мин 6 символов');return false;} let cred = firebase.auth.EmailAuthProvider.credential(currentUser.email, oldP); try{ await currentUser.reauthenticateWithCredential(cred); await currentUser.updatePassword(newP); await db.ref(`users/${currentUser.uid}`).update({defaultPassword:null}); document.getElementById('changePasswordWarningDesktop')?.setAttribute('style','display:none'); document.getElementById('mobileChangePwdWarning')?.setAttribute('style','display:none'); return true; }catch(e){alert('Неверный текущий пароль');return false;} }
-        async function logout(){ detachMessages(); if(presenceRef) await presenceRef.set({ online: false, lastSeen: Date.now() }); await auth.signOut(); window.location.href='login.html'; }
+        async function logout(){ if(currentChatId) detachMessages(currentChatId); if(onlineInterval) clearInterval(onlineInterval); if(presenceRef) await db.ref(`/status/${currentUser.uid}`).set({ online: false, lastSeen: Date.now() }); await auth.signOut(); window.location.href='login.html'; }
 
         auth.onAuthStateChanged(async (user)=>{ 
             if(!user){ window.location.href='login.html'; return; } 
@@ -561,7 +575,11 @@
             document.getElementById('userBadgeDesktop').innerHTML = badgeHtml; document.getElementById('mobileUserBadge').innerHTML = badgeHtml;
             if(currentUserData.defaultPassword==='12345678'){ document.getElementById('changePasswordWarningDesktop').style.display='block'; document.getElementById('mobileChangePwdWarning').style.display='block'; } 
             if(currentUserData.role==='admin'){ document.getElementById('adminBtnDesktop').style.display='flex'; document.getElementById('mobileAdminBtn').style.display='flex'; } 
-            await loadAllUsers(); await loadChats(); loadFontSize(); setupPresence();
+            await loadAllUsers(); 
+            await loadChats(); 
+            loadFontSize(); 
+            setupPresence();
+            startOnlinePolling();
         });
 
         document.getElementById('sendBtnDesktop').onclick = ()=>sendMessage(false); document.getElementById('mobileSendBtn').onclick = ()=>sendMessage(true);
@@ -573,7 +591,7 @@
         document.getElementById('createChatBtn').onclick = createNewChat;
         document.getElementById('cancelChatBtn').onclick = ()=>{document.getElementById('newChatModal').classList.add('hidden'); document.getElementById('chatUsernameInput').value='';};
         document.getElementById('logoutBtnDesktop').onclick = logout; document.getElementById('mobileLogoutBtn').onclick = logout;
-        document.getElementById('mobileBackBtn').onclick = ()=>{ document.getElementById('mobileChatScreen').classList.remove('open'); detachMessages(); currentChatId=null; };
+        document.getElementById('mobileBackBtn').onclick = ()=>{ document.getElementById('mobileChatScreen').classList.remove('open'); if(currentChatId) detachMessages(currentChatId); currentChatId=null; };
         document.getElementById('homeBtnDesktop').onclick = ()=>document.getElementById('homePanelDesktop').classList.add('show');
         document.getElementById('returnToChatBtnDesktop').onclick = ()=>document.getElementById('homePanelDesktop').classList.remove('show');
         document.getElementById('settingsBtnDesktop').onclick = ()=>document.getElementById('settingsModal').classList.remove('hidden');
