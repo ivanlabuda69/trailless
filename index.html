@@ -21,7 +21,6 @@
             overflow-x: hidden;
         }
 
-        /* Анимации */
         @keyframes fadeInUp {
             from {
                 opacity: 0;
@@ -44,37 +43,6 @@
             100% { transform: translateY(0px); }
         }
 
-        @keyframes glowPulse {
-            0% { opacity: 0.3; }
-            50% { opacity: 0.6; }
-            100% { opacity: 0.3; }
-        }
-
-        /* Стили как в твоём чате */
-        .glass-card {
-            background: rgba(9, 9, 11, 0.8);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 24px;
-        }
-
-        .glass-border {
-            border: 1px solid rgba(255, 255, 255, 0.06);
-        }
-
-        .btn-icon-clear {
-            background: transparent;
-            border: none;
-            color: #a1a1aa;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .btn-icon-clear:hover {
-            color: #ffffff;
-        }
-
-        /* Loader как в чате */
         .loader-overlay {
             position: fixed;
             top: 0;
@@ -105,6 +73,7 @@
             max-width: 1280px;
             margin: 0 auto;
             padding: 0 32px;
+            animation: fadeIn 0.4s ease-out;
         }
 
         /* Header */
@@ -166,7 +135,7 @@
             background: rgba(255, 255, 255, 0.08);
         }
 
-        /* Hero секция */
+        /* Hero */
         .hero {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -252,10 +221,6 @@
             gap: 8px;
         }
 
-        .hero-right-title i {
-            font-size: 14px;
-        }
-
         .feature-list {
             display: flex;
             flex-direction: column;
@@ -293,7 +258,7 @@
             margin-top: 2px;
         }
 
-        /* Features сетка */
+        /* Features */
         .features-section {
             margin-bottom: 80px;
         }
@@ -350,7 +315,7 @@
             line-height: 1.5;
         }
 
-        /* CTA секция */
+        /* CTA */
         .cta-section {
             background: rgba(9, 9, 11, 0.8);
             border: 1px solid rgba(255, 255, 255, 0.06);
@@ -388,34 +353,27 @@
             font-size: 13px;
         }
 
-        /* Responsive */
         @media (max-width: 968px) {
             .hero {
                 grid-template-columns: 1fr;
                 gap: 40px;
                 text-align: center;
             }
-
             .hero-left h1 {
                 font-size: 40px;
             }
-
             .hero-buttons {
                 justify-content: center;
             }
-
             .features-grid {
                 grid-template-columns: 1fr;
             }
-
             .cta-section {
                 padding: 40px 24px;
             }
-
             .cta-section h2 {
                 font-size: 28px;
             }
-
             .container {
                 padding: 0 20px;
             }
@@ -427,16 +385,13 @@
                 gap: 16px;
                 margin-bottom: 40px;
             }
-
             .hero-left h1 {
                 font-size: 32px;
             }
-
             .hero-buttons {
                 flex-direction: column;
                 align-items: center;
             }
-
             .hero-btn {
                 width: 100%;
                 justify-content: center;
@@ -451,16 +406,14 @@
 
     <div id="mainContent" style="display: none;">
         <div class="container">
-            <!-- Header -->
             <div class="header">
                 <a href="index.html" class="logo">trailless<span>/chat</span></a>
-                <div class="nav" id="navButtons">
+                <div class="nav">
                     <a href="login.html" class="nav-link nav-link-secondary">Вход</a>
                     <a href="register.html" class="nav-link nav-link-primary">Регистрация</a>
                 </div>
             </div>
 
-            <!-- Hero -->
             <div class="hero">
                 <div class="hero-left">
                     <h1>Чат Trailless<br>в новом стиле</h1>
@@ -511,7 +464,6 @@
                 </div>
             </div>
 
-            <!-- Features grid -->
             <div class="features-section">
                 <h2 class="section-title">Всё, что нужно для общения</h2>
                 <div class="features-grid">
@@ -533,7 +485,6 @@
                 </div>
             </div>
 
-            <!-- CTA -->
             <div class="cta-section">
                 <h2>Готовы начать?</h2>
                 <p>Присоединяйтесь к trailless уже сегодня и откройте для себя новый уровень общения</p>
@@ -547,7 +498,6 @@
                 </div>
             </div>
 
-            <!-- Footer -->
             <div class="footer">
                 <p>trailless — чат как Telegram, но легче и стильнее</p>
                 <p style="margin-top: 8px; font-size: 11px;">© 2026 trailless. Все права защищены.</p>
@@ -565,18 +515,30 @@
             messagingSenderId: "175122288335",
             appId: "1:175122288335:web:f68cb31bb12631cc6ff1ba"
         };
+        
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
-        auth.onAuthStateChanged((user) => {
+        // Таймаут на всякий случай — если Firebase тупит, убираем спиннер через 2 секунды
+        let timeout = setTimeout(() => {
             const loader = document.getElementById('loader');
             const mainContent = document.getElementById('mainContent');
+            if (loader && loader.style.display !== 'none') {
+                loader.style.display = 'none';
+                if (mainContent) mainContent.style.display = 'block';
+            }
+        }, 2000);
 
+        auth.onAuthStateChanged((user) => {
+            clearTimeout(timeout);
+            const loader = document.getElementById('loader');
+            const mainContent = document.getElementById('mainContent');
+            
             if (user) {
                 window.location.href = 'chat.html';
             } else {
-                loader.style.display = 'none';
-                mainContent.style.display = 'block';
+                if (loader) loader.style.display = 'none';
+                if (mainContent) mainContent.style.display = 'block';
             }
         });
     </script>
