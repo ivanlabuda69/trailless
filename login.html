@@ -2,8 +2,11 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Trailless · Вход</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -14,6 +17,29 @@
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+        .loader-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0d1117;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #30363d;
+            border-top-color: #2f81f7;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
         .card {
             background: #161b22;
@@ -89,7 +115,11 @@
     </style>
 </head>
 <body>
-    <div class="card">
+    <div id="loader" class="loader-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <div id="loginContainer" class="card" style="display: none;">
         <h1>Вход в Trailless</h1>
         <div class="sub">Выберите способ входа</div>
         <div class="choice-buttons" id="choiceButtons">
@@ -111,12 +141,9 @@
             </button>
             <div id="error" class="error"></div>
         </div>
-        <div class="footer">Нет аккаунта? <a href="register.html">Зарегистрироваться</a></div>
+        <div class="footer">Нет аккаунта? <a href="register.html">Зарегистрироваться</a><br><a href="index.html">← На главную</a></div>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyD7c2eq_Z9v_XjxSafPYJuBV3kDa82Eg9w",
@@ -131,10 +158,26 @@
         const auth = firebase.auth();
         const database = firebase.database();
 
+        // ПРОВЕРКА СЕССИИ - ЕСЛИ УЖЕ ЗАЛОГИНЕН, КИДАЕМ В ЧАТ
+        auth.onAuthStateChanged((user) => {
+            const loader = document.getElementById('loader');
+            const loginContainer = document.getElementById('loginContainer');
+            
+            if (user) {
+                // Уже залогинен - сразу в чат
+                window.location.href = 'chat.html';
+            } else {
+                // Не залогинен - показываем форму входа
+                loader.style.display = 'none';
+                loginContainer.style.display = 'block';
+            }
+        });
+
         document.getElementById('emailChoiceBtn').onclick = () => {
             document.getElementById('choiceButtons').style.display = 'none';
             document.getElementById('emailForm').classList.add('show');
         };
+        
         document.getElementById('backToChoiceBtn').onclick = () => {
             document.getElementById('choiceButtons').style.display = 'flex';
             document.getElementById('emailForm').classList.remove('show');
@@ -142,12 +185,13 @@
             document.getElementById('email').value = '';
             document.getElementById('password').value = '';
         };
+        
         document.getElementById('googleChoiceBtn').onclick = async () => {
             const provider = new firebase.auth.GoogleAuthProvider();
             try {
                 const result = await auth.signInWithPopup(provider);
                 const user = result.user;
-                const username = user.email.split('@')[0];
+                const username = user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
                 const userSnap = await database.ref(`users/${user.uid}`).once('value');
                 if (!userSnap.exists()) {
                     await database.ref(`users/${user.uid}`).set({
@@ -156,6 +200,7 @@
                         role: user.email === 'imbatop49@gmail.com' ? 'admin' : 'user',
                         verified: true,
                         banned: false,
+                        coins: 100,
                         createdAt: Date.now()
                     });
                     await database.ref(`usernames/${username}`).set(user.uid);
@@ -172,6 +217,7 @@
                 document.getElementById('error').textContent = error.message;
             }
         };
+        
         document.getElementById('loginBtn').onclick = async () => {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
@@ -206,6 +252,10 @@
                 }
             }
         };
+        
+        document.getElementById('password').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') document.getElementById('loginBtn').click();
+        });
     </script>
 </body>
 </html>
