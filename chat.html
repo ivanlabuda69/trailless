@@ -29,7 +29,6 @@
             -webkit-user-select: text;
         }
 
-        /* ДЕСКТОП (ПК) - НЕ МЕНЯЕМ */
         .desktop-layout { display: flex; height: 100vh; width: 100%; overflow: hidden; }
         
         .icon { width: 20px; height: 20px; display: inline-block; background-size: contain; background-repeat: no-repeat; background-position: center; vertical-align: middle; }
@@ -173,7 +172,6 @@
         .gift-icon-clover { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2332CD32'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='white' font-size='10'%3E🍀%3C/text%3E%3C/svg%3E"); }
         .gift-icon-fire { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FF4500'%3E%3Cpath d='M12,2 C10,6 8,9 8,12 C8,14.21 9.79,16 12,16 C14.21,16 16,14.21 16,12 C16,9 14,6 12,2 Z'/%3E%3Ctext x='12' y='14' text-anchor='middle' fill='yellow' font-size='6'%3E🔥%3C/text%3E%3C/svg%3E"); }
         
-        /* МОБИЛЬНАЯ ВЕРСИЯ */
         @media (max-width: 768px) {
             .desktop-layout { display: none !important; }
             .mobile-layout { display: flex !important; flex-direction: column; height: 100%; width: 100%; background: #0d1117; }
@@ -317,7 +315,6 @@
                 margin-top: 4px;
             }
             
-            /* Цветные бейджи на телефоне */
             .mobile-chat-name .admin-badge,
             .mobile-chat-name .creator-badge,
             .mobile-chat-name .tester-badge {
@@ -432,7 +429,7 @@
         <div class="spinner"></div>
     </div>
 
-    <!-- ДЕСКТОПНАЯ ВЕРСИЯ (ПК) -->
+    <!-- ДЕСКТОПНАЯ ВЕРСИЯ -->
     <div class="desktop-layout" id="desktopLayout" style="display: none;">
         <div class="menu-bar">
             <div class="menu-icon" id="newChatBtnDesktop"><span class="icon icon-plus"></span></div>
@@ -469,7 +466,7 @@
         </div>
     </div>
 
-    <!-- МОБИЛЬНАЯ ВЕРСИЯ (ТЕЛЕФОН) -->
+    <!-- МОБИЛЬНАЯ ВЕРСИЯ -->
     <div class="mobile-layout" id="mobileLayout" style="display: none;">
         <div class="mobile-chats-screen" id="mobileChatsScreen">
             <div class="mobile-header">
@@ -531,7 +528,7 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
-        // ПРОВЕРКА АВТОРИЗАЦИИ - ЕСЛИ НЕ ЗАЛОГИНЕН, КИДАЕМ НА ГЛАВНУЮ
+        // ПРОВЕРКА АВТОРИЗАЦИИ
         auth.onAuthStateChanged((user) => {
             if (!user) {
                 window.location.href = 'index.html';
@@ -1041,7 +1038,6 @@
             
             document.getElementById('sessionLoader').style.display = 'none';
             
-            // Показываем нужную версию в зависимости от устройства
             if (window.innerWidth <= 768) {
                 document.getElementById('mobileLayout').style.display = 'flex';
             } else {
@@ -1105,7 +1101,6 @@
             startOnlinePolling();
         });
 
-        // Обработчики событий
         document.getElementById('sendBtnDesktop').onclick = ()=>sendMessage(false); 
         document.getElementById('mobileSendBtn').onclick = ()=>sendMessage(true);
         document.getElementById('messageInputDesktop').onkeypress = e=>{if(e.key==='Enter') sendMessage(false);};
