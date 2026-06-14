@@ -77,7 +77,8 @@
         .chat-header { flex-shrink: 0; padding: 1rem; border-bottom: 1px solid #30363d; background: #161b22; display: flex; justify-content: space-between; align-items: center; }
         .chat-title { font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
         .typing-indicator { font-size: 0.7rem; color: #8b949e; margin-left: 0.5rem; font-style: italic; }
-        .gift-chat-btn { background: #21262d; border: none; border-radius: 20px; padding: 5px 12px; color: white; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.75rem; }
+        .gift-chat-btn { background: #21262d; border: none; border-radius: 20px; padding: 5px 12px; color: white; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.75rem; transition: all 0.2s; }
+        .gift-chat-btn:active { transform: scale(0.95); }
         .messages { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
         .message { max-width: 70%; padding: 0.5rem 0.75rem; border-radius: 8px; font-size: 0.85rem; position: relative; transition: all 0.2s ease; }
         .message.outgoing { align-self: flex-end; background: #2f81f7; color: white; }
@@ -182,7 +183,6 @@
         .admin-user { margin-bottom: 12px; padding: 10px; background: #21262d; border-radius: 10px; }
         .admin-user-buttons { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
         .btn-tester { background: #238636; border: none; padding: 6px 12px; border-radius: 6px; color: white; cursor: pointer; font-size: 0.75rem; }
-        .btn-creator { background: #9b59b6; border: none; padding: 6px 12px; border-radius: 6px; color: white; cursor: pointer; font-size: 0.75rem; }
         .btn-user { background: #6e7681; border: none; padding: 6px 12px; border-radius: 6px; color: white; cursor: pointer; font-size: 0.75rem; }
         .btn-ban { background: #da3633; border: none; padding: 6px 12px; border-radius: 6px; color: white; cursor: pointer; font-size: 0.75rem; }
         .btn-unban { background: #2f81f7; border: none; padding: 6px 12px; border-radius: 6px; color: white; cursor: pointer; font-size: 0.75rem; }
@@ -327,7 +327,7 @@
     <div id="settingsModal" class="modal hidden"><div class="modal-content"><h3>Настройки</h3><div class="settings-group"><label>Размер шрифта</label><select id="fontSizeSelect"><option value="small">Маленький</option><option value="medium" selected>Средний</option><option value="large">Большой</option></select></div><div class="settings-group"><label>Сменить username</label><input type="text" id="newUsername" placeholder="5-15 символов"><button id="changeUsernameBtn">Сменить</button></div><div class="settings-group"><label>Сменить пароль</label><input type="password" id="currentPassword" placeholder="Текущий"><input type="password" id="newPassword" placeholder="Новый (мин 6)"><input type="password" id="confirmPassword" placeholder="Повторите"><button id="changePasswordBtn">Сменить</button></div><button id="closeSettingsBtn">Закрыть</button></div></div>
     <div id="newChatModal" class="modal hidden"><div class="modal-content"><h3>Новый чат</h3><input type="text" id="chatUsernameInput" placeholder="Username собеседника"><button id="createChatBtn">Начать</button><button id="cancelChatBtn">Отмена</button></div></div>
     <div id="giftShopModal" class="modal hidden"><div class="modal-content"><h3>🎁 Магазин подарков</h3><div id="giftShopList"></div><button id="closeGiftShopBtn">Закрыть</button></div></div>
-    <div id="giftHistoryModal" class="modal hidden"><div class="modal-content"><h3>📦 Полученные подарки</h3><div id="giftHistoryList"></div><button id="closeGiftHistoryBtn">Закрыть</button></div></div>
+    <div id="giftHistoryModal" class="modal hidden"><div class="modal-content"><h3>📦 Подарки</h3><div id="giftHistoryList"></div><button id="closeGiftHistoryBtn">Закрыть</button></div></div>
     <div id="selectChatModal" class="modal hidden"><div class="modal-content"><h3>📱 Выберите получателя</h3><div id="selectChatList"></div><button id="closeSelectChatBtn">Отмена</button></div></div>
     
     <div id="adminPanel" class="admin-panel hidden">
@@ -345,21 +345,6 @@
         let typingTimeout = null;
         let onlineInterval = null;
         let messageListeners = {};
-
-        // Функция проверки доступа к админке (Admin или Creator)
-        function hasAdminAccess(role) {
-            return role === 'admin' || role === 'creator';
-        }
-
-        // Функция проверки может ли пользователь банить цель
-        function canBan(actorRole, targetRole) {
-            if (actorRole === 'creator') return true; // Creator может банить всех
-            if (actorRole === 'admin') {
-                // Admin не может банить Creator и других Admin
-                return targetRole !== 'creator' && targetRole !== 'admin';
-            }
-            return false; // Tester и User не могут банить
-        }
 
         const giftsList = [
             { id: 'sweet', name: 'Sweet Candy', emoji: '🍬', price: 300, iconClass: 'gift-icon-sweet' },
@@ -383,6 +368,18 @@
             { id: 'clover', name: 'Lucky Clover', emoji: '🍀', price: 70, iconClass: 'gift-icon-clover' },
             { id: 'fire', name: 'Fire Gift', emoji: '🔥', price: 450, iconClass: 'gift-icon-fire' }
         ];
+
+        function hasAdminAccess(role) {
+            return role === 'admin' || role === 'creator';
+        }
+
+        function canBan(actorRole, targetRole) {
+            if (actorRole === 'creator') return true;
+            if (actorRole === 'admin') {
+                return targetRole !== 'creator' && targetRole !== 'admin';
+            }
+            return false;
+        }
 
         function validateUsername(u) { return /^[a-zA-Z0-9]{5,15}$/.test(u); }
         function setFontSize(s) { let f = s==='small'?'12px':s==='medium'?'14px':'16px'; document.body.style.fontSize = f; localStorage.setItem('trailless_font_size', s); }
@@ -712,12 +709,22 @@
             alert(`🎉 Подарок "${giftName}" отправлен!`);
         }
         
+        // Показать подарки СОБЕСЕДНИКА
         async function showGiftHistory() { 
             if(!currentChatOtherId) { alert('Сначала откройте чат'); return; } 
             let snap = await db.ref(`users/${currentChatOtherId}/gifts`).once('value'); 
             let list = Object.values(snap.val()||{}).reverse(); 
             document.getElementById('giftHistoryList').innerHTML = list.length ? list.map(g=>`<div class="gift-history-item"><div class="gift-icon ${getGiftIconClass(g.type)}" style="width:32px;height:32px;"></div><div><strong>${g.emoji || '🎁'} ${g.name}</strong><br><span style="font-size:0.7rem;">от ${g.fromName} • ${g.value} 🪙</span></div><div style="font-size:0.7rem;">${new Date(g.timestamp).toLocaleDateString()}</div></div>`).join('') : '<div style="text-align:center;padding:1rem;">Нет подарков</div>'; 
             document.getElementById('giftHistoryModal').classList.remove('hidden'); 
+        }
+        
+        // Показать СВОИ подарки (ПКМ или долгое нажатие)
+        async function showMyGifts() {
+            if(!currentUser) return;
+            let snap = await db.ref(`users/${currentUser.uid}/gifts`).once('value'); 
+            let list = Object.values(snap.val()||{}).reverse(); 
+            document.getElementById('giftHistoryList').innerHTML = list.length ? list.map(g=>`<div class="gift-history-item"><div class="gift-icon ${getGiftIconClass(g.type)}" style="width:32px;height:32px;"></div><div><strong>${g.emoji || '🎁'} ${g.name}</strong><br><span style="font-size:0.7rem;">от ${g.fromName} • ${g.value} 🪙</span></div><div style="font-size:0.7rem;">${new Date(g.timestamp).toLocaleDateString()}</div></div>`).join('') : '<div style="text-align:center;padding:1rem;">У вас пока нет подарков</div>'; 
+            document.getElementById('giftHistoryModal').classList.remove('hidden');
         }
         
         function getGiftIconClass(giftId) {
@@ -777,7 +784,6 @@
         async function changePassword(oldP,newP,conf){ if(newP!==conf){alert('Пароли не совпадают');return false;} if(newP.length<6){alert('Мин 6 символов');return false;} let cred = firebase.auth.EmailAuthProvider.credential(currentUser.email, oldP); try{ await currentUser.reauthenticateWithCredential(cred); await currentUser.updatePassword(newP); await db.ref(`users/${currentUser.uid}`).update({defaultPassword:null}); document.getElementById('changePasswordWarningDesktop')?.setAttribute('style','display:none'); document.getElementById('mobileChangePwdWarning')?.setAttribute('style','display:none'); return true; }catch(e){alert('Неверный текущий пароль');return false;} }
         async function logout(){ if(currentChatId) detachMessages(currentChatId); if(onlineInterval) clearInterval(onlineInterval); if(currentUser) await db.ref(`/status/${currentUser.uid}`).set({ online: false, lastSeen: Date.now() }); await auth.signOut(); window.location.href='login.html'; }
 
-        // Функция для бана с проверкой прав
         window.toggleBan = async (uid, ban) => {
             if(!hasAdminAccess(currentUserData?.role)) {
                 alert('Нет доступа');
@@ -814,7 +820,6 @@
             let badgeHtml = getRoleBadge(currentUserData.role);
             document.getElementById('userBadgeDesktop').innerHTML = badgeHtml; document.getElementById('mobileUserBadge').innerHTML = badgeHtml;
             if(currentUserData.defaultPassword==='12345678'){ document.getElementById('changePasswordWarningDesktop').style.display='block'; document.getElementById('mobileChangePwdWarning').style.display='block'; } 
-            // Показываем кнопку админки для Admin и Creator
             if(hasAdminAccess(currentUserData.role)){ 
                 document.getElementById('adminBtnDesktop').style.display = 'flex';
                 document.getElementById('mobileAdminBtn').style.display = 'flex';
@@ -844,7 +849,35 @@
         document.getElementById('fontSizeSelect').onchange = e=>setFontSize(e.target.value);
         document.getElementById('changeUsernameBtn').onclick = async()=>{ await changeUsername(document.getElementById('newUsername').value.trim()); document.getElementById('newUsername').value=''; alert('Username изменён'); };
         document.getElementById('changePasswordBtn').onclick = async()=>{ let ok = await changePassword(document.getElementById('currentPassword').value, document.getElementById('newPassword').value, document.getElementById('confirmPassword').value); if(ok) alert('Пароль изменён'); };
-        document.getElementById('giftChatBtnDesktop').onclick = ()=>showGiftHistory(); document.getElementById('mobileChatGiftBtn').onclick = ()=>showGiftHistory();
+        
+        // Кнопки подарков: левое нажатие - подарки собеседника, ПКМ/долгое нажатие - свои подарки
+        document.getElementById('giftChatBtnDesktop').onclick = ()=>showGiftHistory();
+        document.getElementById('mobileChatGiftBtn').onclick = ()=>showGiftHistory();
+        
+        let desktopGiftBtn = document.getElementById('giftChatBtnDesktop');
+        if(desktopGiftBtn) {
+            desktopGiftBtn.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                showMyGifts();
+            });
+        }
+        
+        let mobileGiftBtn = document.getElementById('mobileChatGiftBtn');
+        if(mobileGiftBtn) {
+            let touchTimer;
+            mobileGiftBtn.addEventListener('touchstart', (e) => {
+                touchTimer = setTimeout(() => {
+                    showMyGifts();
+                }, 500);
+            });
+            mobileGiftBtn.addEventListener('touchend', () => {
+                clearTimeout(touchTimer);
+            });
+            mobileGiftBtn.addEventListener('touchmove', () => {
+                clearTimeout(touchTimer);
+            });
+        }
+        
         document.getElementById('giftShopBtnDesktop').onclick = ()=>showGiftShopDesktop(); document.getElementById('mobileGiftShopBtn').onclick = ()=>showGiftShopMobile();
         document.getElementById('closeGiftHistoryBtn').onclick = ()=>document.getElementById('giftHistoryModal').classList.add('hidden');
         document.getElementById('closeGiftShopBtn').onclick = ()=>document.getElementById('giftShopModal').classList.add('hidden');
@@ -860,7 +893,12 @@
                     const banButton = d.banned ? 
                         `<button class="btn-unban" onclick="window.toggleBan('${uid}',false)" ${!canBanUser ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>Разбан</button>` :
                         `<button class="btn-ban" onclick="window.toggleBan('${uid}',true)" ${!canBanUser ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>Бан</button>`;
-                    return `<div class="admin-user"><div><strong>@${escapeHtml(d.username)}</strong> ${getRoleBadge(d.role)}<br><span style="font-size:0.7rem;">${escapeHtml(d.email)}</span><br><span style="font-size:0.7rem;">🪙 ${d.coins || 0} монет</span></div><div class="admin-user-buttons"><button class="btn-tester" onclick="window.setRole('${uid}','tester')">Тестер</button><button class="btn-creator" onclick="window.setRole('${uid}','creator')">Creator</button><button class="btn-user" onclick="window.setRole('${uid}','user')">Юзер</button>${banButton}<button class="btn-tester" onclick="window.addCoinsAdmin('${uid}')">+100 🪙</button></div></div>`;
+                    
+                    // Только кнопки Tester и User (Creator нельзя выдать)
+                    let roleButtons = `<button class="btn-tester" onclick="window.setRole('${uid}','tester')">Тестер</button>
+                                       <button class="btn-user" onclick="window.setRole('${uid}','user')">Юзер</button>`;
+                    
+                    return `<div class="admin-user"><div><strong>@${escapeHtml(d.username)}</strong> ${getRoleBadge(d.role)}<br><span style="font-size:0.7rem;">${escapeHtml(d.email)}</span><br><span style="font-size:0.7rem;">🪙 ${d.coins || 0} монет</span></div><div class="admin-user-buttons">${roleButtons}${banButton}<button class="btn-tester" onclick="window.addCoinsAdmin('${uid}')">+100 🪙</button></div></div>`;
                 }).join('');
             }
         }
@@ -868,7 +906,18 @@
         document.getElementById('adminBtnDesktop').onclick = async()=>{ if(!hasAdminAccess(currentUserData?.role)) return; await refreshAdminPanel(); document.getElementById('adminPanel').classList.remove('hidden'); document.getElementById('adminPanel').classList.add('open'); };
         document.getElementById('mobileAdminBtn').onclick = ()=>document.getElementById('adminBtnDesktop').onclick();
         document.getElementById('closeAdminBtn').onclick = ()=>{document.getElementById('adminPanel').classList.remove('open'); document.getElementById('adminPanel').classList.add('hidden');};
-        window.setRole = async (uid,role)=>{ if(!hasAdminAccess(currentUserData?.role)) return; await db.ref(`users/${uid}`).update({role}); await loadAllUsers(); await loadChats(); await refreshAdminPanel(); };
+        
+        window.setRole = async (uid,role)=>{ 
+            if(!hasAdminAccess(currentUserData?.role)) return;
+            if(role === 'creator') {
+                alert('Нельзя выдать роль Creator');
+                return;
+            }
+            await db.ref(`users/${uid}`).update({role}); 
+            await loadAllUsers(); 
+            await loadChats(); 
+            await refreshAdminPanel(); 
+        };
         window.cancelReplyDesktop = cancelReplyDesktop; window.cancelReplyMobile = cancelReplyMobile;
     </script>
 </body>
