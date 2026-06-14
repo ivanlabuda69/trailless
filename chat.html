@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Trailless · Чат</title>
     <link rel="icon" type="image/jpeg" href="https://i.ibb.co/9HFqzqsL/photo-2026-06-13-23-25-13.jpg">
-    <link rel="shortcut icon" type="image/jpeg" href="https://i.ibb.co/9HFqzqsL/photo-2026-06-13-23-25-13.jpg">
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
@@ -59,6 +58,7 @@
         .admin-badge { background: #2f81f7; color: white; border-radius: 20px; padding: 0.1rem 0.4rem; font-size: 0.6rem; }
         .tester-badge { background: #238636; color: white; border-radius: 20px; padding: 0.1rem 0.4rem; font-size: 0.6rem; }
         .creator-badge { background: #9b59b6; color: white; border-radius: 20px; padding: 0.1rem 0.4rem; font-size: 0.6rem; }
+        .bot-badge { background: #da3633; color: white; border-radius: 20px; padding: 0.1rem 0.4rem; font-size: 0.6rem; }
         .coin-display { display: flex; align-items: center; gap: 4px; background: #1a1f26; padding: 2px 8px; border-radius: 20px; font-size: 0.75rem; }
         .online-status { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-left: 6px; }
         .online-status.online { background: #238636; box-shadow: 0 0 4px #238636; }
@@ -77,12 +77,12 @@
         .chat-header { flex-shrink: 0; padding: 1rem; border-bottom: 1px solid #30363d; background: #161b22; display: flex; justify-content: space-between; align-items: center; }
         .chat-title { font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
         .typing-indicator { font-size: 0.7rem; color: #8b949e; margin-left: 0.5rem; font-style: italic; }
-        .gift-chat-btn { background: #21262d; border: none; border-radius: 20px; padding: 5px 12px; color: white; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.75rem; transition: all 0.2s; }
-        .gift-chat-btn:active { transform: scale(0.95); }
+        .gift-chat-btn { background: #21262d; border: none; border-radius: 20px; padding: 5px 12px; color: white; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.75rem; }
         .messages { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
         .message { max-width: 70%; padding: 0.5rem 0.75rem; border-radius: 8px; font-size: 0.85rem; position: relative; transition: all 0.2s ease; }
         .message.outgoing { align-self: flex-end; background: #2f81f7; color: white; }
         .message.incoming { align-self: flex-start; background: #21262d; }
+        .message-bot { align-self: flex-start; background: #2d2d2d; border-left: 3px solid #da3633; }
         .message-gift { background: linear-gradient(135deg, #2a2050, #1a1a3a); border-left: 3px solid #FFD966; }
         .message-sender { font-size: 0.7rem; font-weight: 600; margin-bottom: 0.2rem; display: flex; align-items: center; gap: 0.25rem; flex-wrap: wrap; }
         .message-text { word-wrap: break-word; }
@@ -186,7 +186,6 @@
         .btn-user { background: #6e7681; border: none; padding: 6px 12px; border-radius: 6px; color: white; cursor: pointer; font-size: 0.75rem; }
         .btn-ban { background: #da3633; border: none; padding: 6px 12px; border-radius: 6px; color: white; cursor: pointer; font-size: 0.75rem; }
         .btn-unban { background: #2f81f7; border: none; padding: 6px 12px; border-radius: 6px; color: white; cursor: pointer; font-size: 0.75rem; }
-        .btn-disabled { background: #30363d; border: none; padding: 6px 12px; border-radius: 6px; color: #6e7681; cursor: not-allowed; font-size: 0.75rem; }
         
         .gift-icon-sweet { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FF69B4'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='white' font-size='10' font-weight='bold'%3E🍬%3C/text%3E%3C/svg%3E"); }
         .gift-icon-surprise { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FFA500'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='white' font-size='10'%3E🎁%3C/text%3E%3C/svg%3E"); }
@@ -346,6 +345,10 @@
         let onlineInterval = null;
         let messageListeners = {};
 
+        // ID бота (ВАШ UID)
+        const BOT_USER_ID = "QWWaOVsm2WMF52ThlTid8Ln7hCF2";
+        const BOT_USERNAME = "TesterBase";
+
         const giftsList = [
             { id: 'sweet', name: 'Sweet Candy', emoji: '🍬', price: 300, iconClass: 'gift-icon-sweet' },
             { id: 'surprise', name: 'Gift Surprise', emoji: '🎁', price: 50, iconClass: 'gift-icon-surprise' },
@@ -376,7 +379,7 @@
         function canBan(actorRole, targetRole) {
             if (actorRole === 'creator') return true;
             if (actorRole === 'admin') {
-                return targetRole !== 'creator' && targetRole !== 'admin';
+                return targetRole !== 'creator' && targetRole !== 'admin' && targetRole !== 'bot';
             }
             return false;
         }
@@ -389,6 +392,7 @@
             if(role === 'admin') return '<span class="admin-badge">Admin</span>';
             if(role === 'creator') return '<span class="creator-badge">Creator</span>';
             if(role === 'tester') return '<span class="tester-badge">Tester</span>';
+            if(role === 'bot') return '<span class="bot-badge">Bot</span>';
             return '';
         }
         
@@ -407,7 +411,7 @@
             let snap = await db.ref('users').once('value'); 
             let users = snap.val()||{}; 
             for(let [uid, d] of Object.entries(users)) {
-                allUsersCache[uid] = {uid, username:(d.username||'').toLowerCase(), email:d.email, banned:d.banned, role:d.role};
+                allUsersCache[uid] = {uid, username:(d.username||'').toLowerCase(), email:d.email, banned:d.banned, role:d.role, isBot: d.role === 'bot'};
             }
         }
         
@@ -454,6 +458,99 @@
         function escapeHtml(s) { return s?.replace(/[&<>]/g, m=>({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m]))||''; }
         function scrollToBottom(isMobile) { setTimeout(() => { let container = isMobile ? document.getElementById('mobileMessagesList') : document.getElementById('messagesListDesktop'); if(container) container.scrollTop = container.scrollHeight; }, 100); }
 
+        async function ensureBotChat() {
+            if(!currentUser) return;
+            const canHaveBot = currentUserData.role === 'creator' || currentUserData.role === 'tester';
+            if(!canHaveBot) return;
+            
+            const botUser = allUsersCache[BOT_USER_ID];
+            if(!botUser) return;
+            
+            let userChats = await db.ref(`users/${currentUser.uid}/chats`).once('value');
+            let chatsData = userChats.val() || {};
+            let hasBotChat = false;
+            
+            for(let [cid, info] of Object.entries(chatsData)) {
+                if(info.with === BOT_USER_ID) {
+                    hasBotChat = true;
+                    break;
+                }
+            }
+            
+            if(!hasBotChat) {
+                const newChatId = `bot_chat_${currentUser.uid}`;
+                await db.ref(`users/${currentUser.uid}/chats/${newChatId}`).set({
+                    with: BOT_USER_ID,
+                    name: BOT_USERNAME,
+                    createdAt: Date.now(),
+                    isBotChat: true
+                });
+            }
+        }
+        
+        async function sendBotMessage(text, replyToMsgData) {
+            if(!currentChatOtherId || currentChatOtherId !== BOT_USER_ID) return false;
+            
+            const isCreator = currentUserData.role === 'creator';
+            const isTester = currentUserData.role === 'tester';
+            
+            if(isCreator) {
+                const allUsers = Object.values(allUsersCache);
+                const testers = allUsers.filter(u => u.role === 'tester' && u.uid !== currentUser.uid);
+                
+                const msgData = {
+                    text: text,
+                    senderId: BOT_USER_ID,
+                    senderName: BOT_USERNAME,
+                    senderRole: 'bot',
+                    timestamp: Date.now(),
+                    read: false,
+                    originalSender: currentUser.uid,
+                    originalSenderName: currentUserData.username,
+                    isBroadcast: true
+                };
+                if(replyToMsgData) {
+                    msgData.replyTo = replyToMsgData.id;
+                    msgData.replyToText = replyToMsgData.text;
+                }
+                
+                await db.ref(`messages/${currentChatId}`).push(msgData);
+                
+                for(const tester of testers) {
+                    const testerChatId = `bot_chat_${tester.uid}`;
+                    await db.ref(`messages/${testerChatId}`).push(msgData);
+                }
+                return true;
+            }
+            
+            if(isTester) {
+                const creator = Object.values(allUsersCache).find(u => u.role === 'creator');
+                if(creator) {
+                    const creatorChatId = `bot_chat_${creator.uid}`;
+                    const msgData = {
+                        text: text,
+                        senderId: BOT_USER_ID,
+                        senderName: BOT_USERNAME,
+                        senderRole: 'bot',
+                        timestamp: Date.now(),
+                        read: false,
+                        originalSender: currentUser.uid,
+                        originalSenderName: currentUserData.username,
+                        isFromTester: true
+                    };
+                    if(replyToMsgData) {
+                        msgData.replyTo = replyToMsgData.id;
+                        msgData.replyToText = replyToMsgData.text;
+                    }
+                    await db.ref(`messages/${creatorChatId}`).push(msgData);
+                    await db.ref(`messages/${currentChatId}`).push(msgData);
+                }
+                return true;
+            }
+            
+            return false;
+        }
+
         async function loadChats() {
             if(!currentUser) return;
             let snap = await db.ref(`users/${currentUser.uid}/chats`).once('value'), data = snap.val()||{}, newChats = [];
@@ -463,20 +560,20 @@
                 let lastSnap = await db.ref(`messages/${cid}`).orderByKey().limitToLast(1).once('value'); 
                 let lastMsg=''; lastSnap.forEach(m=>lastMsg=m.val().text);
                 let roleBadge = getRoleBadge(otherData.role);
-                newChats.push({id:cid, name:otherData.username, userId:info.with, lastMessage:lastMsg||'Нет сообщений', roleBadge});
+                newChats.push({id:cid, name: otherData.role === 'bot' ? BOT_USERNAME : otherData.username, userId:info.with, lastMessage:lastMsg||'Нет сообщений', roleBadge, isBot: otherData.role === 'bot'});
             }
             chats = newChats; renderChatsDesktop(); renderChatsMobile();
         }
         
         function renderChatsDesktop() { 
             let container = document.getElementById('chatsListDesktop'); if(!container) return; 
-            container.innerHTML = chats.map(c=>`<div class="chat-item ${currentChatId===c.id?'active':''}" data-id="${c.id}" data-name="${escapeHtml(c.name)}" data-uid="${c.userId}"><div class="chat-name">@${escapeHtml(c.name)} ${c.roleBadge}<span class="online-status ${allUsersCache[c.userId]?.online?'online':'offline'}" style="width:6px;height:6px;"></span></div><div class="chat-preview">${escapeHtml(c.lastMessage.slice(0,40))}</div></div>`).join('')||'<div style="padding:1rem;text-align:center;">Нет чатов</div>'; 
+            container.innerHTML = chats.map(c=>`<div class="chat-item ${currentChatId===c.id?'active':''}" data-id="${c.id}" data-name="${escapeHtml(c.name)}" data-uid="${c.userId}"><div class="chat-name">${c.isBot ? '🤖 ' : '@'}${escapeHtml(c.name)} ${c.roleBadge}<span class="online-status ${allUsersCache[c.userId]?.online?'online':'offline'}" style="width:6px;height:6px;"></span></div><div class="chat-preview">${escapeHtml(c.lastMessage.slice(0,40))}</div></div>`).join('')||'<div style="padding:1rem;text-align:center;">Нет чатов</div>'; 
             document.querySelectorAll('#chatsListDesktop .chat-item').forEach(el=>{ el.onclick = ()=>openChat(el.dataset.id, el.dataset.name, el.dataset.uid); }); 
         }
         
         function renderChatsMobile() { 
             let container = document.getElementById('mobileChatsList'); if(!container) return; 
-            container.innerHTML = chats.map(c=>`<div class="mobile-chat-item" data-id="${c.id}" data-name="${escapeHtml(c.name)}" data-uid="${c.userId}"><div class="mobile-chat-name">@${escapeHtml(c.name)} ${c.roleBadge}<span class="online-status ${allUsersCache[c.userId]?.online?'online':'offline'}" style="width:6px;height:6px;"></span></div><div class="mobile-chat-preview">${escapeHtml(c.lastMessage.slice(0,40))}</div></div>`).join('')||'<div class="mobile-empty">Нет чатов. Нажмите +</div>'; 
+            container.innerHTML = chats.map(c=>`<div class="mobile-chat-item" data-id="${c.id}" data-name="${escapeHtml(c.name)}" data-uid="${c.userId}"><div class="mobile-chat-name">${c.isBot ? '🤖 ' : '@'}${escapeHtml(c.name)} ${c.roleBadge}<span class="online-status ${allUsersCache[c.userId]?.online?'online':'offline'}" style="width:6px;height:6px;"></span></div><div class="mobile-chat-preview">${escapeHtml(c.lastMessage.slice(0,40))}</div></div>`).join('')||'<div class="mobile-empty">Нет чатов. Нажмите +</div>'; 
             document.querySelectorAll('#mobileChatsList .mobile-chat-item').forEach(el=>{ el.onclick = ()=>{ openChatMobile(el.dataset.id, el.dataset.name, el.dataset.uid); }; }); 
         }
 
@@ -497,30 +594,46 @@
             
             let existing = container.querySelector(`.message[data-msg-id="${msgId}"]`);
             let isOut = msg.senderId === currentUser.uid;
+            let isBot = msg.senderRole === 'bot';
             let time = new Date(msg.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+            
+            let senderDisplay = msg.senderName;
             let badge = getRoleBadge(msg.senderRole);
+            
+            if(isBot && msg.originalSenderName) {
+                if(currentUserData.role === 'creator' && msg.isFromTester) {
+                    senderDisplay = `${msg.senderName} (от @${msg.originalSenderName})`;
+                } else if(currentUserData.role === 'tester' && msg.isBroadcast) {
+                    senderDisplay = msg.senderName;
+                } else if(msg.originalSenderName) {
+                    senderDisplay = `${msg.senderName} (от @${msg.originalSenderName})`;
+                }
+            }
+            
             let giftIcon = msg.isGift ? '<span class="icon icon-gift" style="width:14px;height:14px;margin-right:4px;"></span>' : '';
             let replyHtml = msg.replyTo ? `<div class="reply-preview">↳ ${escapeHtml(msg.replyToText || '')}</div>` : '';
             let editedHtml = msg.edited ? '<span class="edited-mark">(ред.)</span>' : '';
             let linkedText = linkify(escapeHtml(msg.text));
             let statusHtml = '';
-            if(isOut) {
+            if(isOut && !isBot) {
                 statusHtml = msg.read === true ? '<span class="icon icon-double-check" style="width:12px;height:12px;"></span>' : '<span class="icon icon-check" style="width:12px;height:12px;"></span>';
             }
-            let html = `<div class="message-sender">${escapeHtml(msg.senderName)} ${badge} ${isOut?'(вы)':''}</div>${replyHtml}<div class="message-text">${giftIcon}${linkedText} ${editedHtml}</div><div class="message-footer"><span>${time}</span>${statusHtml}</div>`;
+            
+            let messageClass = `message ${isOut && !isBot ? 'outgoing' : 'incoming'} ${msg.isGift ? 'message-gift' : ''} ${isBot && !isOut ? 'message-bot' : ''}`;
+            let html = `<div class="message-sender">${escapeHtml(senderDisplay)} ${badge} ${isOut && !isBot ? '(вы)' : ''}</div>${replyHtml}<div class="message-text">${giftIcon}${linkedText} ${editedHtml}</div><div class="message-footer"><span>${time}</span>${statusHtml}</div>`;
             
             if(existing) {
                 existing.innerHTML = html;
             } else {
                 let div = document.createElement('div');
-                div.className = `message ${isOut?'outgoing':'incoming'} ${msg.isGift?'message-gift':''}`;
+                div.className = messageClass;
                 div.setAttribute('data-msg-id', msgId);
                 div.innerHTML = html;
                 container.appendChild(div);
-                attachMessageEvents(div, msgId, msg.text, isOut, isMobile);
+                if(!isBot) attachMessageEvents(div, msgId, msg.text, isOut && !isBot, isMobile);
                 scrollToBottom(isMobile);
             }
-            if(!isOut && !msg.read) setTimeout(() => markAsRead(msgId), 500);
+            if(!isOut && !msg.read && !isBot) setTimeout(() => markAsRead(msgId), 500);
         }
         
         function attachMessageEvents(el, msgId, msgText, isOwn, isMobile) {
@@ -648,9 +761,9 @@
             if(currentChatId) detachMessages(currentChatId);
             currentChatId = chatId; 
             currentChatOtherId = otherUid; 
-            document.getElementById('chatTitleDesktop').innerHTML = `@${escapeHtml(otherName)}`; 
+            document.getElementById('chatTitleDesktop').innerHTML = `${otherUid === BOT_USER_ID ? '🤖 ' : '@'}${escapeHtml(otherName)}`; 
             document.getElementById('messageAreaDesktop').style.display = 'flex'; 
-            document.getElementById('giftChatBtnDesktop').style.display = 'flex';
+            document.getElementById('giftChatBtnDesktop').style.display = otherUid !== BOT_USER_ID ? 'flex' : 'none';
             replyToMsg = null; cancelReplyDesktop();
             await setupMessagesListener(chatId, false);
             renderChatsDesktop(); 
@@ -663,7 +776,7 @@
             if(currentChatId) detachMessages(currentChatId);
             currentChatId = chatId; 
             currentChatOtherId = otherUid; 
-            document.getElementById('mobileChatTitle').innerHTML = `@${escapeHtml(otherName)}`; 
+            document.getElementById('mobileChatTitle').innerHTML = `${otherUid === BOT_USER_ID ? '🤖 ' : '@'}${escapeHtml(otherName)}`; 
             replyToMsg = null; cancelReplyMobile();
             await setupMessagesListener(chatId, true);
             document.getElementById('mobileChatScreen').classList.add('open'); 
@@ -677,6 +790,20 @@
             let input = isMobile ? document.getElementById('mobileMessageInput') : document.getElementById('messageInputDesktop');
             let text = input.value.trim();
             if(!text || !currentChatId) return;
+            
+            if(currentChatOtherId === BOT_USER_ID) {
+                const success = await sendBotMessage(text, replyToMsg);
+                if(success) {
+                    input.value = '';
+                    if(replyToMsg) {
+                        replyToMsg = null;
+                        if(isMobile) cancelReplyMobile(); else cancelReplyDesktop();
+                    }
+                    if(isMobile) scrollToBottom(true); else input.focus();
+                }
+                return;
+            }
+            
             let msg = { 
                 text, 
                 senderId: currentUser.uid, 
@@ -709,7 +836,6 @@
             alert(`🎉 Подарок "${giftName}" отправлен!`);
         }
         
-        // Показать подарки СОБЕСЕДНИКА
         async function showGiftHistory() { 
             if(!currentChatOtherId) { alert('Сначала откройте чат'); return; } 
             let snap = await db.ref(`users/${currentChatOtherId}/gifts`).once('value'); 
@@ -718,7 +844,6 @@
             document.getElementById('giftHistoryModal').classList.remove('hidden'); 
         }
         
-        // Показать СВОИ подарки (ПКМ или долгое нажатие)
         async function showMyGifts() {
             if(!currentUser) return;
             let snap = await db.ref(`users/${currentUser.uid}/gifts`).once('value'); 
@@ -764,7 +889,7 @@
         
         function showGiftShopMobile() { 
             if(chats.length === 0){ alert('Нет чатов'); return; } 
-            document.getElementById('selectChatList').innerHTML = chats.map(c=>`<div class="chat-option" data-chat-id="${c.id}" data-user-id="${c.userId}"><span>@${c.name}</span></div>`).join(''); 
+            document.getElementById('selectChatList').innerHTML = chats.map(c=>`<div class="chat-option" data-chat-id="${c.id}" data-user-id="${c.userId}"><span>${c.isBot ? '🤖 ' : '@'}${c.name}</span></div>`).join(''); 
             document.getElementById('selectChatModal').classList.remove('hidden'); 
             document.querySelectorAll('#selectChatList .chat-option').forEach(el=>{ 
                 el.onclick = ()=>{ 
@@ -779,9 +904,64 @@
             }); 
         }
         
-        async function createNewChat() { let username = document.getElementById('chatUsernameInput').value.trim().toLowerCase(); if(!username){alert('Введите username');return;} let found = Object.values(allUsersCache).find(u=>u.username === username); if(!found){alert('Не найден');return;} if(found.uid===currentUser.uid){alert('Сам с собой нельзя');return;} if(found.banned){alert('Заблокирован');return;} let existing = chats.find(c=>c.userId===found.uid); if(existing){ openChat(existing.id, existing.name, existing.userId); if(window.innerWidth<=768) openChatMobile(existing.id, existing.name, existing.userId); document.getElementById('newChatModal').classList.add('hidden'); document.getElementById('chatUsernameInput').value=''; return; } let chatId = Date.now().toString(); await db.ref(`users/${currentUser.uid}/chats/${chatId}`).set({with:found.uid, name:found.username, createdAt:Date.now()}); await db.ref(`users/${found.uid}/chats/${chatId}`).set({with:currentUser.uid, name:currentUserData?.username, createdAt:Date.now()}); document.getElementById('newChatModal').classList.add('hidden'); document.getElementById('chatUsernameInput').value=''; await loadChats(); openChat(chatId, found.username, found.uid); if(window.innerWidth<=768) openChatMobile(chatId, found.username, found.uid); }
-        async function changeUsername(newU) { newU = newU.toLowerCase(); if(!validateUsername(newU)){alert('5-15 англ/цифры');return false;} let exist = Object.values(allUsersCache).find(u=>u.username === newU); if(exist && exist.uid!==currentUser.uid){alert('Занят');return false;} await db.ref(`usernames/${currentUserData.username}`).remove(); await db.ref(`usernames/${newU}`).set(currentUser.uid); await db.ref(`users/${currentUser.uid}`).update({username:newU}); await currentUser.updateProfile({displayName:newU}); currentUserData.username=newU; document.getElementById('userNameTextDesktop').innerText=newU; document.getElementById('mobileUserName').innerHTML=newU+'<span id="mobileUserBadge"></span>'; let badgeHtml = getRoleBadge(currentUserData.role); document.getElementById('userBadgeDesktop').innerHTML = badgeHtml; document.getElementById('mobileUserBadge').innerHTML = badgeHtml; await loadAllUsers(); await loadChats(); return true; }
+        async function createNewChat() { 
+            let username = document.getElementById('chatUsernameInput').value.trim().toLowerCase(); 
+            if(!username){alert('Введите username');return;} 
+            
+            // Поиск бота - ТОЛЬКО для Creator и Tester
+            const canFindBot = currentUserData.role === 'creator' || currentUserData.role === 'tester';
+            if(canFindBot && username === BOT_USERNAME.toLowerCase()) {
+                const botData = allUsersCache[BOT_USER_ID];
+                if(botData) {
+                    const existingChat = chats.find(c=>c.userId === BOT_USER_ID);
+                    if(existingChat) {
+                        openChat(existingChat.id, existingChat.name, existingChat.userId);
+                        if(window.innerWidth<=768) openChatMobile(existingChat.id, existingChat.name, existingChat.userId);
+                    } else {
+                        const chatId = `bot_chat_${currentUser.uid}`;
+                        await db.ref(`users/${currentUser.uid}/chats/${chatId}`).set({
+                            with: BOT_USER_ID,
+                            name: BOT_USERNAME,
+                            createdAt: Date.now(),
+                            isBotChat: true
+                        });
+                        await loadChats();
+                        openChat(chatId, BOT_USERNAME, BOT_USER_ID);
+                        if(window.innerWidth<=768) openChatMobile(chatId, BOT_USERNAME, BOT_USER_ID);
+                    }
+                    document.getElementById('newChatModal').classList.add('hidden');
+                    document.getElementById('chatUsernameInput').value='';
+                    return;
+                }
+            }
+            
+            // Обычный поиск пользователей (исключая бота)
+            let found = Object.values(allUsersCache).find(u=>u.username === username && u.role !== 'bot');
+            if(!found){alert('Не найден');return;}
+            if(found.uid===currentUser.uid){alert('Сам с собой нельзя');return;}
+            if(found.banned){alert('Заблокирован');return;}
+            let existing = chats.find(c=>c.userId===found.uid);
+            if(existing){ 
+                openChat(existing.id, existing.name, existing.userId); 
+                if(window.innerWidth<=768) openChatMobile(existing.id, existing.name, existing.userId); 
+                document.getElementById('newChatModal').classList.add('hidden'); 
+                document.getElementById('chatUsernameInput').value=''; 
+                return; 
+            } 
+            let chatId = Date.now().toString(); 
+            await db.ref(`users/${currentUser.uid}/chats/${chatId}`).set({with:found.uid, name:found.username, createdAt:Date.now()}); 
+            await db.ref(`users/${found.uid}/chats/${chatId}`).set({with:currentUser.uid, name:currentUserData?.username, createdAt:Date.now()}); 
+            document.getElementById('newChatModal').classList.add('hidden'); 
+            document.getElementById('chatUsernameInput').value=''; 
+            await loadChats(); 
+            openChat(chatId, found.username, found.uid); 
+            if(window.innerWidth<=768) openChatMobile(chatId, found.username, found.uid); 
+        }
+        
+        async function changeUsername(newU) { newU = newU.toLowerCase(); if(!validateUsername(newU)){alert('5-15 англ/цифры');return false;} let exist = Object.values(allUsersCache).find(u=>u.username === newU && u.role !== 'bot'); if(exist && exist.uid!==currentUser.uid){alert('Занят');return false;} await db.ref(`usernames/${currentUserData.username}`).remove(); await db.ref(`usernames/${newU}`).set(currentUser.uid); await db.ref(`users/${currentUser.uid}`).update({username:newU}); await currentUser.updateProfile({displayName:newU}); currentUserData.username=newU; document.getElementById('userNameTextDesktop').innerText=newU; document.getElementById('mobileUserName').innerHTML=newU+'<span id="mobileUserBadge"></span>'; let badgeHtml = getRoleBadge(currentUserData.role); document.getElementById('userBadgeDesktop').innerHTML = badgeHtml; document.getElementById('mobileUserBadge').innerHTML = badgeHtml; await loadAllUsers(); await loadChats(); return true; }
+        
         async function changePassword(oldP,newP,conf){ if(newP!==conf){alert('Пароли не совпадают');return false;} if(newP.length<6){alert('Мин 6 символов');return false;} let cred = firebase.auth.EmailAuthProvider.credential(currentUser.email, oldP); try{ await currentUser.reauthenticateWithCredential(cred); await currentUser.updatePassword(newP); await db.ref(`users/${currentUser.uid}`).update({defaultPassword:null}); document.getElementById('changePasswordWarningDesktop')?.setAttribute('style','display:none'); document.getElementById('mobileChangePwdWarning')?.setAttribute('style','display:none'); return true; }catch(e){alert('Неверный текущий пароль');return false;} }
+        
         async function logout(){ if(currentChatId) detachMessages(currentChatId); if(onlineInterval) clearInterval(onlineInterval); if(currentUser) await db.ref(`/status/${currentUser.uid}`).set({ online: false, lastSeen: Date.now() }); await auth.signOut(); window.location.href='login.html'; }
 
         window.toggleBan = async (uid, ban) => {
@@ -791,12 +971,14 @@
             }
             const targetUser = allUsersCache[uid];
             if(!targetUser) return;
-            
+            if(targetUser.role === 'bot') {
+                alert('Нельзя заблокировать бота');
+                return;
+            }
             if(!canBan(currentUserData.role, targetUser.role)) {
                 alert(`Нельзя заблокировать пользователя с ролью ${targetUser.role}`);
                 return;
             }
-            
             await db.ref(`users/${uid}`).update({banned: ban});
             await loadAllUsers();
             await loadChats();
@@ -825,6 +1007,7 @@
                 document.getElementById('mobileAdminBtn').style.display = 'flex';
             }
             await loadAllUsers(); 
+            await ensureBotChat();
             await loadChats(); 
             loadFontSize(); 
             setupPresence();
@@ -850,7 +1033,6 @@
         document.getElementById('changeUsernameBtn').onclick = async()=>{ await changeUsername(document.getElementById('newUsername').value.trim()); document.getElementById('newUsername').value=''; alert('Username изменён'); };
         document.getElementById('changePasswordBtn').onclick = async()=>{ let ok = await changePassword(document.getElementById('currentPassword').value, document.getElementById('newPassword').value, document.getElementById('confirmPassword').value); if(ok) alert('Пароль изменён'); };
         
-        // Кнопки подарков: левое нажатие - подарки собеседника, ПКМ/долгое нажатие - свои подарки
         document.getElementById('giftChatBtnDesktop').onclick = ()=>showGiftHistory();
         document.getElementById('mobileChatGiftBtn').onclick = ()=>showGiftHistory();
         
@@ -888,17 +1070,17 @@
             let users = (await db.ref('users').once('value')).val()||{}; 
             let usersList = document.getElementById('adminUsersList');
             if(usersList) {
-                usersList.innerHTML = Object.entries(users).map(([uid,d])=>{
+                let filteredUsers = Object.entries(users).filter(([uid,d]) => d.role !== 'bot');
+                usersList.innerHTML = filteredUsers.map(([uid,d])=>{
                     const canBanUser = canBan(currentUserData.role, d.role);
                     const banButton = d.banned ? 
                         `<button class="btn-unban" onclick="window.toggleBan('${uid}',false)" ${!canBanUser ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>Разбан</button>` :
                         `<button class="btn-ban" onclick="window.toggleBan('${uid}',true)" ${!canBanUser ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>Бан</button>`;
                     
-                    // Только кнопки Tester и User (Creator нельзя выдать)
                     let roleButtons = `<button class="btn-tester" onclick="window.setRole('${uid}','tester')">Тестер</button>
                                        <button class="btn-user" onclick="window.setRole('${uid}','user')">Юзер</button>`;
                     
-                    return `<div class="admin-user"><div><strong>@${escapeHtml(d.username)}</strong> ${getRoleBadge(d.role)}<br><span style="font-size:0.7rem;">${escapeHtml(d.email)}</span><br><span style="font-size:0.7rem;">🪙 ${d.coins || 0} монет</span></div><div class="admin-user-buttons">${roleButtons}${banButton}<button class="btn-tester" onclick="window.addCoinsAdmin('${uid}')">+100 🪙</button></div></div>`;
+                    return `<div class="admin-user"><div><strong>@${escapeHtml(d.username)}</strong> ${getRoleBadge(d.role)}<br><span style="font-size:0.7rem;">${escapeHtml(d.email || '')}</span><br><span style="font-size:0.7rem;">🪙 ${d.coins || 0} монет</span></div><div class="admin-user-buttons">${roleButtons}${banButton}<button class="btn-tester" onclick="window.addCoinsAdmin('${uid}')">+100 🪙</button></div></div>`;
                 }).join('');
             }
         }
@@ -911,6 +1093,10 @@
             if(!hasAdminAccess(currentUserData?.role)) return;
             if(role === 'creator') {
                 alert('Нельзя выдать роль Creator');
+                return;
+            }
+            if(role === 'bot') {
+                alert('Нельзя выдать роль Bot');
                 return;
             }
             await db.ref(`users/${uid}`).update({role}); 
