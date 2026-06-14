@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Trailless · Чат с подарками</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230d1117'/%3E%3Crect x='20' y='25' width='60' height='45' rx='8' fill='%232f81f7'/%3E%3Cpath d='M35 55 L25 65 L45 65 L35 55Z' fill='%232f81f7'/%3E%3Ccircle cx='40' cy='45' r='3' fill='white'/%3E%3Ccircle cx='60' cy='45' r='3' fill='white'/%3E%3C/svg%3E">
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -16,6 +16,8 @@
             color: #c9d1d9;
             height: 100vh;
             overflow: hidden;
+            position: fixed;
+            width: 100%;
         }
 
         /* ========== ДЕСКТОПНАЯ ВЕРСИЯ ========== */
@@ -29,9 +31,6 @@
         .icon-admin { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E"); }
         .icon-gift { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M20 6h-2.18c.11-.31.18-.65.18-1a2.996 2.996 0 0 0-5.5-1.65l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76l1-1.36 1 1.36L15.38 12 17 10.83 14.92 8H20v6z'/%3E%3C/svg%3E"); }
         .icon-coin { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23FFD966' viewBox='0 0 24 24'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z'/%3E%3Ccircle cx='12' cy='12' r='5' fill='%23FFD966'/%3E%3C/svg%3E"); }
-        .icon-close { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z'/%3E%3C/svg%3E"); }
-        .icon-arrow-back { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z'/%3E%3C/svg%3E"); }
-        .icon-check { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E"); }
 
         .menu-bar { width: 72px; background: #161b22; border-right: 1px solid #30363d; display: flex; flex-direction: column; align-items: center; padding: 1rem 0; gap: 0.5rem; flex-shrink: 0; }
         .menu-icon { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 10px; cursor: pointer; transition: all 0.2s; }
@@ -51,7 +50,7 @@
         .chat-item { padding: 0.75rem; border-radius: 6px; cursor: pointer; margin-bottom: 0.25rem; }
         .chat-item:hover { background: #21262d; }
         .chat-item.active { background: #2f81f7; color: white; }
-        .chat-name { font-size: 0.85rem; font-weight: 500; display: flex; align-items: center; gap: 0.25rem; }
+        .chat-name { font-size: 0.85rem; font-weight: 500; display: flex; align-items: center; gap: 0.25rem; flex-wrap: wrap; }
         .chat-preview { font-size: 0.65rem; color: #6e7681; margin-top: 0.2rem; }
         .chat-item.active .chat-preview { color: rgba(255,255,255,0.7); }
         .chat-main { flex: 1; display: flex; flex-direction: column; min-width: 0; height: 100vh; overflow: hidden; }
@@ -81,52 +80,62 @@
         .home-panel.show { display: flex; }
         .return-btn { margin-top: 2rem; padding: 0.75rem 1.5rem; background: #2f81f7; border: none; border-radius: 8px; color: white; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; }
         .warning-banner { background: #e3b34120; border-left: 3px solid #e3b341; padding: 0.5rem; margin-bottom: 0.5rem; font-size: 0.7rem; color: #e3b341; }
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .modal-content { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 1.5rem; width: 90%; max-width: 400px; max-height: 80vh; overflow-y: auto; }
+        
+        /* Модальные окна по центру экрана (не всей страницы) */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(3px); }
+        .modal-content { background: #161b22; border: 1px solid #30363d; border-radius: 16px; padding: 1.5rem; width: 90%; max-width: 380px; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 35px rgba(0,0,0,0.5); }
         .modal-content input, .modal-content select { width: 100%; padding: 0.5rem; background: #0d1117; border: 1px solid #30363d; border-radius: 6px; color: white; margin: 0.5rem 0; }
         .modal-content button { padding: 0.5rem 1rem; background: #2f81f7; border: none; border-radius: 6px; color: white; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
         .modal-content .danger-btn { background: #da3633; }
         .hidden { display: none; }
-        .admin-panel { position: fixed; right: 0; top: 0; width: 350px; height: 100vh; background: #161b22; border-left: 1px solid #30363d; z-index: 1000; padding: 1rem; overflow-y: auto; transform: translateX(100%); transition: transform 0.3s; }
+        
+        .admin-panel { position: fixed; right: 0; top: 0; width: 350px; height: 100vh; background: #161b22; border-left: 1px solid #30363d; z-index: 1001; padding: 1rem; overflow-y: auto; transform: translateX(100%); transition: transform 0.3s; }
         .admin-panel.open { transform: translateX(0); }
-        .admin-panel.hidden { display: none; }
         .settings-group { margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #30363d; }
         .gift-option { display: flex; justify-content: space-between; align-items: center; padding: 12px; margin: 8px 0; background: #21262d; border-radius: 12px; cursor: pointer; transition: all 0.2s; }
-        .gift-option:hover { background: #30363d; transform: scale(1.01); }
+        .gift-option:hover { background: #30363d; }
         .gift-history-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid #30363d; }
         .gift-icon-small { width: 28px; height: 28px; background-size: contain; background-repeat: no-repeat; background-position: center; }
         .gift-sweet-icon { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23FF69B4' viewBox='0 0 24 24'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z'/%3E%3Ccircle cx='12' cy='12' r='4' fill='%23FF69B4'/%3E%3C/svg%3E"); }
         .gift-surprise-icon { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23FFA500' viewBox='0 0 24 24'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z'/%3E%3Cpolygon points='12,7 14,11 18,11 15,14 16,18 12,16 8,18 9,14 6,11 10,11' fill='%23FFA500'/%3E%3C/svg%3E"); }
+        .admin-user { margin-bottom: 12px; padding: 10px; background: #21262d; border-radius: 10px; }
+        .admin-user-buttons { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+        .btn-tester { background: #238636; border: none; padding: 4px 12px; border-radius: 6px; color: white; cursor: pointer; }
+        .btn-user { background: #6e7681; border: none; padding: 4px 12px; border-radius: 6px; color: white; cursor: pointer; }
+        .btn-ban { background: #da3633; border: none; padding: 4px 12px; border-radius: 6px; color: white; cursor: pointer; }
+        .btn-unban { background: #2f81f7; border: none; padding: 4px 12px; border-radius: 6px; color: white; cursor: pointer; }
         
         /* ========== МОБИЛЬНАЯ ВЕРСИЯ ========== */
         @media (max-width: 768px) {
             .desktop-layout { display: none; }
-            .mobile-layout { display: flex; flex-direction: column; height: 100vh; background: #0d1117; }
+            .mobile-layout { display: flex; flex-direction: column; height: 100vh; background: #0d1117; position: relative; }
             .mobile-chats-screen, .mobile-chat-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #0d1117; transition: transform 0.25s ease; overflow: hidden; display: flex; flex-direction: column; }
             .mobile-chats-screen { transform: translateX(0); z-index: 1; }
-            .mobile-chat-screen { transform: translateX(100%); z-index: 2; background: #0d1117; }
+            .mobile-chat-screen { transform: translateX(100%); z-index: 2; }
             .mobile-chat-screen.open { transform: translateX(0); }
-            .mobile-header { background: #161b22; padding: 12px 16px; display: flex; align-items: center; gap: 12px; border-bottom: 0.5px solid #30363d; flex-shrink: 0; }
-            .mobile-back-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 8px; background: #21262d; }
-            .mobile-header-title { font-weight: 600; font-size: 1.1rem; flex: 1; }
-            .mobile-gift-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: #21262d; border-radius: 8px; cursor: pointer; }
-            .mobile-new-chat { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: #2f81f7; border-radius: 8px; cursor: pointer; }
+            .mobile-header { background: #161b22; padding: 12px 12px; display: flex; align-items: center; gap: 10px; border-bottom: 0.5px solid #30363d; flex-shrink: 0; }
+            .mobile-header-icons { display: flex; gap: 8px; margin-left: auto; }
+            .mobile-icon-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: #21262d; border-radius: 10px; cursor: pointer; }
+            .mobile-back-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: #21262d; border-radius: 10px; cursor: pointer; }
+            .mobile-header-title { font-weight: 600; font-size: 1rem; flex: 1; }
+            .mobile-new-chat { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: #2f81f7; border-radius: 10px; cursor: pointer; }
             .mobile-user-row { padding: 12px 16px; background: #161b22; border-bottom: 0.5px solid #30363d; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; flex-wrap: wrap; gap: 8px; }
             .mobile-user-info { display: flex; flex-direction: column; gap: 4px; }
             .mobile-username { font-weight: 600; font-size: 1rem; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
             .mobile-useremail { font-size: 0.7rem; color: #6e7681; }
             .mobile-coin { display: flex; align-items: center; gap: 4px; background: #21262d; padding: 4px 10px; border-radius: 20px; }
-            .mobile-logout-btn { background: #da3633; border: none; padding: 6px 12px; border-radius: 20px; color: white; font-size: 0.75rem; cursor: pointer; }
+            .mobile-logout-btn { background: #da3633; border: none; padding: 6px 12px; border-radius: 20px; color: white; font-size: 0.7rem; cursor: pointer; }
             .mobile-chats-list { flex: 1; overflow-y: auto; padding: 8px 0; }
-            .mobile-chat-item { padding: 12px 16px; border-bottom: 0.5px solid #30363d; cursor: pointer; display: flex; flex-direction: column; gap: 4px; }
-            .mobile-chat-name { font-weight: 500; font-size: 1rem; }
-            .mobile-chat-preview { font-size: 0.75rem; color: #6e7681; }
+            .mobile-chat-item { padding: 12px 16px; border-bottom: 0.5px solid #30363d; cursor: pointer; }
+            .mobile-chat-name { font-weight: 500; font-size: 1rem; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+            .mobile-chat-preview { font-size: 0.75rem; color: #6e7681; margin-top: 4px; }
             .mobile-messages { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
             .mobile-input-area { padding: 10px 12px; border-top: 0.5px solid #30363d; background: #161b22; display: flex; gap: 8px; flex-shrink: 0; }
             .mobile-input { flex: 1; padding: 10px 12px; background: #0d1117; border: 0.5px solid #30363d; border-radius: 24px; color: white; font-size: 0.9rem; outline: none; }
             .mobile-send { background: #2f81f7; border: none; width: 42px; height: 42px; border-radius: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-            .mobile-empty { text-align: center; padding: 2rem; color: #6e7681; font-size: 0.9rem; }
+            .mobile-empty { text-align: center; padding: 2rem; color: #6e7681; }
             .warning-banner-mobile { background: #e3b34120; padding: 8px 12px; font-size: 0.7rem; color: #e3b341; text-align: center; }
+            .modal-content { width: 90%; max-width: 340px; }
         }
         @media (min-width: 769px) { .mobile-layout { display: none; } }
     </style>
@@ -136,6 +145,7 @@
     <div class="desktop-layout" id="desktopLayout">
         <div class="menu-bar">
             <div class="menu-icon" id="newChatBtnDesktop"><span class="icon icon-plus"></span></div>
+            <div class="menu-icon" id="giftShopBtnDesktop"><span class="icon icon-gift"></span></div>
             <div class="menu-icon" id="adminBtnDesktop" style="display: none;"><span class="icon icon-admin"></span></div>
             <div class="menu-icon" id="homeBtnDesktop"><span class="icon icon-home"></span></div>
             <div class="menu-icon" id="settingsBtnDesktop"><span class="icon icon-settings"></span></div>
@@ -164,16 +174,21 @@
                     <button id="sendBtnDesktop" class="send-btn"><span class="icon icon-send"></span> Отправить</button>
                 </div>
             </div>
-            <div class="home-panel" id="homePanelDesktop"><h2>Trailless</h2><p style="color:#8b949e;">Мгновенный чат без следа</p><button id="returnToChatBtnDesktop" class="return-btn"><span class="icon icon-arrow-back"></span> Вернуться в чат</button></div>
+            <div class="home-panel" id="homePanelDesktop"><h2>Trailless</h2><p style="color:#8b949e;">Мгновенный чат с подарками</p><button id="returnToChatBtnDesktop" class="return-btn"><span class="icon icon-arrow-back"></span> Вернуться в чат</button></div>
         </div>
     </div>
 
-    <!-- МОБИЛЬНЫЙ ИНТЕРФЕЙС -->
+    <!-- МОБИЛЬНЫЙ ИНТЕРФЕЙС (с иконками админки и настроек в шапке) -->
     <div class="mobile-layout" id="mobileLayout">
         <div class="mobile-chats-screen" id="mobileChatsScreen">
             <div class="mobile-header">
                 <div class="mobile-header-title">📩 Trailless</div>
-                <div class="mobile-new-chat" id="mobileNewChatBtn"><span class="icon icon-plus" style="width:18px;height:18px;"></span></div>
+                <div class="mobile-header-icons">
+                    <div class="mobile-icon-btn" id="mobileGiftShopBtn"><span class="icon icon-gift" style="width:18px;height:18px;"></span></div>
+                    <div class="mobile-icon-btn" id="mobileAdminBtn" style="display: none;"><span class="icon icon-admin" style="width:18px;height:18px;"></span></div>
+                    <div class="mobile-icon-btn" id="mobileSettingsBtn"><span class="icon icon-settings" style="width:18px;height:18px;"></span></div>
+                    <div class="mobile-new-chat" id="mobileNewChatBtn"><span class="icon icon-plus" style="width:18px;height:18px;"></span></div>
+                </div>
             </div>
             <div class="mobile-user-row">
                 <div class="mobile-user-info">
@@ -189,7 +204,7 @@
             <div class="mobile-header">
                 <div class="mobile-back-btn" id="mobileBackBtn"><span class="icon icon-arrow-back" style="width:18px;height:18px;"></span></div>
                 <div class="mobile-header-title" id="mobileChatTitle">Чат</div>
-                <div class="mobile-gift-btn" id="mobileGiftBtn"><span class="icon icon-gift" style="width:18px;height:18px;"></span></div>
+                <div class="mobile-icon-btn" id="mobileChatGiftBtn"><span class="icon icon-gift" style="width:18px;height:18px;"></span></div>
             </div>
             <div class="mobile-messages" id="mobileMessagesList"><div class="mobile-empty">Выберите чат</div></div>
             <div class="mobile-input-area">
@@ -204,7 +219,7 @@
     <div id="newChatModal" class="modal hidden"><div class="modal-content"><h3>Новый чат</h3><input type="text" id="chatUsernameInput" placeholder="Username собеседника"><button id="createChatBtn">Начать</button><button id="cancelChatBtn">Отмена</button></div></div>
     <div id="giftShopModal" class="modal hidden"><div class="modal-content"><h3>🎁 Магазин подарков</h3><div id="giftShopList"></div><button id="closeGiftShopBtn">Закрыть</button></div></div>
     <div id="giftHistoryModal" class="modal hidden"><div class="modal-content"><h3>📦 Полученные подарки</h3><div id="giftHistoryList"></div><button id="closeGiftHistoryBtn">Закрыть</button></div></div>
-    <div id="adminPanel" class="admin-panel hidden"><h3>Админ панель</h3><div id="adminUsersList"></div><button id="closeAdminBtn">Закрыть</button></div>
+    <div id="adminPanel" class="admin-panel hidden"><h3>Админ панель</h3><div id="adminUsersList"></div><button id="closeAdminBtn" style="margin-top:1rem;">Закрыть</button></div>
 
     <script>
         const firebaseConfig = { apiKey: "AIzaSyD7c2eq_Z9v_XjxSafPYJuBV3kDa82Eg9w", authDomain: "trailless-chat.firebaseapp.com", databaseURL: "https://trailless-chat-default-rtdb.europe-west1.firebasedatabase.app", projectId: "trailless-chat", storageBucket: "trailless-chat.firebasestorage.app", messagingSenderId: "175122288335", appId: "1:175122288335:web:f68cb31bb12631cc6ff1ba" };
@@ -229,12 +244,20 @@
             for(let [cid,info] of Object.entries(data)){ let other = await db.ref(`users/${info.with}`).once('value'), otherData = other.val(); let last = await db.ref(`messages/${cid}`).orderByKey().limitToLast(1).once('value'); let lastMsg=''; last.forEach(m=>lastMsg=m.val().text); newChats.push({id:cid, name:otherData?.username||'Unknown', userId:info.with, lastMessage:lastMsg||'Нет сообщений'}); }
             chats = newChats; renderChatsDesktop(); renderChatsMobile();
         }
-        function renderChatsDesktop() { let container = document.getElementById('chatsListDesktop'); if(!container) return; container.innerHTML = chats.map(c=>`<div class="chat-item ${currentChatId===c.id?'active':''}" data-id="${c.id}" data-name="${escapeHtml(c.name)}" data-uid="${c.userId}"><div class="chat-name">@${escapeHtml(c.name)}</div><div class="chat-preview">${escapeHtml(c.lastMessage.slice(0,40))}</div></div>`).join('')||'<div style="padding:1rem;text-align:center;">Нет чатов</div>'; document.querySelectorAll('#chatsListDesktop .chat-item').forEach(el=>{ el.onclick = ()=>openChat(el.dataset.id, el.dataset.name, el.dataset.uid); }); }
-        function renderChatsMobile() { let container = document.getElementById('mobileChatsList'); if(!container) return; container.innerHTML = chats.map(c=>`<div class="mobile-chat-item" data-id="${c.id}" data-name="${escapeHtml(c.name)}" data-uid="${c.userId}"><div class="mobile-chat-name">@${escapeHtml(c.name)}</div><div class="mobile-chat-preview">${escapeHtml(c.lastMessage.slice(0,40))}</div></div>`).join('')||'<div class="mobile-empty">Нет чатов. Нажмите +</div>'; document.querySelectorAll('#mobileChatsList .mobile-chat-item').forEach(el=>{ el.onclick = ()=>{ openChatMobile(el.dataset.id, el.dataset.name, el.dataset.uid); }; }); }
+        function renderChatsDesktop() { 
+            let container = document.getElementById('chatsListDesktop'); if(!container) return; 
+            container.innerHTML = chats.map(c=>`<div class="chat-item ${currentChatId===c.id?'active':''}" data-id="${c.id}" data-name="${escapeHtml(c.name)}" data-uid="${c.userId}"><div class="chat-name">@${escapeHtml(c.name)} ${c.roleBadge || ''}</div><div class="chat-preview">${escapeHtml(c.lastMessage.slice(0,40))}</div></div>`).join('')||'<div style="padding:1rem;text-align:center;">Нет чатов</div>'; 
+            document.querySelectorAll('#chatsListDesktop .chat-item').forEach(el=>{ el.onclick = ()=>openChat(el.dataset.id, el.dataset.name, el.dataset.uid); }); 
+        }
+        function renderChatsMobile() { 
+            let container = document.getElementById('mobileChatsList'); if(!container) return; 
+            container.innerHTML = chats.map(c=>`<div class="mobile-chat-item" data-id="${c.id}" data-name="${escapeHtml(c.name)}" data-uid="${c.userId}"><div class="mobile-chat-name">@${escapeHtml(c.name)} ${c.roleBadge || ''}</div><div class="mobile-chat-preview">${escapeHtml(c.lastMessage.slice(0,40))}</div></div>`).join('')||'<div class="mobile-empty">Нет чатов. Нажмите +</div>'; 
+            document.querySelectorAll('#mobileChatsList .mobile-chat-item').forEach(el=>{ el.onclick = ()=>{ openChatMobile(el.dataset.id, el.dataset.name, el.dataset.uid); }; }); 
+        }
 
         function detachMessages() { if(messagesUnsubscribe && currentChatId) db.ref(`messages/${currentChatId}`).off('child_added', messagesUnsubscribe); }
         
-        function addMessageToUI(msg, msgId, isMobile=false) { 
+        function addMessageToUI(msg, isMobile=false) { 
             let container = isMobile?document.getElementById('mobileMessagesList'):document.getElementById('messagesListDesktop'); 
             if(!container) return; 
             if(container.querySelector('.empty-state') && container.children.length===1) container.innerHTML=''; 
@@ -262,9 +285,9 @@
             let snap = await db.ref(`messages/${chatId}`).once('value'); 
             let msgs = snap.val()||{}; 
             container.innerHTML=''; 
-            Object.values(msgs).sort((a,b)=>a.timestamp-b.timestamp).forEach(m=>addMessageToUI(m, null, false)); 
+            Object.values(msgs).sort((a,b)=>a.timestamp-b.timestamp).forEach(m=>addMessageToUI(m, false)); 
             if(Object.keys(msgs).length===0) container.innerHTML='<div class="empty-state">Нет сообщений</div>'; 
-            messagesUnsubscribe = db.ref(`messages/${chatId}`).on('child_added', (s)=>{ addMessageToUI(s.val(), s.key, false); }); 
+            messagesUnsubscribe = db.ref(`messages/${chatId}`).on('child_added', (s)=>{ addMessageToUI(s.val(), false); }); 
             renderChatsDesktop(); 
             setTimeout(()=>container.scrollTop=container.scrollHeight,100); 
         }
@@ -279,9 +302,9 @@
             let snap = await db.ref(`messages/${chatId}`).once('value'); 
             let msgs = snap.val()||{}; 
             container.innerHTML=''; 
-            Object.values(msgs).sort((a,b)=>a.timestamp-b.timestamp).forEach(m=>addMessageToUI(m, null, true)); 
+            Object.values(msgs).sort((a,b)=>a.timestamp-b.timestamp).forEach(m=>addMessageToUI(m, true)); 
             if(Object.keys(msgs).length===0) container.innerHTML='<div class="mobile-empty">Нет сообщений</div>'; 
-            messagesUnsubscribe = db.ref(`messages/${chatId}`).on('child_added', (s)=>{ addMessageToUI(s.val(), s.key, true); }); 
+            messagesUnsubscribe = db.ref(`messages/${chatId}`).on('child_added', (s)=>{ addMessageToUI(s.val(), true); }); 
             document.getElementById('mobileChatScreen').classList.add('open'); 
             setTimeout(()=>container.scrollTop=container.scrollHeight,100); 
             renderChatsMobile(); 
@@ -386,7 +409,7 @@
             if(window.innerWidth<=768) openChatMobile(chatId, found.username, found.uid); 
         }
         
-        async function changeUsername(newU) { newU = newU.toLowerCase(); if(!validateUsername(newU)){alert('5-15 англ/цифры');return false;} let exist = await findUserByUsername(newU); if(exist && exist.uid!==currentUser.uid){alert('Занят');return false;} await db.ref(`usernames/${currentUserData.username}`).remove(); await db.ref(`usernames/${newU}`).set(currentUser.uid); await db.ref(`users/${currentUser.uid}`).update({username:newU}); await currentUser.updateProfile({displayName:newU}); currentUserData.username=newU; document.getElementById('userNameTextDesktop').innerText=newU; document.getElementById('mobileUserName').innerHTML=newU+'<span id="mobileUserBadge"></span>'; await loadAllUsers(); await loadChats(); return true; }
+        async function changeUsername(newU) { newU = newU.toLowerCase(); if(!validateUsername(newU)){alert('5-15 англ/цифры');return false;} let exist = await findUserByUsername(newU); if(exist && exist.uid!==currentUser.uid){alert('Занят');return false;} await db.ref(`usernames/${currentUserData.username}`).remove(); await db.ref(`usernames/${newU}`).set(currentUser.uid); await db.ref(`users/${currentUser.uid}`).update({username:newU}); await currentUser.updateProfile({displayName:newU}); currentUserData.username=newU; document.getElementById('userNameTextDesktop').innerText=newU; document.getElementById('mobileUserName').innerHTML=newU+'<span id="mobileUserBadge"></span>'; document.getElementById('mobileUserBadge').innerHTML = currentUserData.role==='admin'?'<span class="admin-badge">Admin</span>':(currentUserData.role==='tester'?'<span class="tester-badge">Tester</span>':''); await loadAllUsers(); await loadChats(); return true; }
         
         async function changePassword(oldP,newP,conf){ if(newP!==conf){alert('Пароли не совпадают');return false;} if(newP.length<6){alert('Мин 6 символов');return false;} let cred = firebase.auth.EmailAuthProvider.credential(currentUser.email, oldP); try{ await currentUser.reauthenticateWithCredential(cred); await currentUser.updatePassword(newP); await db.ref(`users/${currentUser.uid}`).update({defaultPassword:null}); document.getElementById('changePasswordWarningDesktop')?.setAttribute('style','display:none'); document.getElementById('mobileChangePwdWarning')?.setAttribute('style','display:none'); return true; }catch(e){alert('Неверный текущий пароль');return false;} }
         
@@ -416,7 +439,10 @@
             document.getElementById('userBadgeDesktop').innerHTML = badgeHtml;
             document.getElementById('mobileUserBadge').innerHTML = badgeHtml;
             if(currentUserData.defaultPassword==='12345678'){ document.getElementById('changePasswordWarningDesktop').style.display='block'; document.getElementById('mobileChangePwdWarning').style.display='block'; } 
-            if(currentUserData.role==='admin'){ document.getElementById('adminBtnDesktop').style.display='flex'; } 
+            if(currentUserData.role==='admin'){ 
+                document.getElementById('adminBtnDesktop').style.display='flex';
+                document.getElementById('mobileAdminBtn').style.display='flex';
+            } 
             await loadAllUsers(); 
             await loadChats(); 
             loadFontSize(); 
@@ -438,6 +464,7 @@
         document.getElementById('homeBtnDesktop').onclick = ()=>document.getElementById('homePanelDesktop').classList.add('show');
         document.getElementById('returnToChatBtnDesktop').onclick = ()=>document.getElementById('homePanelDesktop').classList.remove('show');
         document.getElementById('settingsBtnDesktop').onclick = ()=>document.getElementById('settingsModal').classList.remove('hidden');
+        document.getElementById('mobileSettingsBtn').onclick = ()=>document.getElementById('settingsModal').classList.remove('hidden');
         document.getElementById('closeSettingsBtn').onclick = ()=>document.getElementById('settingsModal').classList.add('hidden');
         document.getElementById('fontSizeSelect').onchange = e=>setFontSize(e.target.value);
         document.getElementById('changeUsernameBtn').onclick = async()=>{ await changeUsername(document.getElementById('newUsername').value.trim()); document.getElementById('newUsername').value=''; alert('Username изменён'); };
@@ -445,38 +472,30 @@
         
         // Подарки
         document.getElementById('giftChatBtnDesktop').onclick = () => showGiftHistory();
-        document.getElementById('mobileGiftBtn').onclick = () => showGiftHistory();
+        document.getElementById('mobileChatGiftBtn').onclick = () => showGiftHistory();
+        document.getElementById('giftShopBtnDesktop').onclick = () => showGiftShop();
+        document.getElementById('mobileGiftShopBtn').onclick = () => showGiftShop();
         document.getElementById('closeGiftHistoryBtn').onclick = ()=>document.getElementById('giftHistoryModal').classList.add('hidden');
         document.getElementById('closeGiftShopBtn').onclick = ()=>document.getElementById('giftShopModal').classList.add('hidden');
         
-        // Кнопка магазина подарков - добавим в меню ПК и в мобильную шапку
-        // Создаем иконку подарка в меню ПК для магазина
-        let giftShopIcon = document.createElement('div');
-        giftShopIcon.className = 'menu-icon';
-        giftShopIcon.innerHTML = '<span class="icon icon-gift"></span>';
-        giftShopIcon.onclick = () => showGiftShop();
-        let menuBar = document.querySelector('.menu-bar');
-        let adminBtn = document.getElementById('adminBtnDesktop');
-        if(adminBtn) menuBar.insertBefore(giftShopIcon, adminBtn.nextSibling);
-        
-        // На мобилку добавим кнопку магазина в шапку чатов
-        let mobileHeader = document.querySelector('.mobile-header');
-        let mobileGiftShopBtn = document.createElement('div');
-        mobileGiftShopBtn.className = 'mobile-icon-btn';
-        mobileGiftShopBtn.innerHTML = '<span class="icon icon-gift" style="width:18px;height:18px;"></span>';
-        mobileGiftShopBtn.onclick = () => showGiftShop();
-        let mobileNewChat = document.getElementById('mobileNewChatBtn');
-        if(mobileNewChat) mobileHeader.insertBefore(mobileGiftShopBtn, mobileNewChat);
-        
-        // Админка (старая, рабочая)
+        // Админка (цветные кнопки)
         document.getElementById('adminBtnDesktop').onclick = async()=>{ 
             if(currentUserData?.role!=='admin')return; 
             let users = (await db.ref('users').once('value')).val()||{}; 
             let container = document.getElementById('adminUsersList'); 
-            container.innerHTML = Object.entries(users).map(([uid,d])=>`<div class="admin-user"><div><strong>@${escapeHtml(d.username)}</strong><br>${d.email} ${d.role==='admin'?'<span class="admin-badge">Admin</span>':''}</div><div><button onclick="window.setRoleUser('${uid}','tester')">Тестер</button><button onclick="window.setRoleUser('${uid}','user')">Юзер</button><button onclick="window.toggleBanUser('${uid}',${!d.banned})">${d.banned?'Разбан':'Бан'}</button></div></div>`).join(''); 
+            container.innerHTML = Object.entries(users).map(([uid,d])=>`
+                <div class="admin-user">
+                    <div><strong>@${escapeHtml(d.username)}</strong> ${d.role==='admin'?'<span class="admin-badge">Admin</span>':(d.role==='tester'?'<span class="tester-badge">Tester</span>':'<span style="color:#8b949e;">User</span>')}<br><span style="font-size:0.7rem;">${d.email}</span></div>
+                    <div class="admin-user-buttons">
+                        <button class="btn-tester" onclick="window.setRoleUser('${uid}','tester')">🔧 Тестер</button>
+                        <button class="btn-user" onclick="window.setRoleUser('${uid}','user')">👤 Юзер</button>
+                        <button class="${d.banned ? 'btn-unban' : 'btn-ban'}" onclick="window.toggleBanUser('${uid}',${!d.banned})">${d.banned ? '🔓 Разбан' : '🔒 Бан'}</button>
+                    </div>
+                </div>`).join(''); 
             document.getElementById('adminPanel').classList.remove('hidden'); 
             document.getElementById('adminPanel').classList.add('open'); 
         };
+        document.getElementById('mobileAdminBtn').onclick = ()=>document.getElementById('adminBtnDesktop').onclick();
         document.getElementById('closeAdminBtn').onclick = ()=>{document.getElementById('adminPanel').classList.remove('open'); document.getElementById('adminPanel').classList.add('hidden');};
         window.setRoleUser = async (uid,role)=>{ if(currentUserData?.role!=='admin') return; await db.ref(`users/${uid}`).update({role}); await loadAllUsers(); };
         window.toggleBanUser = async (uid,ban)=>{ if(currentUserData?.role!=='admin') return; await db.ref(`users/${uid}`).update({banned:ban}); await loadAllUsers(); if(ban && uid===currentUser.uid) await logout(); };
