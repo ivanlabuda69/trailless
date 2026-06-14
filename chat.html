@@ -97,11 +97,16 @@
         .message-footer { display: flex; justify-content: flex-end; align-items: center; gap: 4px; margin-top: 0.2rem; font-size: 0.6rem; opacity: 0.7; }
         .edited-mark { font-size: 0.55rem; opacity: 0.6; margin-left: 4px; }
         .reply-preview { background: rgba(255,255,255,0.1); border-left: 2px solid #2f81f7; padding: 4px 6px; margin-bottom: 4px; border-radius: 4px; font-size: 0.7rem; }
+        .message-reactions { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+        .reaction-bubble { background: rgba(255,255,255,0.1); border-radius: 20px; padding: 2px 6px; font-size: 0.7rem; cursor: pointer; transition: all 0.1s; display: inline-flex; align-items: center; gap: 3px; }
+        .reaction-bubble:hover { background: rgba(255,255,255,0.2); transform: scale(1.05); }
+        .reaction-emoji { font-size: 0.8rem; }
+        .reaction-count { font-size: 0.65rem; opacity: 0.8; }
         .message-input-area { flex-shrink: 0; padding: 1rem; border-top: 1px solid #30363d; background: #161b22; display: flex; flex-direction: column; gap: 8px; }
         .reply-bar { background: #21262d; border-radius: 8px; padding: 6px 10px; display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; }
         .reply-cancel { cursor: pointer; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #30363d; }
-        .input-row { display: flex; gap: 0.5rem; }
-        .message-input { flex: 1; padding: 0.5rem 0.75rem; background: #0d1117; border: 1px solid #30363d; border-radius: 6px; color: #c9d1d9; outline: none; }
+        .input-row { display: flex; gap: 0.5rem; align-items: center; }
+        .message-input { flex: 1; padding: 0.5rem 0.75rem; background: #0d1117; border: 1px solid #30363d; border-radius: 6px; color: #c9d1d9; outline: none; resize: vertical; font-family: inherit; }
         .message-input:disabled { opacity: 0.5; cursor: not-allowed; }
         .send-btn { padding: 0.5rem 1rem; background: #2f81f7; border: none; border-radius: 6px; color: white; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; }
         .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -121,6 +126,10 @@
         .context-menu-item { padding: 8px 16px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 0.85rem; }
         .context-menu-item:hover { background: #2f81f7; }
         .context-menu-item.danger:hover { background: #da3633; }
+        
+        .reaction-menu { position: fixed; background: #1f2429; border-radius: 40px; padding: 8px 12px; display: flex; gap: 12px; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.5); border: 1px solid #30363d; }
+        .reaction-option { font-size: 24px; cursor: pointer; padding: 4px 8px; border-radius: 30px; transition: all 0.1s; }
+        .reaction-option:hover { background: #2f81f7; transform: scale(1.2); }
         
         .gift-card-overlay {
             position: fixed;
@@ -318,6 +327,8 @@
             .warning-banner-mobile { background: #e3b34120; padding: 8px 12px; font-size: 0.7rem; color: #e3b341; text-align: center; }
             .modal-content { max-width: 95%; }
             .group-members-modal { width: 95%; }
+            .reaction-menu { padding: 6px 10px; gap: 8px; }
+            .reaction-option { font-size: 20px; padding: 2px 6px; }
         }
         
         @media (min-width: 769px) { .mobile-layout { display: none !important; } }
@@ -381,7 +392,7 @@
                 <div class="messages" id="messagesListDesktop"><div class="empty-state">Нажмите + чтобы начать новый чат</div></div>
                 <div class="message-input-area" id="messageAreaDesktop" style="display: none;">
                     <div id="replyBarDesktop" class="reply-bar hidden"><span id="replyTextDesktop"></span><span class="reply-cancel" onclick="cancelReplyDesktop()">✕</span></div>
-                    <div class="input-row"><input type="text" id="messageInputDesktop" class="message-input" placeholder="Введите сообщение..."><button id="sendBtnDesktop" class="send-btn"><span class="icon icon-send"></span> Отправить</button></div>
+                    <div class="input-row"><textarea id="messageInputDesktop" class="message-input" placeholder="Введите сообщение... (Enter - отправить, Ctrl+Enter - новая строка)" rows="1"></textarea><button id="sendBtnDesktop" class="send-btn"><span class="icon icon-send"></span> Отправить</button></div>
                 </div>
             </div>
             <div class="home-panel" id="homePanelDesktop"><h2>Trailless</h2><p style="color:#8b949e;">Чат с подарками, группами и статусами</p><button id="returnToChatBtnDesktop" class="return-btn"><span class="icon icon-arrow-back"></span> Вернуться в чат</button></div>
@@ -420,12 +431,11 @@
             <div class="mobile-messages" id="mobileMessagesList"><div class="mobile-empty">Выберите чат</div></div>
             <div class="mobile-input-area" id="mobileInputArea">
                 <div id="replyBarMobile" class="mobile-reply-bar hidden"><span id="replyTextMobile"></span><span class="reply-cancel" onclick="cancelReplyMobile()">✕</span></div>
-                <div class="mobile-input-row"><input type="text" id="mobileMessageInput" class="mobile-input" placeholder="Сообщение..."><button id="mobileSendBtn" class="mobile-send"><span class="icon icon-send" style="width:20px;height:20px;"></span></button></div>
+                <div class="mobile-input-row"><textarea id="mobileMessageInput" class="mobile-input" placeholder="Сообщение..."></textarea><button id="mobileSendBtn" class="mobile-send"><span class="icon icon-send" style="width:20px;height:20px;"></span></button></div>
             </div>
         </div>
     </div>
 
-    <!-- МОДАЛЬНЫЕ ОКНА -->
     <div id="settingsModal" class="modal hidden"><div class="modal-content"><h3>Настройки</h3><div class="settings-group"><label>Размер шрифта</label><select id="fontSizeSelect"><option value="small">Маленький</option><option value="medium" selected>Средний</option><option value="large">Большой</option></select></div><div class="settings-group"><label>Сменить username</label><input type="text" id="newUsername" placeholder="5-15 символов"><button id="changeUsernameBtn">Сменить</button></div><div class="settings-group"><label>Сменить пароль</label><input type="password" id="currentPassword" placeholder="Текущий"><input type="password" id="newPassword" placeholder="Новый (мин 6)"><input type="password" id="confirmPassword" placeholder="Повторите"><button id="changePasswordBtn">Сменить</button></div><button id="closeSettingsBtn">Закрыть</button></div></div>
     
     <div id="newChatModal" class="modal hidden"><div class="modal-content"><h3>Новый чат</h3><button id="privateChatBtn" style="background:#238636;">💬 Личный чат</button><button id="groupMenuBtn" style="background:#1f6feb;">👥 Группа</button><div id="groupSubMenu" style="display:none; margin-top:12px;"><button id="createGroupBtn">➕ Создать группу</button><button id="joinGroupBtn">🔗 Присоединиться по ID</button></div><hr style="margin:12px 0; border-color:#30363d;"><input type="text" id="chatUsernameInput" placeholder="Username для личного чата"><button id="createChatBtn">Начать</button><button id="cancelChatBtn">Отмена</button></div></div>
@@ -464,6 +474,8 @@
         let messageListeners = {};
         let autoDeleteInterval = null;
 
+        const REACTIONS = ['👍', '❤️', '😂', '😮', '😢'];
+        
         const giftsList = [
             { id: 'sweet', name: 'Sweet Candy', emoji: '🍬', price: 300, iconClass: 'gift-icon-sweet' },
             { id: 'surprise', name: 'Gift Surprise', emoji: '🎁', price: 50, iconClass: 'gift-icon-surprise' },
@@ -614,6 +626,92 @@
         function escapeHtml(s) { return s?.replace(/[&<>]/g, m=>({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m]))||''; }
         function scrollToBottom(isMobile) { setTimeout(() => { let container = isMobile ? document.getElementById('mobileMessagesList') : document.getElementById('messagesListDesktop'); if(container) container.scrollTop = container.scrollHeight; }, 100); }
 
+        // Функции для работы с реакциями
+        async function addReaction(msgId, reaction) {
+            if(!currentChatId) return;
+            let reactionRef = db.ref(`messages/${currentChatId}/${msgId}/reactions/${reaction}`);
+            let snap = await reactionRef.once('value');
+            let users = snap.val() || [];
+            if(users.includes(currentUser.uid)) {
+                // Убираем реакцию
+                let newUsers = users.filter(u => u !== currentUser.uid);
+                if(newUsers.length === 0) {
+                    await reactionRef.remove();
+                } else {
+                    await reactionRef.set(newUsers);
+                }
+            } else {
+                // Добавляем реакцию
+                users.push(currentUser.uid);
+                await reactionRef.set(users);
+            }
+            // Обновляем отображение
+            let msgElement = document.querySelector(`.message[data-msg-id="${msgId}"]`);
+            if(msgElement) {
+                let reactionsDiv = msgElement.querySelector('.message-reactions');
+                if(reactionsDiv) {
+                    await updateReactionsDisplay(msgId, msgElement);
+                }
+            }
+        }
+        
+        async function updateReactionsDisplay(msgId, msgElement) {
+            let snap = await db.ref(`messages/${currentChatId}/${msgId}/reactions`).once('value');
+            let reactions = snap.val() || {};
+            let reactionsHtml = '';
+            for(let [emoji, users] of Object.entries(reactions)) {
+                if(users && users.length > 0) {
+                    let count = users.length;
+                    let hasCurrent = users.includes(currentUser.uid);
+                    reactionsHtml += `<div class="reaction-bubble" data-reaction="${emoji}" onclick="event.stopPropagation(); addReaction('${msgId}', '${emoji}')">
+                        <span class="reaction-emoji">${emoji}</span>
+                        <span class="reaction-count">${count}</span>
+                    </div>`;
+                }
+            }
+            let existingReactions = msgElement.querySelector('.message-reactions');
+            if(reactionsHtml) {
+                if(existingReactions) {
+                    existingReactions.innerHTML = reactionsHtml;
+                } else {
+                    let newReactionsDiv = document.createElement('div');
+                    newReactionsDiv.className = 'message-reactions';
+                    newReactionsDiv.innerHTML = reactionsHtml;
+                    msgElement.appendChild(newReactionsDiv);
+                }
+            } else if(existingReactions) {
+                existingReactions.remove();
+            }
+        }
+        
+        function showReactionMenu(x, y, msgId, isMobile) {
+            let existing = document.querySelector('.reaction-menu');
+            if(existing) existing.remove();
+            let menu = document.createElement('div');
+            menu.className = 'reaction-menu';
+            menu.style.left = (x - 100) + 'px';
+            menu.style.top = (y - 50) + 'px';
+            REACTIONS.forEach(emoji => {
+                let option = document.createElement('div');
+                option.className = 'reaction-option';
+                option.textContent = emoji;
+                option.onclick = () => {
+                    addReaction(msgId, emoji);
+                    menu.remove();
+                };
+                menu.appendChild(option);
+            });
+            document.body.appendChild(menu);
+            setTimeout(() => {
+                document.addEventListener('click', function removeMenu(e) {
+                    if(menu && !menu.contains(e.target)) {
+                        menu.remove();
+                        document.removeEventListener('click', removeMenu);
+                    }
+                });
+            }, 10);
+        }
+        
         async function loadChats() {
             if(!currentUser) return;
             let snap = await db.ref(`users/${currentUser.uid}/chats`).once('value'), data = snap.val()||{}, newChats = [];
@@ -835,7 +933,7 @@
                 } else {
                     input.disabled = false;
                     sendBtn.disabled = false;
-                    input.placeholder = 'Введите сообщение...';
+                    input.placeholder = 'Введите сообщение... (Enter - отправить, Ctrl+Enter - новая строка)';
                 }
             } else {
                 document.getElementById('messageInputDesktop').disabled = false;
@@ -922,10 +1020,33 @@
                 statusHtml = msg.read === true ? '<span class="icon icon-double-check" style="width:12px;height:12px;"></span>' : '<span class="icon icon-check" style="width:12px;height:12px;"></span>';
             }
             let senderName = currentChatIsGroup ? `@${msg.senderName}` : escapeHtml(msg.senderName);
+            let reactionsHtml = '';
+            if(msg.reactions) {
+                for(let [emoji, users] of Object.entries(msg.reactions)) {
+                    if(users && users.length > 0) {
+                        let count = users.length;
+                        let hasCurrent = users.includes(currentUser.uid);
+                        reactionsHtml += `<div class="reaction-bubble" data-reaction="${emoji}" onclick="event.stopPropagation(); addReaction('${msgId}', '${emoji}')">
+                            <span class="reaction-emoji">${emoji}</span>
+                            <span class="reaction-count">${count}</span>
+                        </div>`;
+                    }
+                }
+            }
             let html = `<div class="message-sender">${senderName} ${badge} ${isOut?'(вы)':''}</div>${replyHtml}<div class="message-text">${giftIcon}${linkedText} ${editedHtml}</div><div class="message-footer"><span>${time}</span>${statusHtml}</div>`;
+            if(reactionsHtml) html += `<div class="message-reactions">${reactionsHtml}</div>`;
             
             if(existing) {
                 existing.innerHTML = html;
+                if(msg.reactions) {
+                    let reactionsDiv = existing.querySelector('.message-reactions');
+                    if(reactionsDiv) {
+                        reactionsDiv.querySelectorAll('.reaction-bubble').forEach(el => {
+                            let emoji = el.dataset.reaction;
+                            el.onclick = (e) => { e.stopPropagation(); addReaction(msgId, emoji); };
+                        });
+                    }
+                }
             } else {
                 let div = document.createElement('div');
                 div.className = `message ${isOut?'outgoing':'incoming'} ${msg.isGift?'message-gift':''}`;
@@ -933,6 +1054,12 @@
                 div.innerHTML = html;
                 container.appendChild(div);
                 attachMessageEvents(div, msgId, msg.text, isOut, isMobile);
+                if(msg.reactions) {
+                    div.querySelectorAll('.reaction-bubble').forEach(el => {
+                        let emoji = el.dataset.reaction;
+                        el.onclick = (e) => { e.stopPropagation(); addReaction(msgId, emoji); };
+                    });
+                }
                 scrollToBottom(isMobile);
             }
             if(!isOut && !currentChatIsGroup && !msg.read) setTimeout(() => markAsRead(msgId), 500);
@@ -941,10 +1068,17 @@
         function attachMessageEvents(el, msgId, msgText, isOwn, isMobile) {
             if(!el) return;
             if(!isMobile) {
-                el.addEventListener('contextmenu', (e) => { e.preventDefault(); showMessageContextMenu(e.clientX, e.clientY, msgId, msgText, isOwn); });
+                el.addEventListener('contextmenu', (e) => { 
+                    e.preventDefault(); 
+                    showMessageContextMenu(e.clientX, e.clientY, msgId, msgText, isOwn, msgId);
+                });
             } else {
                 let touchTimer;
-                el.addEventListener('touchstart', (e) => { touchTimer = setTimeout(() => { showMessageContextMenuMobile(e.touches[0].clientX, e.touches[0].clientY, msgId, msgText, isOwn); }, 500); });
+                el.addEventListener('touchstart', (e) => { 
+                    touchTimer = setTimeout(() => { 
+                        showMessageContextMenuMobile(e.touches[0].clientX, e.touches[0].clientY, msgId, msgText, isOwn, msgId);
+                    }, 500); 
+                });
                 el.addEventListener('touchend', () => clearTimeout(touchTimer));
                 el.addEventListener('touchmove', () => clearTimeout(touchTimer));
             }
@@ -952,42 +1086,90 @@
         
         async function copyToClipboard(text) { try { await navigator.clipboard.writeText(text); } catch(e) {} }
         
-        function showMessageContextMenu(x, y, msgId, msgText, isOwn) {
+        function showMessageContextMenu(x, y, msgId, msgText, isOwn, msgIdForReaction) {
             let existing = document.querySelector('.context-menu');
             if(existing) existing.remove();
             let menu = document.createElement('div');
             menu.className = 'context-menu';
             menu.style.left = x + 'px';
             menu.style.top = y + 'px';
-            let replyItem = document.createElement('div'); replyItem.className = 'context-menu-item'; replyItem.innerHTML = '<span class="icon icon-reply" style="width:16px;height:16px;"></span> Ответить'; replyItem.onclick = () => { setReply(msgId, msgText); menu.remove(); };
+            
+            let reactionItem = document.createElement('div');
+            reactionItem.className = 'context-menu-item';
+            reactionItem.innerHTML = '<span style="font-size:18px;">😊</span> Реакции';
+            reactionItem.onclick = () => { 
+                menu.remove();
+                showReactionMenu(x, y, msgIdForReaction, false);
+            };
+            menu.appendChild(reactionItem);
+            
+            let replyItem = document.createElement('div'); 
+            replyItem.className = 'context-menu-item'; 
+            replyItem.innerHTML = '<span class="icon icon-reply" style="width:16px;height:16px;"></span> Ответить'; 
+            replyItem.onclick = () => { setReply(msgId, msgText); menu.remove(); };
             menu.appendChild(replyItem);
-            let copyItem = document.createElement('div'); copyItem.className = 'context-menu-item'; copyItem.innerHTML = '<span class="icon icon-copy" style="width:16px;height:16px;"></span> Копировать'; copyItem.onclick = () => { copyToClipboard(msgText); menu.remove(); };
+            
+            let copyItem = document.createElement('div'); 
+            copyItem.className = 'context-menu-item'; 
+            copyItem.innerHTML = '<span class="icon icon-copy" style="width:16px;height:16px;"></span> Копировать'; 
+            copyItem.onclick = () => { copyToClipboard(msgText); menu.remove(); };
             menu.appendChild(copyItem);
+            
             if(isOwn) {
-                let editItem = document.createElement('div'); editItem.className = 'context-menu-item'; editItem.innerHTML = '<span class="icon icon-edit" style="width:16px;height:16px;"></span> Редактировать'; editItem.onclick = () => { editMessage(msgId, msgText); menu.remove(); };
+                let editItem = document.createElement('div'); 
+                editItem.className = 'context-menu-item'; 
+                editItem.innerHTML = '<span class="icon icon-edit" style="width:16px;height:16px;"></span> Редактировать'; 
+                editItem.onclick = () => { editMessage(msgId, msgText); menu.remove(); };
                 menu.appendChild(editItem);
-                let deleteItem = document.createElement('div'); deleteItem.className = 'context-menu-item danger'; deleteItem.innerHTML = '<span class="icon icon-delete" style="width:16px;height:16px;"></span> Удалить'; deleteItem.onclick = () => { deleteMessage(msgId); menu.remove(); };
+                let deleteItem = document.createElement('div'); 
+                deleteItem.className = 'context-menu-item danger'; 
+                deleteItem.innerHTML = '<span class="icon icon-delete" style="width:16px;height:16px;"></span> Удалить'; 
+                deleteItem.onclick = () => { deleteMessage(msgId); menu.remove(); };
                 menu.appendChild(deleteItem);
             }
             document.body.appendChild(menu);
             setTimeout(() => { document.addEventListener('click', function removeMenu() { if(menu && menu.remove) menu.remove(); document.removeEventListener('click', removeMenu); }); }, 10);
         }
         
-        function showMessageContextMenuMobile(x, y, msgId, msgText, isOwn) {
+        function showMessageContextMenuMobile(x, y, msgId, msgText, isOwn, msgIdForReaction) {
             let existing = document.querySelector('.context-menu');
             if(existing) existing.remove();
             let menu = document.createElement('div');
             menu.className = 'context-menu';
             menu.style.left = x + 'px';
             menu.style.top = (y - 50) + 'px';
-            let replyItem = document.createElement('div'); replyItem.className = 'context-menu-item'; replyItem.innerHTML = '<span class="icon icon-reply" style="width:16px;height:16px;"></span> Ответить'; replyItem.onclick = () => { setReply(msgId, msgText); menu.remove(); };
+            
+            let reactionItem = document.createElement('div');
+            reactionItem.className = 'context-menu-item';
+            reactionItem.innerHTML = '<span style="font-size:18px;">😊</span> Реакции';
+            reactionItem.onclick = () => { 
+                menu.remove();
+                showReactionMenu(x, y - 50, msgIdForReaction, true);
+            };
+            menu.appendChild(reactionItem);
+            
+            let replyItem = document.createElement('div'); 
+            replyItem.className = 'context-menu-item'; 
+            replyItem.innerHTML = '<span class="icon icon-reply" style="width:16px;height:16px;"></span> Ответить'; 
+            replyItem.onclick = () => { setReply(msgId, msgText); menu.remove(); };
             menu.appendChild(replyItem);
-            let copyItem = document.createElement('div'); copyItem.className = 'context-menu-item'; copyItem.innerHTML = '<span class="icon icon-copy" style="width:16px;height:16px;"></span> Копировать'; copyItem.onclick = () => { copyToClipboard(msgText); menu.remove(); };
+            
+            let copyItem = document.createElement('div'); 
+            copyItem.className = 'context-menu-item'; 
+            copyItem.innerHTML = '<span class="icon icon-copy" style="width:16px;height:16px;"></span> Копировать'; 
+            copyItem.onclick = () => { copyToClipboard(msgText); menu.remove(); };
             menu.appendChild(copyItem);
+            
             if(isOwn) {
-                let editItem = document.createElement('div'); editItem.className = 'context-menu-item'; editItem.innerHTML = '<span class="icon icon-edit" style="width:16px;height:16px;"></span> Редактировать'; editItem.onclick = () => { editMessage(msgId, msgText); menu.remove(); };
+                let editItem = document.createElement('div'); 
+                editItem.className = 'context-menu-item'; 
+                editItem.innerHTML = '<span class="icon icon-edit" style="width:16px;height:16px;"></span> Редактировать'; 
+                editItem.onclick = () => { editMessage(msgId, msgText); menu.remove(); };
                 menu.appendChild(editItem);
-                let deleteItem = document.createElement('div'); deleteItem.className = 'context-menu-item danger'; deleteItem.innerHTML = '<span class="icon icon-delete" style="width:16px;height:16px;"></span> Удалить'; deleteItem.onclick = () => { deleteMessage(msgId); menu.remove(); };
+                let deleteItem = document.createElement('div'); 
+                deleteItem.className = 'context-menu-item danger'; 
+                deleteItem.innerHTML = '<span class="icon icon-delete" style="width:16px;height:16px;"></span> Удалить'; 
+                deleteItem.onclick = () => { deleteMessage(msgId); menu.remove(); };
                 menu.appendChild(deleteItem);
             }
             document.body.appendChild(menu);
@@ -1057,6 +1239,20 @@
             messageListeners[chatId] = { added: addedHandler, changed: changedHandler, removed: removedHandler };
         }
         
+        function handleTextareaKeydown(e, isMobile) {
+            if(e.key === 'Enter') {
+                if(e.ctrlKey || e.metaKey) {
+                    // Ctrl+Enter - новая строка
+                    // Ничего не делаем, позволим стандартное поведение
+                    return;
+                } else {
+                    // Enter - отправка
+                    e.preventDefault();
+                    sendMessage(isMobile);
+                }
+            }
+        }
+        
         async function sendMessage(isMobile) {
             let input = isMobile ? document.getElementById('mobileMessageInput') : document.getElementById('messageInputDesktop');
             let text = input.value.trim();
@@ -1091,7 +1287,23 @@
             if(chat) chat.lastMessage = text;
             if(isMobile) renderChatsMobile(); else renderChatsDesktop();
             input.value = '';
+            // Сбрасываем высоту textarea
+            if(!isMobile) {
+                input.style.height = 'auto';
+                input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+            }
             if(isMobile) scrollToBottom(true); else input.focus();
+        }
+        
+        // Auto-resize textarea for desktop
+        function setupAutoResize() {
+            let textarea = document.getElementById('messageInputDesktop');
+            if(textarea) {
+                textarea.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+                });
+            }
         }
         
         async function createGroup(groupName) {
@@ -1128,20 +1340,15 @@
         }
         
         async function joinGroup(groupId) {
-            // Ищем группу по точному ID (регистр важен, но ID генерится из капса и цифр)
             let foundGroupId = null;
             let groupsSnap = await db.ref('groups').once('value');
             let groups = groupsSnap.val() || {};
             
-            // Ищем точное совпадение (учитывая, что ID в верхнем регистре)
             let searchId = groupId.toUpperCase();
             if(groups[searchId]) {
                 foundGroupId = searchId;
-            } else {
-                // Если не нашли, пробуем как есть
-                if(groups[groupId]) {
-                    foundGroupId = groupId;
-                }
+            } else if(groups[groupId]) {
+                foundGroupId = groupId;
             }
             
             if(!foundGroupId) { alert('Группа не найдена'); return false; }
@@ -1175,7 +1382,6 @@
             
             let userRole = await getUserGroupRole(groupId, currentUser.uid);
             let canManage = (userRole === 'owner' || userRole === 'moderator');
-            let isOwner = (userRole === 'owner');
             
             let membersList = [];
             for(let uid in (groupData.members || {})) {
@@ -1388,6 +1594,8 @@
             await refreshAdminPanel();
             if(ban && uid === currentUser.uid) setTimeout(() => logout(), 500);
         };
+        
+        window.addReaction = addReaction;
 
         auth.onAuthStateChanged(async (user) => {
             if (!user) return;
@@ -1439,13 +1647,27 @@
             setupPresence();
             startOnlinePolling();
             startAutoDeleteCheck();
+            setupAutoResize();
         });
         
         // ОБРАБОТЧИКИ СОБЫТИЙ
         document.getElementById('sendBtnDesktop').onclick = ()=>sendMessage(false); 
         document.getElementById('mobileSendBtn').onclick = ()=>sendMessage(true);
-        document.getElementById('messageInputDesktop').onkeypress = e=>{if(e.key==='Enter') sendMessage(false);};
-        document.getElementById('mobileMessageInput').onkeypress = e=>{if(e.key==='Enter') sendMessage(true);};
+        
+        const desktopTextarea = document.getElementById('messageInputDesktop');
+        if(desktopTextarea) {
+            desktopTextarea.addEventListener('keydown', (e) => handleTextareaKeydown(e, false));
+        }
+        
+        const mobileTextarea = document.getElementById('mobileMessageInput');
+        if(mobileTextarea) {
+            mobileTextarea.addEventListener('keydown', (e) => {
+                if(e.key === 'Enter' && !e.ctrlKey && !e.metaKey) {
+                    e.preventDefault();
+                    sendMessage(true);
+                }
+            });
+        }
         
         document.getElementById('newChatBtnDesktop').onclick = ()=>document.getElementById('newChatModal').classList.remove('hidden');
         document.getElementById('newChatSidebarBtnDesktop').onclick = ()=>document.getElementById('newChatModal').classList.remove('hidden');
