@@ -58,6 +58,7 @@
         .user-email { font-size: 0.7rem; color: #6e7681; }
         .admin-badge { background: #2f81f7; color: white; border-radius: 20px; padding: 0.1rem 0.4rem; font-size: 0.6rem; }
         .tester-badge { background: #238636; color: white; border-radius: 20px; padding: 0.1rem 0.4rem; font-size: 0.6rem; }
+        .creator-badge { background: #9b59b6; color: white; border-radius: 20px; padding: 0.1rem 0.4rem; font-size: 0.6rem; }
         .coin-display { display: flex; align-items: center; gap: 4px; background: #1a1f26; padding: 2px 8px; border-radius: 20px; font-size: 0.75rem; }
         .online-status { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-left: 6px; }
         .online-status.online { background: #238636; box-shadow: 0 0 4px #238636; }
@@ -159,7 +160,6 @@
         
         .settings-group { margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #30363d; }
         
-        /* Стили для подарков в магазине */
         .gift-option { 
             display: flex; 
             justify-content: space-between; 
@@ -182,11 +182,11 @@
         .admin-user { margin-bottom: 12px; padding: 10px; background: #21262d; border-radius: 10px; }
         .admin-user-buttons { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
         .btn-tester { background: #238636; border: none; padding: 6px 12px; border-radius: 6px; color: white; cursor: pointer; font-size: 0.75rem; }
+        .btn-creator { background: #9b59b6; border: none; padding: 6px 12px; border-radius: 6px; color: white; cursor: pointer; font-size: 0.75rem; }
         .btn-user { background: #6e7681; border: none; padding: 6px 12px; border-radius: 6px; color: white; cursor: pointer; font-size: 0.75rem; }
         .btn-ban { background: #da3633; border: none; padding: 6px 12px; border-radius: 6px; color: white; cursor: pointer; font-size: 0.75rem; }
         .btn-unban { background: #2f81f7; border: none; padding: 6px 12px; border-radius: 6px; color: white; cursor: pointer; font-size: 0.75rem; }
         
-        /* Иконки подарков */
         .gift-icon-sweet { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FF69B4'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='white' font-size='10' font-weight='bold'%3E🍬%3C/text%3E%3C/svg%3E"); }
         .gift-icon-surprise { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FFA500'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='white' font-size='10'%3E🎁%3C/text%3E%3C/svg%3E"); }
         .gift-icon-chocolate { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%238B4513'%3E%3Crect x='7' y='7' width='10' height='10' rx='2'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='white' font-size='10'%3E🍫%3C/text%3E%3C/svg%3E"); }
@@ -373,6 +373,13 @@
         function setFontSize(s) { let f = s==='small'?'12px':s==='medium'?'14px':'16px'; document.body.style.fontSize = f; localStorage.setItem('trailless_font_size', s); }
         function loadFontSize() { let s = localStorage.getItem('trailless_font_size'); if(s){ document.getElementById('fontSizeSelect').value = s; setFontSize(s); } }
         
+        function getRoleBadge(role) {
+            if(role === 'admin') return '<span class="admin-badge">Admin</span>';
+            if(role === 'creator') return '<span class="creator-badge">Creator</span>';
+            if(role === 'tester') return '<span class="tester-badge">Tester</span>';
+            return '';
+        }
+        
         function linkify(text) {
             if(!text) return '';
             const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -443,7 +450,7 @@
                 if(!otherData) continue;
                 let lastSnap = await db.ref(`messages/${cid}`).orderByKey().limitToLast(1).once('value'); 
                 let lastMsg=''; lastSnap.forEach(m=>lastMsg=m.val().text);
-                let roleBadge = otherData.role==='admin'?'<span class="admin-badge">Admin</span>':(otherData.role==='tester'?'<span class="tester-badge">Tester</span>':'');
+                let roleBadge = getRoleBadge(otherData.role);
                 newChats.push({id:cid, name:otherData.username, userId:info.with, lastMessage:lastMsg||'Нет сообщений', roleBadge});
             }
             chats = newChats; renderChatsDesktop(); renderChatsMobile();
@@ -479,7 +486,7 @@
             let existing = container.querySelector(`.message[data-msg-id="${msgId}"]`);
             let isOut = msg.senderId === currentUser.uid;
             let time = new Date(msg.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-            let badge = msg.senderRole==='admin'?'<span class="admin-badge">Admin</span>':(msg.senderRole==='tester'?'<span class="tester-badge">Tester</span>':'');
+            let badge = getRoleBadge(msg.senderRole);
             let giftIcon = msg.isGift ? '<span class="icon icon-gift" style="width:14px;height:14px;margin-right:4px;"></span>' : '';
             let replyHtml = msg.replyTo ? `<div class="reply-preview">↳ ${escapeHtml(msg.replyToText || '')}</div>` : '';
             let editedHtml = msg.edited ? '<span class="edited-mark">(ред.)</span>' : '';
@@ -751,7 +758,7 @@
         }
         
         async function createNewChat() { let username = document.getElementById('chatUsernameInput').value.trim().toLowerCase(); if(!username){alert('Введите username');return;} let found = Object.values(allUsersCache).find(u=>u.username === username); if(!found){alert('Не найден');return;} if(found.uid===currentUser.uid){alert('Сам с собой нельзя');return;} if(found.banned){alert('Заблокирован');return;} let existing = chats.find(c=>c.userId===found.uid); if(existing){ openChat(existing.id, existing.name, existing.userId); if(window.innerWidth<=768) openChatMobile(existing.id, existing.name, existing.userId); document.getElementById('newChatModal').classList.add('hidden'); document.getElementById('chatUsernameInput').value=''; return; } let chatId = Date.now().toString(); await db.ref(`users/${currentUser.uid}/chats/${chatId}`).set({with:found.uid, name:found.username, createdAt:Date.now()}); await db.ref(`users/${found.uid}/chats/${chatId}`).set({with:currentUser.uid, name:currentUserData?.username, createdAt:Date.now()}); document.getElementById('newChatModal').classList.add('hidden'); document.getElementById('chatUsernameInput').value=''; await loadChats(); openChat(chatId, found.username, found.uid); if(window.innerWidth<=768) openChatMobile(chatId, found.username, found.uid); }
-        async function changeUsername(newU) { newU = newU.toLowerCase(); if(!validateUsername(newU)){alert('5-15 англ/цифры');return false;} let exist = Object.values(allUsersCache).find(u=>u.username === newU); if(exist && exist.uid!==currentUser.uid){alert('Занят');return false;} await db.ref(`usernames/${currentUserData.username}`).remove(); await db.ref(`usernames/${newU}`).set(currentUser.uid); await db.ref(`users/${currentUser.uid}`).update({username:newU}); await currentUser.updateProfile({displayName:newU}); currentUserData.username=newU; document.getElementById('userNameTextDesktop').innerText=newU; document.getElementById('mobileUserName').innerHTML=newU+'<span id="mobileUserBadge"></span>'; let badgeHtml = currentUserData.role==='admin'?'<span class="admin-badge">Admin</span>':(currentUserData.role==='tester'?'<span class="tester-badge">Tester</span>':''); document.getElementById('userBadgeDesktop').innerHTML = badgeHtml; document.getElementById('mobileUserBadge').innerHTML = badgeHtml; await loadAllUsers(); await loadChats(); return true; }
+        async function changeUsername(newU) { newU = newU.toLowerCase(); if(!validateUsername(newU)){alert('5-15 англ/цифры');return false;} let exist = Object.values(allUsersCache).find(u=>u.username === newU); if(exist && exist.uid!==currentUser.uid){alert('Занят');return false;} await db.ref(`usernames/${currentUserData.username}`).remove(); await db.ref(`usernames/${newU}`).set(currentUser.uid); await db.ref(`users/${currentUser.uid}`).update({username:newU}); await currentUser.updateProfile({displayName:newU}); currentUserData.username=newU; document.getElementById('userNameTextDesktop').innerText=newU; document.getElementById('mobileUserName').innerHTML=newU+'<span id="mobileUserBadge"></span>'; let badgeHtml = getRoleBadge(currentUserData.role); document.getElementById('userBadgeDesktop').innerHTML = badgeHtml; document.getElementById('mobileUserBadge').innerHTML = badgeHtml; await loadAllUsers(); await loadChats(); return true; }
         async function changePassword(oldP,newP,conf){ if(newP!==conf){alert('Пароли не совпадают');return false;} if(newP.length<6){alert('Мин 6 символов');return false;} let cred = firebase.auth.EmailAuthProvider.credential(currentUser.email, oldP); try{ await currentUser.reauthenticateWithCredential(cred); await currentUser.updatePassword(newP); await db.ref(`users/${currentUser.uid}`).update({defaultPassword:null}); document.getElementById('changePasswordWarningDesktop')?.setAttribute('style','display:none'); document.getElementById('mobileChangePwdWarning')?.setAttribute('style','display:none'); return true; }catch(e){alert('Неверный текущий пароль');return false;} }
         async function logout(){ if(currentChatId) detachMessages(currentChatId); if(onlineInterval) clearInterval(onlineInterval); if(currentUser) await db.ref(`/status/${currentUser.uid}`).set({ online: false, lastSeen: Date.now() }); await auth.signOut(); window.location.href='login.html'; }
 
@@ -768,10 +775,10 @@
             document.getElementById('userNameTextDesktop').innerText = currentUserData.username; document.getElementById('userEmailDesktop').innerText = user.email; 
             document.getElementById('mobileUserName').innerHTML = currentUserData.username+'<span id="mobileUserBadge"></span>'; document.getElementById('mobileUserEmail').innerText = user.email; 
             updateCoinsUI();
-            let badgeHtml = currentUserData.role==='admin'?'<span class="admin-badge">Admin</span>':(currentUserData.role==='tester'?'<span class="tester-badge">Tester</span>':'');
+            let badgeHtml = getRoleBadge(currentUserData.role);
             document.getElementById('userBadgeDesktop').innerHTML = badgeHtml; document.getElementById('mobileUserBadge').innerHTML = badgeHtml;
             if(currentUserData.defaultPassword==='12345678'){ document.getElementById('changePasswordWarningDesktop').style.display='block'; document.getElementById('mobileChangePwdWarning').style.display='block'; } 
-            if(currentUserData.role==='admin'){ document.getElementById('adminBtnDesktop').style.display='flex'; }
+            if(currentUserData.role === 'admin'){ document.getElementById('adminBtnDesktop').style.display='flex'; }
             await loadAllUsers(); 
             await loadChats(); 
             loadFontSize(); 
@@ -808,7 +815,7 @@
             let users = (await db.ref('users').once('value')).val()||{}; 
             let usersList = document.getElementById('adminUsersList');
             if(usersList) {
-                usersList.innerHTML = Object.entries(users).map(([uid,d])=>`<div class="admin-user"><div><strong>@${escapeHtml(d.username)}</strong> ${d.role==='admin'?'<span class="admin-badge">Admin</span>':(d.role==='tester'?'<span class="tester-badge">Tester</span>':'<span>User</span>')}<br><span style="font-size:0.7rem;">${escapeHtml(d.email)}</span><br><span style="font-size:0.7rem;">🪙 ${d.coins || 0} монет</span></div><div class="admin-user-buttons"><button class="btn-tester" onclick="window.setRole('${uid}','tester')">Тестер</button><button class="btn-user" onclick="window.setRole('${uid}','user')">Юзер</button><button class="${d.banned?'btn-unban':'btn-ban'}" onclick="window.toggleBan('${uid}',${!d.banned})">${d.banned?'Разбан':'Бан'}</button><button class="btn-tester" onclick="window.addCoinsAdmin('${uid}')">+100 🪙</button></div></div>`).join('');
+                usersList.innerHTML = Object.entries(users).map(([uid,d])=>`<div class="admin-user"><div><strong>@${escapeHtml(d.username)}</strong> ${getRoleBadge(d.role)}<br><span style="font-size:0.7rem;">${escapeHtml(d.email)}</span><br><span style="font-size:0.7rem;">🪙 ${d.coins || 0} монет</span></div><div class="admin-user-buttons"><button class="btn-tester" onclick="window.setRole('${uid}','tester')">Тестер</button><button class="btn-creator" onclick="window.setRole('${uid}','creator')">Creator</button><button class="btn-user" onclick="window.setRole('${uid}','user')">Юзер</button><button class="${d.banned?'btn-unban':'btn-ban'}" onclick="window.toggleBan('${uid}',${!d.banned})">${d.banned?'Разбан':'Бан'}</button><button class="btn-tester" onclick="window.addCoinsAdmin('${uid}')">+100 🪙</button></div></div>`).join('');
             }
         }
         window.addCoinsAdmin = async (uid) => { if(currentUserData?.role !== 'admin') return; let userSnap = await db.ref(`users/${uid}`).once('value'); let userData = userSnap.val(); let newCoins = (userData.coins || 0) + 100; await db.ref(`users/${uid}`).update({ coins: newCoins }); await refreshAdminPanel(); };
