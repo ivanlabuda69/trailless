@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Trailless · Чат</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230d1117'/%3E%3Crect x='20' y='25' width='60' height='45' rx='8' fill='%232f81f7'/%3E%3Cpath d='M35 55 L25 65 L45 65 L35 55Z' fill='%232f81f7'/%3E%3Ccircle cx='40' cy='45' r='3' fill='white'/%3E%3Ccircle cx='60' cy='45' r='3' fill='white'/%3E%3C/svg%3E">
+    <link rel="icon" type="image/jpeg" href="https://i.ibb.co/9HFqzqsL/photo-2026-06-13-23-25-13.jpg">
+    <link rel="shortcut icon" type="image/jpeg" href="https://i.ibb.co/9HFqzqsL/photo-2026-06-13-23-25-13.jpg">
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
@@ -112,7 +113,7 @@
         .context-menu-item:hover { background: #2f81f7; }
         .context-menu-item.danger:hover { background: #da3633; }
         
-        /* Админ-панель - кнопка закрытия как строка ввода сообщений */
+        /* Админ-панель */
         .admin-panel { 
             position: fixed; 
             right: 0; 
@@ -141,7 +142,6 @@
             padding: 1rem;
             -webkit-overflow-scrolling: touch;
         }
-        /* Кнопка закрытия - точно как строка ввода сообщений */
         .admin-panel .close-admin-btn { 
             flex-shrink: 0;
             background: #2f81f7; 
@@ -201,7 +201,7 @@
             .warning-banner-mobile { background: #e3b34120; padding: 8px 12px; font-size: 0.7rem; color: #e3b341; text-align: center; }
             .context-menu { position: fixed; background: #1f2429; border-radius: 12px; padding: 8px 0; min-width: 180px; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.5); border: 1px solid #30363d; }
             
-            /* Админ-панель на мобильных - кнопка как строка ввода */
+            /* Админ-панель на мобильных */
             .admin-panel { 
                 width: 100%; 
             }
@@ -211,6 +211,10 @@
                 margin-bottom: max(12px, env(safe-area-inset-bottom));
                 padding: 12px 16px;
                 border-radius: 6px;
+            }
+            /* Скрываем кнопку админки на телефоне */
+            #mobileAdminBtn {
+                display: none !important;
             }
         }
         @media (min-width: 769px) { .mobile-layout { display: none; } }
@@ -263,7 +267,7 @@
                 <div class="mobile-header-title">📩 Trailless</div>
                 <div class="mobile-header-icons">
                     <div class="mobile-icon-btn" id="mobileGiftShopBtn"><span class="icon icon-gift" style="width:18px;height:18px;"></span></div>
-                    <div class="mobile-icon-btn" id="mobileAdminBtn" style="display: none;"><span class="icon icon-admin" style="width:18px;height:18px;"></span></div>
+                    <!-- Кнопка админки скрыта на телефоне -->
                     <div class="mobile-icon-btn" id="mobileSettingsBtn"><span class="icon icon-settings" style="width:18px;height:18px;"></span></div>
                     <div class="mobile-new-chat" id="mobileNewChatBtn"><span class="icon icon-plus" style="width:18px;height:18px;"></span></div>
                 </div>
@@ -298,7 +302,7 @@
     <div id="giftHistoryModal" class="modal hidden"><div class="modal-content"><h3>📦 Полученные подарки</h3><div id="giftHistoryList"></div><button id="closeGiftHistoryBtn">Закрыть</button></div></div>
     <div id="selectChatModal" class="modal hidden"><div class="modal-content"><h3>📱 Выберите получателя</h3><div id="selectChatList"></div><button id="closeSelectChatBtn">Отмена</button></div></div>
     
-    <!-- Админ-панель с кнопкой как строка ввода сообщений -->
+    <!-- Админ-панель -->
     <div id="adminPanel" class="admin-panel hidden">
         <h3>👑 Админ панель</h3>
         <div class="admin-users-container" id="adminUsersList"></div>
@@ -657,7 +661,10 @@
             let badgeHtml = currentUserData.role==='admin'?'<span class="admin-badge">Admin</span>':(currentUserData.role==='tester'?'<span class="tester-badge">Tester</span>':'');
             document.getElementById('userBadgeDesktop').innerHTML = badgeHtml; document.getElementById('mobileUserBadge').innerHTML = badgeHtml;
             if(currentUserData.defaultPassword==='12345678'){ document.getElementById('changePasswordWarningDesktop').style.display='block'; document.getElementById('mobileChangePwdWarning').style.display='block'; } 
-            if(currentUserData.role==='admin'){ document.getElementById('adminBtnDesktop').style.display='flex'; document.getElementById('mobileAdminBtn').style.display='flex'; } 
+            if(currentUserData.role==='admin'){ 
+                document.getElementById('adminBtnDesktop').style.display='flex';
+                // На телефоне кнопка админки НЕ показывается
+            }
             await loadAllUsers(); 
             await loadChats(); 
             loadFontSize(); 
@@ -698,7 +705,7 @@
             }
         }
         document.getElementById('adminBtnDesktop').onclick = async()=>{ if(currentUserData?.role!=='admin')return; await refreshAdminPanel(); document.getElementById('adminPanel').classList.remove('hidden'); document.getElementById('adminPanel').classList.add('open'); };
-        document.getElementById('mobileAdminBtn').onclick = ()=>document.getElementById('adminBtnDesktop').onclick();
+        // На телефоне обработчик для админки не нужен, так как кнопки нет
         document.getElementById('closeAdminBtn').onclick = ()=>{document.getElementById('adminPanel').classList.remove('open'); document.getElementById('adminPanel').classList.add('hidden');};
         window.setRole = async (uid,role)=>{ if(currentUserData?.role!=='admin') return; await db.ref(`users/${uid}`).update({role}); await loadAllUsers(); await loadChats(); await refreshAdminPanel(); };
         window.toggleBan = async (uid,ban)=>{ if(currentUserData?.role!=='admin') return; await db.ref(`users/${uid}`).update({banned:ban}); await loadAllUsers(); await loadChats(); await refreshAdminPanel(); if(ban && uid===currentUser.uid) setTimeout(()=>logout(), 500); };
