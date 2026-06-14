@@ -67,7 +67,7 @@
         .chat-card:hover { background: rgba(255, 255, 255, 0.02); }
         .chat-card.active { background: var(--bg-glass-active); box-shadow: inset 0 0 0 1px var(--border-glass-bright); }
         .avatar-container { position: relative; width: 44px; height: 44px; flex-shrink: 0; }
-        .user-avatar { width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(135deg, #1f1f23, #050505); border: 1px solid var(--border-glass); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; background-size: cover; background-position: center; }
+        .user-avatar { width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(135deg, #1f1f23, #050505); border: 1px solid var(--border-glass); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; background-size: cover; background-position: center; background-repeat: no-repeat; }
         .chat-details { flex: 1; min-width: 0; }
         .chat-meta-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
         .name-wrapper { font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px; }
@@ -95,7 +95,7 @@
         .inspect-header { height: 60px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-glass); }
         .inspect-body { padding: 24px; display: flex; flex-direction: column; gap: 24px; }
         .inspect-hero { text-align: center; padding-bottom: 20px; border-bottom: 1px solid var(--border-glass); }
-        .inspect-avatar { width: 80px; height: 80px; border-radius: 50%; background: var(--bg-panel); border: 1px solid var(--border-glass-bright); font-size: 26px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; background-size: cover; background-position: center; }
+        .inspect-avatar { width: 80px; height: 80px; border-radius: 50%; background: var(--bg-panel); border: 1px solid var(--border-glass-bright); font-size: 26px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; background-size: cover; background-position: center; background-repeat: no-repeat; }
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: center; justify-content: center; }
         .modal-window { background: var(--bg-sidebar); border: 1px solid var(--border-glass-bright); border-radius: 16px; width: 440px; padding: 24px; }
         .main-drawer { position: fixed; top: 60px; left: 16px; background: var(--bg-sidebar); border: 1px solid var(--border-glass-bright); border-radius: 12px; width: 250px; display: none; flex-direction: column; padding: 6px; z-index: 100; }
@@ -105,7 +105,7 @@
         select.auth-input { appearance: none; cursor: pointer; }
         .date-row { display: flex; gap: 8px; }
         .date-row select { flex: 1; }
-        .profile-avatar-preview { width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 16px; background-size: cover; background-position: center; background: var(--bg-panel); border: 1px solid var(--border-glass-bright); }
+        .profile-avatar-preview { width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 16px; background-size: cover; background-position: center; background: var(--bg-panel); border: 1px solid var(--border-glass-bright); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -166,7 +166,7 @@
         <section class="chat-viewport">
             <div class="viewport-header">
                 <div class="header-interact" id="profileInspectTrigger">
-                    <div class="avatar-container"><div class="user-avatar" id="activeAvatar">--</div></div>
+                    <div class="avatar-container"><div class="user-avatar" id="activeAvatar">⭐</div></div>
                     <div class="header-meta"><div class="name-wrapper" id="activeName">Избранное</div><div class="time-text" id="activeStatus"></div></div>
                 </div>
                 <div><button class="btn-icon" id="triplePanelToggle"><i class="fa-solid fa-table-columns"></i></button></div>
@@ -200,11 +200,10 @@
 <div class="modal-overlay" id="newChatModal"><div class="modal-window"><div class="auth-title" style="text-align:left;">Новый чат</div><input type="text" class="auth-input" id="chatUsernameInput" placeholder="Username пользователя"><button class="google-btn" id="createChatBtn" style="margin-top:16px;">Начать чат</button><button class="google-btn" id="cancelChatBtn" style="background:#21262d; color:#fff;">Отмена</button></div></div>
 <div class="modal-overlay" id="createGroupModal"><div class="modal-window"><div class="auth-title" style="text-align:left;">Создать группу</div><input type="text" class="auth-input" id="groupNameInput" placeholder="Название группы" maxlength="20"><button class="google-btn" id="confirmCreateGroupBtn" style="margin-top:16px;">Создать</button><button class="google-btn" id="cancelCreateGroupBtn" style="background:#21262d; color:#fff;">Отмена</button></div></div>
 
-<!-- Модалка профиля -->
 <div class="modal-overlay" id="profileModal">
     <div class="modal-window">
         <div class="auth-title" style="text-align:left;">Редактировать профиль</div>
-        <div class="profile-avatar-preview" id="profileAvatarPreview" style="background-image: url('https://i.ibb.co/cXM6mbNq/photo-2026-06-14-21-27-45.jpg');"></div>
+        <div class="profile-avatar-preview" id="profileAvatarPreview">👤</div>
         <div class="input-group"><label>Имя</label><input type="text" class="auth-input" id="profileFirstName" placeholder="Имя"></div>
         <div class="input-group"><label>Фамилия</label><input type="text" class="auth-input" id="profileLastName" placeholder="Фамилия"></div>
         <div class="input-group"><label>Username</label><input type="text" class="auth-input" id="profileUsername" placeholder="Username"></div>
@@ -241,11 +240,11 @@
     let currentChatId = 'saved_messages';
     let currentChatIsGroup = false;
     let currentChatOtherId = null;
+    let currentChatIsSaved = true;
     let chats = [];
     let allUsersCache = {};
     let currentMessageListener = null;
 
-    // Избранное (saved messages)
     const SAVED_CHAT_ID = 'saved_messages';
     const SAVED_AVATAR_URL = 'https://i.ibb.co/cXM6mbNq/photo-2026-06-14-21-27-45.jpg';
 
@@ -290,8 +289,27 @@
     }
 
     function validateUsername(u) { return /^[a-zA-Z0-9]{5,15}$/.test(u); }
-
     function escapeHtml(s) { return s?.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>' : '&gt;' }[m])) || ''; }
+
+    function getInitials(name) {
+        if (!name) return '??';
+        return name.substring(0, 2).toUpperCase();
+    }
+
+    function setAvatarImage(element, isSaved, textName, imageUrl = null) {
+        if (isSaved) {
+            element.style.backgroundImage = `url('${SAVED_AVATAR_URL}')`;
+            element.style.backgroundSize = 'cover';
+            element.innerHTML = '';
+        } else if (imageUrl) {
+            element.style.backgroundImage = `url('${imageUrl}')`;
+            element.style.backgroundSize = 'cover';
+            element.innerHTML = '';
+        } else {
+            element.style.backgroundImage = '';
+            element.innerHTML = getInitials(textName);
+        }
+    }
 
     async function loadAllUsers() {
         let snap = await db.ref('users').once('value');
@@ -326,7 +344,6 @@
                 }
             }
         }
-        // Добавляем "Избранное" в начало списка
         let savedLastSnap = await db.ref(`messages/${SAVED_CHAT_ID}`).orderByKey().limitToLast(1).once('value');
         let savedLastMsg = '';
         savedLastSnap.forEach(m => savedLastMsg = m.val().text);
@@ -348,7 +365,7 @@
         });
         wrapper.innerHTML = filtered.map(c => {
             let isSaved = c.id === SAVED_CHAT_ID;
-            let avatarHtml = isSaved ? `<div class="user-avatar" style="background-image: url('${SAVED_AVATAR_URL}'); background-size: cover;"></div>` : `<div class="user-avatar">${c.name.substring(0, 2).toUpperCase()}</div>`;
+            let avatarHtml = isSaved ? `<div class="user-avatar" id="avatar-${c.id}"></div>` : `<div class="user-avatar" id="avatar-${c.id}">${getInitials(c.name)}</div>`;
             return `
                 <div class="chat-card ${currentChatId === c.id ? 'active' : ''}" data-id="${c.id}" data-name="${escapeHtml(c.name)}" data-uid="${c.userId || ''}" data-isgroup="${c.isGroup}" data-issaved="${isSaved}">
                     <div class="avatar-container">${avatarHtml}</div>
@@ -359,6 +376,22 @@
                 </div>
             `;
         }).join('');
+        
+        // Устанавливаем аватарки после рендера
+        for (let c of filtered) {
+            let avatarDiv = document.getElementById(`avatar-${c.id}`);
+            if (avatarDiv) {
+                if (c.id === SAVED_CHAT_ID) {
+                    avatarDiv.style.backgroundImage = `url('${SAVED_AVATAR_URL}')`;
+                    avatarDiv.style.backgroundSize = 'cover';
+                    avatarDiv.innerHTML = '';
+                } else {
+                    avatarDiv.style.backgroundImage = '';
+                    avatarDiv.innerHTML = getInitials(c.name);
+                }
+            }
+        }
+        
         document.querySelectorAll('.chat-card').forEach(el => {
             el.onclick = () => {
                 let id = el.dataset.id;
@@ -385,8 +418,6 @@
         let time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         let line = document.createElement('div');
         line.className = `msg-line ${isOut ? 'out' : 'in'}`;
-        let senderName = msg.senderName;
-        if (currentChatId === SAVED_CHAT_ID && isOut) senderName = 'Вы';
         line.innerHTML = `
             <div class="bubble">
                 ${!isOut && currentChatIsGroup ? `<strong>${escapeHtml(msg.senderName)}</strong><br>` : ''}
@@ -425,30 +456,29 @@
         currentChatId = chatId;
         currentChatIsGroup = isGroup;
         currentChatOtherId = otherUid;
+        currentChatIsSaved = isSaved || chatId === SAVED_CHAT_ID;
         
         let displayName = chatName;
-        let avatarHtml = chatName.substring(0, 2).toUpperCase();
-        if (isSaved || chatId === SAVED_CHAT_ID) {
-            displayName = 'Избранное';
-            avatarHtml = '⭐';
-            document.getElementById('activeAvatar').style.backgroundImage = `url('${SAVED_AVATAR_URL}')`;
-            document.getElementById('activeAvatar').style.backgroundSize = 'cover';
-            document.getElementById('activeAvatar').innerHTML = '';
-        } else {
-            document.getElementById('activeAvatar').style.backgroundImage = '';
-            document.getElementById('activeAvatar').innerHTML = avatarHtml;
-        }
+        if (isSaved || chatId === SAVED_CHAT_ID) displayName = 'Избранное';
+        
         document.getElementById('activeName').innerText = displayName;
         document.getElementById('inspectName').innerText = displayName;
-        if (isSaved || chatId === SAVED_CHAT_ID) {
-            document.getElementById('inspectAvatar').style.backgroundImage = `url('${SAVED_AVATAR_URL}')`;
-            document.getElementById('inspectAvatar').style.backgroundSize = 'cover';
-            document.getElementById('inspectAvatar').innerHTML = '';
-        } else {
-            document.getElementById('inspectAvatar').style.backgroundImage = '';
-            document.getElementById('inspectAvatar').innerHTML = avatarHtml;
-        }
         document.getElementById('inspectNodeId').innerText = chatId === SAVED_CHAT_ID ? 'saved_messages' : chatId;
+        
+        // Устанавливаем аватарку в шапке
+        let activeAvatar = document.getElementById('activeAvatar');
+        let inspectAvatar = document.getElementById('inspectAvatar');
+        if (isSaved || chatId === SAVED_CHAT_ID) {
+            setAvatarImage(activeAvatar, true, '');
+            setAvatarImage(inspectAvatar, true, '');
+        } else if (isGroup) {
+            setAvatarImage(activeAvatar, false, chatName);
+            setAvatarImage(inspectAvatar, false, chatName);
+        } else {
+            setAvatarImage(activeAvatar, false, chatName);
+            setAvatarImage(inspectAvatar, false, chatName);
+        }
+        
         await loadMessages(chatId);
         renderChats();
     }
@@ -500,13 +530,22 @@
         openChat(groupId, groupName, null, true);
     }
 
-    // Редактирование профиля
     async function openProfileModal() {
         if (!currentUserData) return;
         document.getElementById('profileFirstName').value = currentUserData.firstName || '';
         document.getElementById('profileLastName').value = currentUserData.lastName || '';
         document.getElementById('profileUsername').value = currentUserData.username || '';
         if (currentUserData.birthdate) setBirthdateSelects(currentUserData.birthdate, 'profile');
+        
+        let profilePreview = document.getElementById('profileAvatarPreview');
+        let nameForAvatar = currentUserData.firstName || currentUserData.username || 'U';
+        profilePreview.style.backgroundImage = '';
+        profilePreview.innerHTML = getInitials(nameForAvatar);
+        profilePreview.style.fontSize = '32px';
+        profilePreview.style.display = 'flex';
+        profilePreview.style.alignItems = 'center';
+        profilePreview.style.justifyContent = 'center';
+        
         document.getElementById('profileModal').style.display = 'flex';
         document.getElementById('profileError').innerText = '';
         document.getElementById('profileSuccess').innerText = '';
@@ -551,15 +590,24 @@
         document.getElementById('profileSuccess').innerText = '✅ Профиль обновлён';
         setTimeout(() => document.getElementById('profileModal').style.display = 'none', 1500);
         await loadChats();
-        if (currentChatId === SAVED_CHAT_ID) {
-            document.getElementById('activeName').innerText = 'Избранное';
-        } else {
+        
+        // Обновляем аватарку в шапке если открыт не избранное
+        if (currentChatId !== SAVED_CHAT_ID) {
+            let activeAvatar = document.getElementById('activeAvatar');
+            let inspectAvatar = document.getElementById('inspectAvatar');
             let currentChat = chats.find(c => c.id === currentChatId);
-            if (currentChat) document.getElementById('activeName').innerText = currentChat.isGroup ? '👥 ' + currentChat.name : '@' + currentChat.name;
+            if (currentChat) {
+                if (currentChat.isGroup) {
+                    setAvatarImage(activeAvatar, false, currentChat.name);
+                    setAvatarImage(inspectAvatar, false, currentChat.name);
+                } else {
+                    setAvatarImage(activeAvatar, false, currentChat.name);
+                    setAvatarImage(inspectAvatar, false, currentChat.name);
+                }
+            }
         }
     }
 
-    // Регистрация с автовходом
     async function registerWithEmail() {
         let firstName = document.getElementById('regFirstName').value.trim();
         let lastName = document.getElementById('regLastName').value.trim();
@@ -593,7 +641,6 @@
                 createdAt: Date.now()
             });
             await db.ref(`usernames/${username}`).set(user.uid);
-            // Автовход уже произошёл через onAuthStateChanged
             document.getElementById('registerSuccess').innerHTML = '✅ Регистрация успешна! Вход выполнен автоматически.';
         } catch (e) { document.getElementById('registerError').innerText = e.message; }
     }
@@ -637,7 +684,6 @@
         } catch (e) { document.getElementById('registerError').innerText = e.message; }
     }
 
-    // Auth state
     auth.onAuthStateChanged(async (user) => {
         if (user) {
             currentUser = user;
@@ -653,7 +699,6 @@
             document.getElementById('screenMessenger').classList.add('active');
             await loadAllUsers();
             await loadChats();
-            // Открываем Избранное по умолчанию
             if (!currentChatId || currentChatId === 'saved_messages') {
                 openChat(SAVED_CHAT_ID, 'Избранное', null, false, true);
             }
@@ -662,7 +707,6 @@
             document.getElementById('screenAuth').classList.add('active');
             document.getElementById('screenMessenger').classList.remove('active');
             currentChatId = SAVED_CHAT_ID;
-            // Очистка полей регистрации
             document.getElementById('regFirstName').value = '';
             document.getElementById('regLastName').value = '';
             document.getElementById('regUsername').value = '';
@@ -676,7 +720,6 @@
         }
     });
 
-    // Обработчики
     document.getElementById('googleLoginBtn').onclick = async () => {
         try {
             let result = await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
