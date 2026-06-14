@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Trailless · Продвинутый чат</title>
+    <title>Trailless · Чат с подарками</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230d1117'/%3E%3Crect x='20' y='25' width='60' height='45' rx='8' fill='%232f81f7'/%3E%3Cpath d='M35 55 L25 65 L45 65 L35 55Z' fill='%232f81f7'/%3E%3Ccircle cx='40' cy='45' r='3' fill='white'/%3E%3Ccircle cx='60' cy='45' r='3' fill='white'/%3E%3C/svg%3E">
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -21,6 +21,12 @@
             left: 0;
             right: 0;
             bottom: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        input, textarea, .message-input, .mobile-input {
+            user-select: text;
+            -webkit-user-select: text;
         }
 
         .desktop-layout { display: flex; height: 100vh; overflow: hidden; }
@@ -34,11 +40,12 @@
         .icon-gift { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M20 6h-2.18c.11-.31.18-.65.18-1a2.996 2.996 0 0 0-5.5-1.65l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76l1-1.36 1 1.36L15.38 12 17 10.83 14.92 8H20v6z'/%3E%3C/svg%3E"); }
         .icon-coin { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23FFD966' viewBox='0 0 24 24'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z'/%3E%3Ccircle cx='12' cy='12' r='5' fill='%23FFD966'/%3E%3C/svg%3E"); }
         .icon-arrow-back { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z'/%3E%3C/svg%3E"); }
-        .icon-check { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E"); }
+        .icon-check { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='#8b949e' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E"); }
         .icon-double-check { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='#2f81f7' viewBox='0 0 24 24'%3E%3Cpath d='M18 7l-1.41-1.41-6.34 6.34 1.41 1.41L18 7zm4.24-1.41L11.66 16.17 7.48 12l-1.41 1.41L11.66 19l12-12-1.42-1.41zM.41 13.41L6 19l1.41-1.41L1.83 12 .41 13.41z'/%3E%3C/svg%3E"); }
         .icon-edit { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z'/%3E%3C/svg%3E"); }
         .icon-delete { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='#da3633' viewBox='0 0 24 24'%3E%3Cpath d='M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z'/%3E%3C/svg%3E"); }
         .icon-reply { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z'/%3E%3C/svg%3E"); }
+        .icon-copy { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z'/%3E%3C/svg%3E"); }
 
         .menu-bar { width: 72px; background: #161b22; border-right: 1px solid #30363d; display: flex; flex-direction: column; align-items: center; padding: 1rem 0; gap: 0.5rem; flex-shrink: 0; }
         .menu-icon { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 10px; cursor: pointer; transition: all 0.2s; }
@@ -76,6 +83,9 @@
         .message-gift { background: linear-gradient(135deg, #2a2050, #1a1a3a); border-left: 3px solid #FFD966; }
         .message-sender { font-size: 0.7rem; font-weight: 600; margin-bottom: 0.2rem; display: flex; align-items: center; gap: 0.25rem; flex-wrap: wrap; }
         .message-text { word-wrap: break-word; }
+        .message-text a { color: #58a6ff; text-decoration: none; }
+        .message-text a:hover { text-decoration: underline; }
+        .message.outgoing .message-text a { color: #ffffff; text-decoration: underline; }
         .message-footer { display: flex; justify-content: flex-end; align-items: center; gap: 4px; margin-top: 0.2rem; font-size: 0.6rem; opacity: 0.7; }
         .edited-mark { font-size: 0.55rem; opacity: 0.6; }
         .reply-preview { background: rgba(255,255,255,0.1); border-left: 2px solid #2f81f7; padding: 4px 6px; margin-bottom: 4px; border-radius: 4px; font-size: 0.7rem; }
@@ -149,10 +159,13 @@
             .context-menu { position: fixed; background: #1f2429; border-radius: 12px; padding: 8px 0; min-width: 180px; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.5); border: 1px solid #30363d; }
         }
         @media (min-width: 769px) { .mobile-layout { display: none; } }
+        
+        .gift-icon-small { width: 28px; height: 28px; background-size: contain; background-repeat: no-repeat; }
+        .gift-sweet-icon { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23FF69B4' viewBox='0 0 24 24'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z'/%3E%3Ccircle cx='12' cy='12' r='4' fill='%23FF69B4'/%3E%3C/svg%3E"); }
+        .gift-surprise-icon { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23FFA500' viewBox='0 0 24 24'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z'/%3E%3Cpolygon points='12,7 14,11 18,11 15,14 16,18 12,16 8,18 9,14 6,11 10,11' fill='%23FFA500'/%3E%3C/svg%3E"); }
     </style>
 </head>
 <body>
-    <!-- ДЕСКТОП -->
     <div class="desktop-layout" id="desktopLayout">
         <div class="menu-bar">
             <div class="menu-icon" id="newChatBtnDesktop"><span class="icon icon-plus"></span></div>
@@ -185,11 +198,10 @@
                     <div class="input-row"><input type="text" id="messageInputDesktop" class="message-input" placeholder="Введите сообщение..."><button id="sendBtnDesktop" class="send-btn"><span class="icon icon-send"></span> Отправить</button></div>
                 </div>
             </div>
-            <div class="home-panel" id="homePanelDesktop"><h2>Trailless</h2><p style="color:#8b949e;">Продвинутый чат с подарками</p><button id="returnToChatBtnDesktop" class="return-btn"><span class="icon icon-arrow-back"></span> Вернуться в чат</button></div>
+            <div class="home-panel" id="homePanelDesktop"><h2>Trailless</h2><p style="color:#8b949e;">Чат с подарками и ссылками</p><button id="returnToChatBtnDesktop" class="return-btn"><span class="icon icon-arrow-back"></span> Вернуться в чат</button></div>
         </div>
     </div>
 
-    <!-- МОБИЛЬНЫЙ -->
     <div class="mobile-layout" id="mobileLayout">
         <div class="mobile-chats-screen" id="mobileChatsScreen">
             <div class="mobile-header">
@@ -225,7 +237,6 @@
         </div>
     </div>
 
-    <!-- Модалки -->
     <div id="settingsModal" class="modal hidden"><div class="modal-content"><h3>Настройки</h3><div class="settings-group"><label>Размер шрифта</label><select id="fontSizeSelect"><option value="small">Маленький</option><option value="medium" selected>Средний</option><option value="large">Большой</option></select></div><div class="settings-group"><label>Сменить username</label><input type="text" id="newUsername" placeholder="5-15 символов"><button id="changeUsernameBtn">Сменить</button></div><div class="settings-group"><label>Сменить пароль</label><input type="password" id="currentPassword" placeholder="Текущий"><input type="password" id="newPassword" placeholder="Новый (мин 6)"><input type="password" id="confirmPassword" placeholder="Повторите"><button id="changePasswordBtn">Сменить</button></div><button id="closeSettingsBtn">Закрыть</button></div></div>
     <div id="newChatModal" class="modal hidden"><div class="modal-content"><h3>Новый чат</h3><input type="text" id="chatUsernameInput" placeholder="Username собеседника"><button id="createChatBtn">Начать</button><button id="cancelChatBtn">Отмена</button></div></div>
     <div id="giftShopModal" class="modal hidden"><div class="modal-content"><h3>🎁 Магазин подарков</h3><div id="giftShopList"></div><button id="closeGiftShopBtn">Закрыть</button></div></div>
@@ -238,7 +249,7 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth(), db = firebase.database();
         let currentUser = null, currentUserData = null, currentChatId = null, currentChatOtherId = null, chats = [], messagesUnsubscribe = null, allUsersCache = null;
-        let replyToMsg = null; // { id, text, senderName }
+        let replyToMsg = null;
         let typingTimeout = null;
         let presenceRef = null;
 
@@ -246,19 +257,34 @@
         function setFontSize(s) { let f = s==='small'?'12px':s==='medium'?'14px':'16px'; document.body.style.fontSize = f; localStorage.setItem('trailless_font_size', s); }
         function loadFontSize() { let s = localStorage.getItem('trailless_font_size'); if(s){ document.getElementById('fontSizeSelect').value = s; setFontSize(s); } }
         
+        function linkify(text) {
+            if(!text) return '';
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            return text.replace(urlRegex, function(url) {
+                return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+            });
+        }
+        
         async function updateCoinsUI() { if(!currentUserData) return; document.getElementById('coinAmountDesktop').innerText = currentUserData.coins || 0; document.getElementById('mobileCoinAmount').innerText = currentUserData.coins || 0; }
         async function addCoins(amount) { if(!currentUser) return; let newCoins = (currentUserData.coins || 0) + amount; await db.ref(`users/${currentUser.uid}`).update({ coins: newCoins }); currentUserData.coins = newCoins; updateCoinsUI(); }
 
-        async function loadAllUsers() { let snap = await db.ref('users').once('value'); let users = snap.val()||{}; allUsersCache = Object.entries(users).map(([uid,d])=>({uid, username:(d.username||'').toLowerCase(), email:d.email, banned:d.banned, role:d.role, online:d?.online||false})); }
+        async function loadAllUsers() { 
+            let snap = await db.ref('users').once('value'); 
+            let statusSnap = await db.ref('status').once('value');
+            let statuses = statusSnap.val()||{};
+            let users = snap.val()||{}; 
+            allUsersCache = Object.entries(users).map(([uid,d])=>({uid, username:(d.username||'').toLowerCase(), email:d.email, banned:d.banned, role:d.role, online: statuses[uid]?.online || false})); 
+        }
         async function findUserByUsername(u) { if(!allUsersCache) await loadAllUsers(); return allUsersCache.find(x=>x.username === u.toLowerCase()); }
         
         function updateOnlineStatus() {
-            if(!currentChatOtherId) return;
-            let other = allUsersCache?.find(x=>x.uid === currentChatOtherId);
+            if(!currentChatOtherId || !allUsersCache) return;
+            let other = allUsersCache.find(x=>x.uid === currentChatOtherId);
             let isOnline = other?.online || false;
-            let statusHtml = `<span class="online-status ${isOnline ? 'online' : 'offline'}"></span>`;
-            document.getElementById('onlineStatusDesktop').outerHTML = `<span id="onlineStatusDesktop" class="online-status ${isOnline ? 'online' : 'offline'}"></span>`;
-            document.getElementById('onlineStatusMobile').outerHTML = `<span id="onlineStatusMobile" class="online-status ${isOnline ? 'online' : 'offline'}"></span>`;
+            let desktopSpan = document.getElementById('onlineStatusDesktop');
+            let mobileSpan = document.getElementById('onlineStatusMobile');
+            if(desktopSpan) desktopSpan.className = `online-status ${isOnline ? 'online' : 'offline'}`;
+            if(mobileSpan) mobileSpan.className = `online-status ${isOnline ? 'online' : 'offline'}`;
         }
         
         function setupPresence() {
@@ -268,14 +294,22 @@
             userStatusRef.set({ online: true, lastSeen: Date.now() });
             presenceRef = userStatusRef;
             setInterval(() => { if(currentUser) userStatusRef.update({ online: true, lastSeen: Date.now() }); }, 30000);
-            db.ref('/status').on('value', () => { if(allUsersCache) loadAllUsers().then(()=>updateOnlineStatus()); });
+            db.ref('/status').on('value', () => { if(allUsersCache) loadAllUsers().then(()=>{ updateOnlineStatus(); renderChatsDesktop(); renderChatsMobile(); }); });
         }
         
         function setupTyping() {
             if(!currentChatId || !currentChatOtherId) return;
             let typingRef = db.ref(`/typing/${currentChatId}`);
-            document.getElementById('messageInputDesktop')?.addEventListener('input', () => { typingRef.set({ [currentUser.uid]: true }); clearTimeout(typingTimeout); typingTimeout = setTimeout(() => typingRef.set({ [currentUser.uid]: false }), 1500); });
-            document.getElementById('mobileMessageInput')?.addEventListener('input', () => { typingRef.set({ [currentUser.uid]: true }); clearTimeout(typingTimeout); typingTimeout = setTimeout(() => typingRef.set({ [currentUser.uid]: false }), 1500); });
+            let desktopInput = document.getElementById('messageInputDesktop');
+            let mobileInput = document.getElementById('mobileMessageInput');
+            if(desktopInput) {
+                desktopInput.removeEventListener('input', () => {});
+                desktopInput.addEventListener('input', () => { typingRef.set({ [currentUser.uid]: true }); clearTimeout(typingTimeout); typingTimeout = setTimeout(() => typingRef.set({ [currentUser.uid]: false }), 1500); });
+            }
+            if(mobileInput) {
+                mobileInput.removeEventListener('input', () => {});
+                mobileInput.addEventListener('input', () => { typingRef.set({ [currentUser.uid]: true }); clearTimeout(typingTimeout); typingTimeout = setTimeout(() => typingRef.set({ [currentUser.uid]: false }), 1500); });
+            }
             typingRef.on('value', (snap) => { let data = snap.val()||{}; let isTyping = data[currentChatOtherId] === true; let typingHtml = isTyping ? '✏️ печатает...' : ''; document.getElementById('typingStatusDesktop').innerText = typingHtml; document.getElementById('typingStatusMobile').innerText = typingHtml; });
         }
 
@@ -283,6 +317,7 @@
         function scrollToBottom(isMobile) { setTimeout(() => { let container = isMobile ? document.getElementById('mobileMessagesList') : document.getElementById('messagesListDesktop'); if(container) container.scrollTop = container.scrollHeight; }, 50); }
 
         async function loadChats() {
+            if(!currentUser) return;
             let snap = await db.ref(`users/${currentUser.uid}/chats`).once('value'), data = snap.val()||{}, newChats = [];
             for(let [cid,info] of Object.entries(data)){ 
                 let other = await db.ref(`users/${info.with}`).once('value'), otherData = other.val(); 
@@ -308,10 +343,7 @@
 
         function detachMessages() { if(messagesUnsubscribe && currentChatId) db.ref(`messages/${currentChatId}`).off('child_added', messagesUnsubscribe); }
         
-        function markAsRead(msgId) {
-            if(!currentChatId || !msgId) return;
-            db.ref(`messages/${currentChatId}/${msgId}/read`).set(true);
-        }
+        function markAsRead(msgId) { if(!currentChatId || !msgId) return; db.ref(`messages/${currentChatId}/${msgId}/read`).set(true); }
         
         function addMessageToUI(msg, msgId, isMobile=false) { 
             let container = isMobile?document.getElementById('mobileMessagesList'):document.getElementById('messagesListDesktop'); 
@@ -334,7 +366,8 @@
                 let read = msg.read === true;
                 statusHtml = read ? '<span class="icon icon-double-check" style="width:12px;height:12px;"></span>' : '<span class="icon icon-check" style="width:12px;height:12px;"></span>';
             }
-            div.innerHTML = `<div class="message-sender">${escapeHtml(msg.senderName)} ${badge} ${isOut?'(вы)':''}</div>${replyHtml}<div class="message-text">${giftIcon}${escapeHtml(msg.text)} ${editedHtml}</div><div class="message-footer"><span>${time}</span>${statusHtml}</div>`; 
+            let linkedText = linkify(escapeHtml(msg.text));
+            div.innerHTML = `<div class="message-sender">${escapeHtml(msg.senderName)} ${badge} ${isOut?'(вы)':''}</div>${replyHtml}<div class="message-text">${giftIcon}${linkedText} ${editedHtml}</div><div class="message-footer"><span>${time}</span>${statusHtml}</div>`; 
             container.appendChild(div); 
             scrollToBottom(isMobile);
             if(!isOut && msgId) setTimeout(() => markAsRead(msgId), 500);
@@ -353,6 +386,14 @@
             }
         }
         
+        async function copyToClipboard(text) {
+            try {
+                await navigator.clipboard.writeText(text);
+            } catch(e) {
+                console.error('Copy failed', e);
+            }
+        }
+        
         function showContextMenu(x, y, msgId, msgText, isOwn) {
             let existing = document.querySelector('.context-menu');
             if(existing) existing.remove();
@@ -360,14 +401,18 @@
             menu.className = 'context-menu';
             menu.style.left = x + 'px';
             menu.style.top = y + 'px';
+            
+            let replyItem = document.createElement('div'); replyItem.className = 'context-menu-item'; replyItem.innerHTML = '<span class="icon icon-reply" style="width:16px;height:16px;"></span> Ответить'; replyItem.onclick = () => { setReply(msgId, msgText); menu.remove(); };
+            menu.appendChild(replyItem);
+            
+            let copyItem = document.createElement('div'); copyItem.className = 'context-menu-item'; copyItem.innerHTML = '<span class="icon icon-copy" style="width:16px;height:16px;"></span> Копировать'; copyItem.onclick = () => { copyToClipboard(msgText); menu.remove(); };
+            menu.appendChild(copyItem);
+            
             if(isOwn) {
-                let replyItem = document.createElement('div'); replyItem.className = 'context-menu-item'; replyItem.innerHTML = '<span class="icon icon-reply" style="width:16px;height:16px;"></span> Ответить'; replyItem.onclick = () => { setReply(msgId, msgText); menu.remove(); };
                 let editItem = document.createElement('div'); editItem.className = 'context-menu-item'; editItem.innerHTML = '<span class="icon icon-edit" style="width:16px;height:16px;"></span> Редактировать'; editItem.onclick = () => { editMessage(msgId, msgText); menu.remove(); };
+                menu.appendChild(editItem);
                 let deleteItem = document.createElement('div'); deleteItem.className = 'context-menu-item danger'; deleteItem.innerHTML = '<span class="icon icon-delete" style="width:16px;height:16px;"></span> Удалить'; deleteItem.onclick = () => { deleteMessage(msgId); menu.remove(); };
-                menu.appendChild(replyItem); menu.appendChild(editItem); menu.appendChild(deleteItem);
-            } else {
-                let replyItem = document.createElement('div'); replyItem.className = 'context-menu-item'; replyItem.innerHTML = '<span class="icon icon-reply" style="width:16px;height:16px;"></span> Ответить'; replyItem.onclick = () => { setReply(msgId, msgText); menu.remove(); };
-                menu.appendChild(replyItem);
+                menu.appendChild(deleteItem);
             }
             document.body.appendChild(menu);
             setTimeout(() => { document.addEventListener('click', function removeMenu() { menu.remove(); document.removeEventListener('click', removeMenu); }); }, 10);
@@ -380,14 +425,18 @@
             menu.className = 'context-menu';
             menu.style.left = x + 'px';
             menu.style.top = (y - 50) + 'px';
+            
+            let replyItem = document.createElement('div'); replyItem.className = 'context-menu-item'; replyItem.innerHTML = '<span class="icon icon-reply" style="width:16px;height:16px;"></span> Ответить'; replyItem.onclick = () => { setReply(msgId, msgText); menu.remove(); };
+            menu.appendChild(replyItem);
+            
+            let copyItem = document.createElement('div'); copyItem.className = 'context-menu-item'; copyItem.innerHTML = '<span class="icon icon-copy" style="width:16px;height:16px;"></span> Копировать'; copyItem.onclick = () => { copyToClipboard(msgText); menu.remove(); };
+            menu.appendChild(copyItem);
+            
             if(isOwn) {
-                let replyItem = document.createElement('div'); replyItem.className = 'context-menu-item'; replyItem.innerHTML = '<span class="icon icon-reply" style="width:16px;height:16px;"></span> Ответить'; replyItem.onclick = () => { setReply(msgId, msgText); menu.remove(); };
                 let editItem = document.createElement('div'); editItem.className = 'context-menu-item'; editItem.innerHTML = '<span class="icon icon-edit" style="width:16px;height:16px;"></span> Редактировать'; editItem.onclick = () => { editMessage(msgId, msgText); menu.remove(); };
+                menu.appendChild(editItem);
                 let deleteItem = document.createElement('div'); deleteItem.className = 'context-menu-item danger'; deleteItem.innerHTML = '<span class="icon icon-delete" style="width:16px;height:16px;"></span> Удалить'; deleteItem.onclick = () => { deleteMessage(msgId); menu.remove(); };
-                menu.appendChild(replyItem); menu.appendChild(editItem); menu.appendChild(deleteItem);
-            } else {
-                let replyItem = document.createElement('div'); replyItem.className = 'context-menu-item'; replyItem.innerHTML = '<span class="icon icon-reply" style="width:16px;height:16px;"></span> Ответить'; replyItem.onclick = () => { setReply(msgId, msgText); menu.remove(); };
-                menu.appendChild(replyItem);
+                menu.appendChild(deleteItem);
             }
             document.body.appendChild(menu);
             setTimeout(() => { document.addEventListener('click', function removeMenu() { menu.remove(); document.removeEventListener('click', removeMenu); }); }, 10);
@@ -395,14 +444,18 @@
         
         function setReply(msgId, msgText) {
             replyToMsg = { id: msgId, text: msgText };
-            document.getElementById('replyBarDesktop').classList.remove('hidden');
-            document.getElementById('replyTextDesktop').innerText = `Ответ: ${escapeHtml(msgText.slice(0,50))}`;
-            document.getElementById('replyBarMobile').classList.remove('hidden');
-            document.getElementById('replyTextMobile').innerText = `Ответ: ${escapeHtml(msgText.slice(0,50))}`;
+            let replyBarDesktop = document.getElementById('replyBarDesktop');
+            let replyBarMobile = document.getElementById('replyBarMobile');
+            let replyTextDesktop = document.getElementById('replyTextDesktop');
+            let replyTextMobile = document.getElementById('replyTextMobile');
+            if(replyBarDesktop) replyBarDesktop.classList.remove('hidden');
+            if(replyTextDesktop) replyTextDesktop.innerText = `Ответ: ${escapeHtml(msgText.slice(0,50))}`;
+            if(replyBarMobile) replyBarMobile.classList.remove('hidden');
+            if(replyTextMobile) replyTextMobile.innerText = `Ответ: ${escapeHtml(msgText.slice(0,50))}`;
         }
         
-        function cancelReplyDesktop() { replyToMsg = null; document.getElementById('replyBarDesktop').classList.add('hidden'); }
-        function cancelReplyMobile() { replyToMsg = null; document.getElementById('replyBarMobile').classList.add('hidden'); }
+        function cancelReplyDesktop() { replyToMsg = null; let bar = document.getElementById('replyBarDesktop'); if(bar) bar.classList.add('hidden'); }
+        function cancelReplyMobile() { replyToMsg = null; let bar = document.getElementById('replyBarMobile'); if(bar) bar.classList.add('hidden'); }
         
         async function editMessage(msgId, oldText) {
             let newText = prompt('Редактировать сообщение:', oldText);
