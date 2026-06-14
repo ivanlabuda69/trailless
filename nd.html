@@ -31,22 +31,26 @@
         .spa-screen { display: none; width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; }
         .spa-screen.active { display: flex; }
         .auth-container { width: 100vw; height: 100vh; background: var(--bg-main); display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .auth-card { background: var(--bg-sidebar); border: 1px solid var(--border-glass-bright); border-radius: 16px; width: 420px; padding: 32px; box-shadow: 0 30px 70px rgba(0,0,0,0.8); display: none; flex-direction: column; }
+        .auth-card { background: var(--bg-sidebar); border: 1px solid var(--border-glass-bright); border-radius: 16px; width: 460px; padding: 32px; box-shadow: 0 30px 70px rgba(0,0,0,0.8); display: none; flex-direction: column; max-height: 90vh; overflow-y: auto; }
         .auth-card.active { display: flex; }
         .auth-title { font-size: 24px; font-weight: 600; margin-bottom: 8px; text-align: center; }
         .auth-subtitle { font-size: 13px; color: var(--text-gray); text-align: center; margin-bottom: 24px; }
         .google-btn { width: 100%; background: #ffffff; color: #000000; border: none; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .google-btn:hover { background: #e4e4e7; }
         .auth-divider { display: flex; align-items: center; text-align: center; color: var(--text-gray-dark); font-size: 11px; margin-bottom: 20px; }
         .auth-divider::before, .auth-divider::after { content: ''; flex: 1; border-bottom: 1px solid var(--border-glass); }
         .auth-divider:not(:empty)::before { margin-right: .5em; }
         .auth-divider:not(:empty)::after { margin-left: .5em; }
         .input-group { margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px; }
         .input-group label { font-size: 12px; font-weight: 500; color: var(--text-gray-light); }
+        .input-group label .required { color: #da3633; margin-left: 4px; }
         .auth-input { width: 100%; background: var(--bg-main); border: 1px solid var(--border-glass); border-radius: 8px; padding: 11px 14px; color: #ffffff; font-size: 14px; outline: none; }
         .auth-input:focus { border-color: var(--border-glass-bright); }
+        .auth-input::placeholder { color: var(--text-gray-dark); }
         .auth-toggle-link { font-size: 13px; color: var(--text-gray); text-align: center; margin-top: 20px; cursor: pointer; }
         .auth-toggle-link span { color: #ffffff; text-decoration: underline; }
         .auth-error { color: #da3633; font-size: 12px; text-align: center; margin-top: 12px; }
+        .auth-success { color: #238636; font-size: 12px; text-align: center; margin-top: 12px; }
         .desktop-layout { display: grid; grid-template-columns: var(--sidebar-width) 1fr; height: 100vh; width: 100vw; position: relative; }
         .desktop-layout.triple-panel { grid-template-columns: var(--sidebar-width) 1fr var(--right-panel-width); }
         .sidebar { background: var(--bg-sidebar); border-right: 1px solid var(--border-glass); display: flex; flex-direction: column; height: 100%; overflow: hidden; }
@@ -98,12 +102,16 @@
         .drawer-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; color: var(--text-gray-light); border: none; background: transparent; text-align: left; width: 100%; font-size: 13px; cursor: pointer; border-radius: 6px; }
         .drawer-item:hover { background: var(--bg-glass-active); color: #fff; }
         .coin-display { display: flex; align-items: center; gap: 4px; background: #1a1f26; padding: 2px 8px; border-radius: 20px; font-size: 0.75rem; }
+        select.auth-input { appearance: none; cursor: pointer; }
+        .date-row { display: flex; gap: 8px; }
+        .date-row select { flex: 1; }
     </style>
 </head>
 <body>
 
 <div class="spa-screen active" id="screenAuth">
     <div class="auth-container">
+        <!-- ВХОД -->
         <div class="auth-card active" id="cardLogin">
             <div class="auth-title">Вход в аккаунт</div>
             <div class="auth-subtitle">Добро пожаловать обратно</div>
@@ -115,16 +123,29 @@
             <div id="loginError" class="auth-error"></div>
             <div class="auth-toggle-link" id="showRegisterBtn"><span>Нет аккаунта? Зарегистрироваться</span></div>
         </div>
+
+        <!-- РЕГИСТРАЦИЯ (расширенная) -->
         <div class="auth-card" id="cardRegister">
             <div class="auth-title">Регистрация</div>
             <div class="auth-subtitle">Создайте новый аккаунт</div>
             <button class="google-btn" id="googleRegisterBtn"><i class="fa-brands fa-google"></i> Регистрация через Google</button>
             <div class="auth-divider">или</div>
-            <div class="input-group"><label>Email</label><input type="email" class="auth-input" id="regEmail"></div>
-            <div class="input-group"><label>Username (5-15 букв/цифр)</label><input type="text" class="auth-input" id="regUsername"></div>
-            <div class="input-group"><label>Пароль (мин 6)</label><input type="password" class="auth-input" id="regPassword"></div>
+            
+            <div class="input-group"><label>Полное имя <span class="required">*</span></label><input type="text" class="auth-input" id="regFullName" placeholder="Иван Иванов"></div>
+            <div class="input-group"><label>Username <span class="required">*</span></label><input type="text" class="auth-input" id="regUsername" placeholder="5-15 букв/цифр"></div>
+            <div class="input-group"><label>Дата рождения <span class="required">*</span></label>
+                <div class="date-row">
+                    <select class="auth-input" id="regDay"><option value="">День</option></select>
+                    <select class="auth-input" id="regMonth"><option value="">Месяц</option></select>
+                    <select class="auth-input" id="regYear"><option value="">Год</option></select>
+                </div>
+            </div>
+            <div class="input-group"><label>Email <span class="required">*</span></label><input type="email" class="auth-input" id="regEmail" placeholder="example@mail.com"></div>
+            <div class="input-group"><label>Пароль <span class="required">*</span></label><input type="password" class="auth-input" id="regPassword" placeholder="Минимум 6 символов"></div>
+            
             <button class="google-btn" id="emailRegisterBtn" style="background:#fff; color:#000;">Зарегистрироваться</button>
             <div id="registerError" class="auth-error"></div>
+            <div id="registerSuccess" class="auth-success"></div>
             <div class="auth-toggle-link" id="showLoginBtn"><span>Уже есть аккаунт? Войти</span></div>
         </div>
     </div>
@@ -137,7 +158,7 @@
                 <button class="btn-icon" id="drawerTrigger"><i class="fa-solid fa-bars"></i></button>
                 <div class="search-bar"><i class="fa-solid fa-magnifying-glass"></i><input type="text" id="coreSearch" placeholder="Поиск диалогов..."></div>
             </div>
-            <div class="folders-container" id="foldersContainer">
+            <div class="folders-container">
                 <button class="folder-tab active" data-filter="all">Все</button>
                 <button class="folder-tab" data-filter="user">Люди</button>
                 <button class="folder-tab" data-filter="group">Группы</button>
@@ -203,13 +224,46 @@
     let allUsersCache = {};
     let currentMessageListener = null;
 
+    // Заполнение дней/месяцев/лет
+    function initDateSelects() {
+        let daySelect = document.getElementById('regDay');
+        if (daySelect && daySelect.options.length <= 1) {
+            for (let i = 1; i <= 31; i++) daySelect.innerHTML += `<option value="${i}">${i}</option>`;
+        }
+        let monthSelect = document.getElementById('regMonth');
+        if (monthSelect && monthSelect.options.length <= 1) {
+            let months = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
+            for (let i = 0; i < 12; i++) monthSelect.innerHTML += `<option value="${i+1}">${months[i]}</option>`;
+        }
+        let yearSelect = document.getElementById('regYear');
+        if (yearSelect && yearSelect.options.length <= 1) {
+            let currentYear = new Date().getFullYear();
+            for (let i = currentYear; i >= currentYear - 100; i--) yearSelect.innerHTML += `<option value="${i}">${i}</option>`;
+        }
+    }
+    initDateSelects();
+
+    function getBirthdate() {
+        let day = document.getElementById('regDay')?.value;
+        let month = document.getElementById('regMonth')?.value;
+        let year = document.getElementById('regYear')?.value;
+        if (day && month && year) return `${year}-${month.padStart(2,'0')}-${day.padStart(2,'0')}`;
+        return null;
+    }
+
+    function validateFullName(name) { return name && name.trim().length >= 2; }
+    function validateUsername(u) { return /^[a-zA-Z0-9]{5,15}$/.test(u); }
+    function validateEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+    function validatePassword(p) { return p && p.length >= 6; }
+    function validateBirthdate() { return getBirthdate() !== null; }
+
     function escapeHtml(s) { return s?.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>' : '&gt;' }[m])) || ''; }
 
     async function loadAllUsers() {
         let snap = await db.ref('users').once('value');
         let users = snap.val() || {};
         for (let [uid, d] of Object.entries(users)) {
-            allUsersCache[uid] = { uid, username: (d.username || '').toLowerCase(), email: d.email };
+            allUsersCache[uid] = { uid, username: (d.username || '').toLowerCase(), email: d.email, fullName: d.fullName, birthdate: d.birthdate };
         }
     }
 
@@ -308,12 +362,8 @@
         let msgs = snap.val() || {};
         let sorted = Object.entries(msgs).sort((a, b) => a[1].timestamp - b[1].timestamp);
         if (wrapper) wrapper.innerHTML = '';
-        for (let [id, msg] of sorted) {
-            renderMessage(msg, id);
-        }
-        if (sorted.length === 0 && wrapper) {
-            wrapper.innerHTML = '<div style="text-align:center;color:var(--text-gray);padding:2rem;">Нет сообщений. Напишите что-нибудь!</div>';
-        }
+        for (let [id, msg] of sorted) renderMessage(msg, id);
+        if (sorted.length === 0 && wrapper) wrapper.innerHTML = '<div style="text-align:center;color:var(--text-gray);padding:2rem;">Нет сообщений. Напишите что-нибудь!</div>';
         let handler = (snap) => { renderMessage(snap.val(), snap.key); };
         db.ref(`messages/${chatId}`).on('child_added', handler);
         currentMessageListener = { chatId, handler };
@@ -341,12 +391,7 @@
         let input = document.getElementById('mainInput');
         let text = input.value.trim();
         if (!text || !currentChatId || !currentUser) return;
-        let msg = {
-            text: text,
-            senderId: currentUser.uid,
-            senderName: currentUserData?.username || 'user',
-            timestamp: Date.now()
-        };
+        let msg = { text, senderId: currentUser.uid, senderName: currentUserData?.username || 'user', timestamp: Date.now() };
         await db.ref(`messages/${currentChatId}`).push(msg);
         if (!currentChatIsGroup) {
             let newCoins = (currentUserData.coins || 0) + 1;
@@ -385,18 +430,8 @@
         let groupName = document.getElementById('groupNameInput').value.trim();
         if (!groupName) { alert('Введите название группы'); return; }
         let groupId = Date.now().toString();
-        await db.ref(`groups/${groupId}`).set({
-            name: groupName,
-            owner: currentUser.uid,
-            createdAt: Date.now(),
-            members: { [currentUser.uid]: true }
-        });
-        await db.ref(`users/${currentUser.uid}/chats/${groupId}`).set({
-            isGroup: true,
-            groupId: groupId,
-            name: groupName,
-            createdAt: Date.now()
-        });
+        await db.ref(`groups/${groupId}`).set({ name: groupName, owner: currentUser.uid, createdAt: Date.now(), members: { [currentUser.uid]: true } });
+        await db.ref(`users/${currentUser.uid}/chats/${groupId}`).set({ isGroup: true, groupId: groupId, name: groupName, createdAt: Date.now() });
         document.getElementById('createGroupModal').style.display = 'none';
         document.getElementById('groupNameInput').value = '';
         await loadAllUsers();
@@ -404,7 +439,83 @@
         openChat(groupId, groupName, null, true);
     }
 
-    // Auth
+    // === РАСШИРЕННАЯ РЕГИСТРАЦИЯ ===
+    async function registerWithEmail() {
+        let fullName = document.getElementById('regFullName').value.trim();
+        let username = document.getElementById('regUsername').value.trim().toLowerCase();
+        let email = document.getElementById('regEmail').value.trim();
+        let password = document.getElementById('regPassword').value;
+        let birthdate = getBirthdate();
+
+        document.getElementById('registerError').innerText = '';
+        document.getElementById('registerSuccess').innerText = '';
+
+        if (!validateFullName(fullName)) { document.getElementById('registerError').innerText = 'Введите полное имя'; return; }
+        if (!validateUsername(username)) { document.getElementById('registerError').innerText = 'Username: 5-15 букв/цифр'; return; }
+        if (!validateEmail(email)) { document.getElementById('registerError').innerText = 'Введите корректный email'; return; }
+        if (!validatePassword(password)) { document.getElementById('registerError').innerText = 'Пароль минимум 6 символов'; return; }
+        if (!validateBirthdate()) { document.getElementById('registerError').innerText = 'Укажите дату рождения'; return; }
+
+        let check = await db.ref(`usernames/${username}`).once('value');
+        if (check.exists()) { document.getElementById('registerError').innerText = 'Username уже занят'; return; }
+
+        try {
+            let cred = await auth.createUserWithEmailAndPassword(email, password);
+            await cred.user.sendEmailVerification();
+            await db.ref(`users/${cred.user.uid}`).set({
+                fullName: fullName,
+                username: username,
+                email: email,
+                birthdate: birthdate,
+                coins: 100,
+                createdAt: Date.now()
+            });
+            await db.ref(`usernames/${username}`).set(cred.user.uid);
+            await auth.signOut();
+            document.getElementById('registerSuccess').innerHTML = '✅ Регистрация успешна!<br>На почту отправлена ссылка для подтверждения.<br>Подтвердите email и войдите.';
+            setTimeout(() => document.getElementById('showLoginBtn').click(), 4000);
+        } catch (e) { document.getElementById('registerError').innerText = e.message; }
+    }
+
+    async function registerWithGoogle() {
+        let fullName = document.getElementById('regFullName').value.trim();
+        let username = document.getElementById('regUsername').value.trim().toLowerCase();
+        let birthdate = getBirthdate();
+
+        document.getElementById('registerError').innerText = '';
+        document.getElementById('registerSuccess').innerText = '';
+
+        if (!validateFullName(fullName)) { document.getElementById('registerError').innerText = 'Введите полное имя'; return; }
+        if (!validateUsername(username)) { document.getElementById('registerError').innerText = 'Username: 5-15 букв/цифр'; return; }
+        if (!validateBirthdate()) { document.getElementById('registerError').innerText = 'Укажите дату рождения'; return; }
+
+        let check = await db.ref(`usernames/${username}`).once('value');
+        if (check.exists()) { document.getElementById('registerError').innerText = 'Username уже занят'; return; }
+
+        try {
+            let result = await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+            let user = result.user;
+            let snap = await db.ref(`users/${user.uid}`).once('value');
+            if (!snap.exists()) {
+                await db.ref(`users/${user.uid}`).set({
+                    fullName: fullName,
+                    username: username,
+                    email: user.email,
+                    birthdate: birthdate,
+                    coins: 100,
+                    createdAt: Date.now()
+                });
+                await db.ref(`usernames/${username}`).set(user.uid);
+                document.getElementById('registerSuccess').innerHTML = '✅ Аккаунт создан! Вы будете перенаправлены...';
+                setTimeout(() => { window.location.reload(); }, 2000);
+            } else {
+                document.getElementById('registerError').innerText = 'Этот Google аккаунт уже зарегистрирован';
+                await auth.signOut();
+            }
+        } catch (e) { document.getElementById('registerError').innerText = e.message; }
+    }
+
+    // Auth state
     auth.onAuthStateChanged(async (user) => {
         if (user) {
             currentUser = user;
@@ -412,24 +523,32 @@
             currentUserData = snap.val();
             if (!currentUserData) {
                 let username = user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
-                await db.ref(`users/${user.uid}`).set({ email: user.email, username: username, coins: 100, createdAt: Date.now() });
+                await db.ref(`users/${user.uid}`).set({ email: user.email, username: username, fullName: username, coins: 100, createdAt: Date.now() });
                 await db.ref(`usernames/${username}`).set(user.uid);
-                currentUserData = { username, coins: 100 };
+                currentUserData = { username, fullName: username, coins: 100 };
             }
             document.getElementById('screenAuth').classList.remove('active');
             document.getElementById('screenMessenger').classList.add('active');
             await loadAllUsers();
             await loadChats();
         } else {
-            if (currentMessageListener) {
-                db.ref(`messages/${currentMessageListener.chatId}`).off('child_added', currentMessageListener.handler);
-            }
+            if (currentMessageListener) db.ref(`messages/${currentMessageListener.chatId}`).off('child_added', currentMessageListener.handler);
             document.getElementById('screenAuth').classList.add('active');
             document.getElementById('screenMessenger').classList.remove('active');
             currentChatId = null;
+            document.getElementById('regFullName').value = '';
+            document.getElementById('regUsername').value = '';
+            document.getElementById('regEmail').value = '';
+            document.getElementById('regPassword').value = '';
+            document.getElementById('regDay').value = '';
+            document.getElementById('regMonth').value = '';
+            document.getElementById('regYear').value = '';
+            document.getElementById('registerError').innerText = '';
+            document.getElementById('registerSuccess').innerText = '';
         }
     });
 
+    // Обработчики
     document.getElementById('googleLoginBtn').onclick = async () => {
         try {
             let result = await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
@@ -437,7 +556,7 @@
             let snap = await db.ref(`users/${user.uid}`).once('value');
             if (!snap.exists()) {
                 let username = user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
-                await db.ref(`users/${user.uid}`).set({ email: user.email, username: username, coins: 100, createdAt: Date.now() });
+                await db.ref(`users/${user.uid}`).set({ email: user.email, username: username, fullName: username, coins: 100, createdAt: Date.now() });
                 await db.ref(`usernames/${username}`).set(user.uid);
             }
         } catch (e) { document.getElementById('loginError').innerText = e.message; }
@@ -448,38 +567,8 @@
         try { await auth.signInWithEmailAndPassword(email, pass); }
         catch (e) { document.getElementById('loginError').innerText = e.message; }
     };
-    document.getElementById('googleRegisterBtn').onclick = async () => {
-        try {
-            let result = await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
-            let user = result.user;
-            let snap = await db.ref(`users/${user.uid}`).once('value');
-            if (!snap.exists()) {
-                let username = user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
-                await db.ref(`users/${user.uid}`).set({ email: user.email, username: username, coins: 100, createdAt: Date.now() });
-                await db.ref(`usernames/${username}`).set(user.uid);
-            }
-        } catch (e) { document.getElementById('registerError').innerText = e.message; }
-    };
-    document.getElementById('emailRegisterBtn').onclick = async () => {
-        let email = document.getElementById('regEmail').value.trim();
-        let username = document.getElementById('regUsername').value.trim();
-        let pass = document.getElementById('regPassword').value;
-        if (!email || !username || !pass) { document.getElementById('registerError').innerText = 'Заполните все поля'; return; }
-        if (!/^[a-zA-Z0-9]{5,15}$/.test(username)) { document.getElementById('registerError').innerText = 'Username: 5-15 букв/цифр'; return; }
-        if (pass.length < 6) { document.getElementById('registerError').innerText = 'Пароль минимум 6 символов'; return; }
-        let check = await db.ref(`usernames/${username.toLowerCase()}`).once('value');
-        if (check.exists()) { document.getElementById('registerError').innerText = 'Username уже занят'; return; }
-        try {
-            let cred = await auth.createUserWithEmailAndPassword(email, pass);
-            await cred.user.sendEmailVerification();
-            await db.ref(`users/${cred.user.uid}`).set({ email, username: username.toLowerCase(), coins: 100, createdAt: Date.now() });
-            await db.ref(`usernames/${username.toLowerCase()}`).set(cred.user.uid);
-            await auth.signOut();
-            document.getElementById('registerError').innerText = '✅ Подтвердите email и войдите';
-            document.getElementById('registerError').style.color = '#238636';
-            setTimeout(() => document.getElementById('showLoginBtn').click(), 3000);
-        } catch (e) { document.getElementById('registerError').innerText = e.message; }
-    };
+    document.getElementById('googleRegisterBtn').onclick = registerWithGoogle;
+    document.getElementById('emailRegisterBtn').onclick = registerWithEmail;
     document.getElementById('showRegisterBtn').onclick = () => {
         document.getElementById('cardLogin').classList.remove('active');
         document.getElementById('cardRegister').classList.add('active');
