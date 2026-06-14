@@ -103,7 +103,7 @@
         .warning-banner { background: #e3b34120; border-left: 3px solid #e3b341; padding: 0.5rem; margin-bottom: 0.5rem; font-size: 0.7rem; color: #e3b341; }
         
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(3px); }
-        .modal-content { background: #161b22; border: 1px solid #30363d; border-radius: 16px; padding: 1.5rem; width: 90%; max-width: 380px; max-height: 80vh; overflow-y: auto; }
+        .modal-content { background: #161b22; border: 1px solid #30363d; border-radius: 16px; padding: 1.5rem; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; }
         .modal-content input, .modal-content select { width: 100%; padding: 0.5rem; background: #0d1117; border: 1px solid #30363d; border-radius: 6px; color: white; margin: 0.5rem 0; }
         .modal-content button { padding: 0.5rem 1rem; background: #2f81f7; border: none; border-radius: 6px; color: white; cursor: pointer; margin-top: 0.5rem; }
         .hidden { display: none; }
@@ -113,7 +113,6 @@
         .context-menu-item:hover { background: #2f81f7; }
         .context-menu-item.danger:hover { background: #da3633; }
         
-        /* Админ-панель */
         .admin-panel { 
             position: fixed; 
             right: 0; 
@@ -159,7 +158,26 @@
         .admin-panel .close-admin-btn:active { background: #1a6bd6; transform: scale(0.98); }
         
         .settings-group { margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #30363d; }
-        .gift-option { display: flex; justify-content: space-between; align-items: center; padding: 12px; margin: 8px 0; background: #21262d; border-radius: 12px; cursor: pointer; }
+        
+        /* Стили для подарков в магазине */
+        .gift-option { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 12px 16px; 
+            margin: 8px 0; 
+            background: #21262d; 
+            border-radius: 12px; 
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .gift-option:hover { background: #2d333b; transform: scale(1.02); }
+        .gift-option:active { transform: scale(0.98); }
+        .gift-left { display: flex; align-items: center; gap: 12px; }
+        .gift-icon { width: 36px; height: 36px; background-size: contain; background-repeat: no-repeat; background-position: center; }
+        .gift-name { font-size: 1rem; font-weight: 500; }
+        .gift-price { display: flex; align-items: center; gap: 4px; color: #FFD966; font-weight: 600; }
+        
         .chat-option { display: flex; justify-content: space-between; align-items: center; padding: 12px; margin: 8px 0; background: #21262d; border-radius: 12px; cursor: pointer; }
         .admin-user { margin-bottom: 12px; padding: 10px; background: #21262d; border-radius: 10px; }
         .admin-user-buttons { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
@@ -167,6 +185,28 @@
         .btn-user { background: #6e7681; border: none; padding: 6px 12px; border-radius: 6px; color: white; cursor: pointer; font-size: 0.75rem; }
         .btn-ban { background: #da3633; border: none; padding: 6px 12px; border-radius: 6px; color: white; cursor: pointer; font-size: 0.75rem; }
         .btn-unban { background: #2f81f7; border: none; padding: 6px 12px; border-radius: 6px; color: white; cursor: pointer; font-size: 0.75rem; }
+        
+        /* Иконки подарков */
+        .gift-icon-sweet { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FF69B4'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='white' font-size='10' font-weight='bold'%3E🍬%3C/text%3E%3C/svg%3E"); }
+        .gift-icon-surprise { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FFA500'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='white' font-size='10'%3E🎁%3C/text%3E%3C/svg%3E"); }
+        .gift-icon-chocolate { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%238B4513'%3E%3Crect x='7' y='7' width='10' height='10' rx='2'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='white' font-size='10'%3E🍫%3C/text%3E%3C/svg%3E"); }
+        .gift-icon-bear { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23CD853F'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='white' font-size='10'%3E🧸%3C/text%3E%3C/svg%3E"); }
+        .gift-icon-diamond { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300CED1'%3E%3Cpolygon points='12,3 20,9 12,21 4,9'/%3E%3Ctext x='12' y='14' text-anchor='middle' fill='white' font-size='8'%3E💎%3C/text%3E%3C/svg%3E"); }
+        .gift-icon-rose { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FF1493'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='white' font-size='10'%3E🌹%3C/text%3E%3C/svg%3E"); }
+        .gift-icon-cake { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FFB6C1'%3E%3Crect x='6' y='10' width='12' height='8' rx='2'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='white' font-size='8'%3E🎂%3C/text%3E%3C/svg%3E"); }
+        .gift-icon-pizza { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FF6347'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='white' font-size='10'%3E🍕%3C/text%3E%3C/svg%3E"); }
+        .gift-icon-coffee { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236B3E1F'%3E%3Crect x='8' y='8' width='8' height='10' rx='2'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='white' font-size='8'%3E☕%3C/text%3E%3C/svg%3E"); }
+        .gift-icon-game { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%239C27B0'%3E%3Crect x='5' y='8' width='14' height='10' rx='2'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='white' font-size='8'%3E🎮%3C/text%3E%3C/svg%3E"); }
+        .gift-icon-crown { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FFD700'%3E%3Cpolygon points='12,4 15,10 22,10 17,15 19,22 12,18 5,22 7,15 2,10 9,10'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='black' font-size='6'%3E👑%3C/text%3E%3C/svg%3E"); }
+        .gift-icon-heart { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FF3366'%3E%3Cpath d='M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5 2,5.41 4.42,3 7.5,3c1.74,0 3.41.81 4.5,2.08C13.09,3.81 14.76,3 16.5,3 19.58,3 22,5.41 22,8.5c0,3.77-3.4,6.86-8.55,11.54L12,21.35Z'/%3E%3Ctext x='12' y='14' text-anchor='middle' fill='white' font-size='6'%3E💝%3C/text%3E%3C/svg%3E"); }
+        .gift-icon-cat { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FFA500'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='white' font-size='10'%3E🐱%3C/text%3E%3C/svg%3E"); }
+        .gift-icon-dog { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23D2691E'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='white' font-size='10'%3E🐶%3C/text%3E%3C/svg%3E"); }
+        .gift-icon-star { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FFD700'%3E%3Cpolygon points='12,2 15,9 22,9 16.5,14 18.5,21 12,17 5.5,21 7.5,14 2,9 9,9'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='white' font-size='6'%3E⭐%3C/text%3E%3C/svg%3E"); }
+        .gift-icon-trophy { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FFD700'%3E%3Crect x='7' y='4' width='10' height='6' rx='2'/%3E%3Ctext x='12' y='9' text-anchor='middle' fill='black' font-size='6'%3E🏆%3C/text%3E%3C/svg%3E"); }
+        .gift-icon-balloon { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FF69B4'%3E%3Cellipse cx='12' cy='10' rx='5' ry='7'/%3E%3Ctext x='12' y='13' text-anchor='middle' fill='white' font-size='8'%3E🎈%3C/text%3E%3C/svg%3E"); }
+        .gift-icon-party { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FF4500'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='white' font-size='10'%3E🎉%3C/text%3E%3C/svg%3E"); }
+        .gift-icon-clover { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2332CD32'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='white' font-size='10'%3E🍀%3C/text%3E%3C/svg%3E"); }
+        .gift-icon-fire { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FF4500'%3E%3Cpath d='M12,2 C10,6 8,9 8,12 C8,14.21 9.79,16 12,16 C14.21,16 16,14.21 16,12 C16,9 14,6 12,2 Z'/%3E%3Ctext x='12' y='14' text-anchor='middle' fill='yellow' font-size='6'%3E🔥%3C/text%3E%3C/svg%3E"); }
         
         @media (max-width: 768px) {
             .desktop-layout { display: none; }
@@ -200,28 +240,16 @@
             .mobile-empty { text-align: center; padding: 2rem; color: #6e7681; }
             .warning-banner-mobile { background: #e3b34120; padding: 8px 12px; font-size: 0.7rem; color: #e3b341; text-align: center; }
             .context-menu { position: fixed; background: #1f2429; border-radius: 12px; padding: 8px 0; min-width: 180px; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.5); border: 1px solid #30363d; }
-            
-            /* Админ-панель на мобильных */
-            .admin-panel { 
-                width: 100%; 
-            }
-            .admin-panel .close-admin-btn { 
-                margin: 12px;
-                margin-top: 8px;
-                margin-bottom: max(12px, env(safe-area-inset-bottom));
-                padding: 12px 16px;
-                border-radius: 6px;
-            }
-            /* Скрываем кнопку админки на телефоне */
-            #mobileAdminBtn {
-                display: none !important;
-            }
+            .admin-panel { width: 100%; }
+            .admin-panel .close-admin-btn { margin: 12px; margin-top: 8px; margin-bottom: max(12px, env(safe-area-inset-bottom)); padding: 12px 16px; border-radius: 6px; }
+            #mobileAdminBtn { display: none !important; }
+            .modal-content { max-width: 95%; }
+            .gift-option { padding: 10px 12px; }
+            .gift-icon { width: 32px; height: 32px; }
         }
         @media (min-width: 769px) { .mobile-layout { display: none; } }
         
-        .gift-icon-small { width: 28px; height: 28px; background-size: contain; background-repeat: no-repeat; }
-        .gift-sweet-icon { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23FF69B4' viewBox='0 0 24 24'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z'/%3E%3Ccircle cx='12' cy='12' r='4' fill='%23FF69B4'/%3E%3C/svg%3E"); }
-        .gift-surprise-icon { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23FFA500' viewBox='0 0 24 24'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z'/%3E%3Cpolygon points='12,7 14,11 18,11 15,14 16,18 12,16 8,18 9,14 6,11 10,11' fill='%23FFA500'/%3E%3C/svg%3E"); }
+        .gift-history-item { display: flex; align-items: center; gap: 12px; padding: 10px; border-bottom: 1px solid #30363d; }
     </style>
 </head>
 <body>
@@ -267,7 +295,6 @@
                 <div class="mobile-header-title">📩 Trailless</div>
                 <div class="mobile-header-icons">
                     <div class="mobile-icon-btn" id="mobileGiftShopBtn"><span class="icon icon-gift" style="width:18px;height:18px;"></span></div>
-                    <!-- Кнопка админки скрыта на телефоне -->
                     <div class="mobile-icon-btn" id="mobileSettingsBtn"><span class="icon icon-settings" style="width:18px;height:18px;"></span></div>
                     <div class="mobile-new-chat" id="mobileNewChatBtn"><span class="icon icon-plus" style="width:18px;height:18px;"></span></div>
                 </div>
@@ -302,7 +329,6 @@
     <div id="giftHistoryModal" class="modal hidden"><div class="modal-content"><h3>📦 Полученные подарки</h3><div id="giftHistoryList"></div><button id="closeGiftHistoryBtn">Закрыть</button></div></div>
     <div id="selectChatModal" class="modal hidden"><div class="modal-content"><h3>📱 Выберите получателя</h3><div id="selectChatList"></div><button id="closeSelectChatBtn">Отмена</button></div></div>
     
-    <!-- Админ-панель -->
     <div id="adminPanel" class="admin-panel hidden">
         <h3>👑 Админ панель</h3>
         <div class="admin-users-container" id="adminUsersList"></div>
@@ -318,6 +344,30 @@
         let typingTimeout = null;
         let onlineInterval = null;
         let messageListeners = {};
+
+        // Список подарков
+        const giftsList = [
+            { id: 'sweet', name: 'Sweet Candy', emoji: '🍬', price: 300, iconClass: 'gift-icon-sweet' },
+            { id: 'surprise', name: 'Gift Surprise', emoji: '🎁', price: 50, iconClass: 'gift-icon-surprise' },
+            { id: 'chocolate', name: 'Chocolate Bar', emoji: '🍫', price: 150, iconClass: 'gift-icon-chocolate' },
+            { id: 'bear', name: 'Teddy Bear', emoji: '🧸', price: 200, iconClass: 'gift-icon-bear' },
+            { id: 'diamond', name: 'Diamond', emoji: '💎', price: 500, iconClass: 'gift-icon-diamond' },
+            { id: 'rose', name: 'Rose Flower', emoji: '🌹', price: 100, iconClass: 'gift-icon-rose' },
+            { id: 'cake', name: 'Birthday Cake', emoji: '🎂', price: 250, iconClass: 'gift-icon-cake' },
+            { id: 'pizza', name: 'Pizza Slice', emoji: '🍕', price: 180, iconClass: 'gift-icon-pizza' },
+            { id: 'coffee', name: 'Hot Coffee', emoji: '☕', price: 80, iconClass: 'gift-icon-coffee' },
+            { id: 'game', name: 'Game Gift', emoji: '🎮', price: 400, iconClass: 'gift-icon-game' },
+            { id: 'crown', name: 'Crown', emoji: '👑', price: 1000, iconClass: 'gift-icon-crown' },
+            { id: 'heart', name: 'Love Heart', emoji: '💝', price: 120, iconClass: 'gift-icon-heart' },
+            { id: 'cat', name: 'Cute Cat', emoji: '🐱', price: 160, iconClass: 'gift-icon-cat' },
+            { id: 'dog', name: 'Loyal Dog', emoji: '🐶', price: 160, iconClass: 'gift-icon-dog' },
+            { id: 'star', name: 'Star Power', emoji: '⭐', price: 350, iconClass: 'gift-icon-star' },
+            { id: 'trophy', name: 'Trophy', emoji: '🏆', price: 800, iconClass: 'gift-icon-trophy' },
+            { id: 'balloon', name: 'Balloon', emoji: '🎈', price: 60, iconClass: 'gift-icon-balloon' },
+            { id: 'party', name: 'Party Popper', emoji: '🎉', price: 90, iconClass: 'gift-icon-party' },
+            { id: 'clover', name: 'Lucky Clover', emoji: '🍀', price: 70, iconClass: 'gift-icon-clover' },
+            { id: 'fire', name: 'Fire Gift', emoji: '🔥', price: 450, iconClass: 'gift-icon-fire' }
+        ];
 
         function validateUsername(u) { return /^[a-zA-Z0-9]{5,15}$/.test(u); }
         function setFontSize(s) { let f = s==='small'?'12px':s==='medium'?'14px':'16px'; document.body.style.fontSize = f; localStorage.setItem('trailless_font_size', s); }
@@ -627,18 +677,78 @@
             if(isMobile) scrollToBottom(true); else input.focus();
         }
         
-        async function sendGiftToUser(targetUserId, targetChatId, giftType, cost, giftName) {
-            if((currentUserData.coins || 0) < cost) return;
-            await addCoins(-cost);
-            let giftMessage = `🎁 ${currentUserData.username} подарил(а) ${giftName}! 🎁`;
+        async function sendGiftToUser(targetUserId, targetChatId, giftId, giftName, giftPrice, giftEmoji) {
+            if((currentUserData.coins || 0) < giftPrice) {
+                alert(`Недостаточно монет! Нужно ${giftPrice} 🪙`);
+                return;
+            }
+            await addCoins(-giftPrice);
+            let giftMessage = `🎁 ${currentUserData.username} подарил(а) ${giftEmoji} ${giftName}! 🎁`;
             let msg = { text: giftMessage, senderId: currentUser.uid, senderName: currentUserData.username, senderRole: currentUserData?.role||'user', timestamp: Date.now(), isGift: true, read: false };
             await db.ref(`messages/${targetChatId}`).push(msg);
-            await db.ref(`users/${targetUserId}/gifts`).push({ from: currentUser.uid, fromName: currentUserData.username, type: giftType, name: giftName, value: cost, timestamp: Date.now() });
+            await db.ref(`users/${targetUserId}/gifts`).push({ from: currentUser.uid, fromName: currentUserData.username, type: giftId, name: giftName, emoji: giftEmoji, value: giftPrice, timestamp: Date.now() });
+            alert(`🎉 Подарок "${giftName}" отправлен!`);
         }
         
-        async function showGiftHistory() { if(!currentChatOtherId) { alert('Сначала откройте чат'); return; } let snap = await db.ref(`users/${currentChatOtherId}/gifts`).once('value'); let list = Object.values(snap.val()||{}); document.getElementById('giftHistoryList').innerHTML = list.length ? list.map(g=>`<div class="gift-history-item"><div class="gift-icon-small ${g.type==='sweet'?'gift-sweet-icon':'gift-surprise-icon'}"></div><div><strong>${g.name}</strong><br><span style="font-size:0.7rem;">от ${g.fromName} • ${g.value} 🪙</span></div><div style="font-size:0.7rem;">${new Date(g.timestamp).toLocaleDateString()}</div></div>`).join('') : '<div style="text-align:center;padding:1rem;">Нет подарков</div>'; document.getElementById('giftHistoryModal').classList.remove('hidden'); }
-        function showGiftShopDesktop() { if(!currentChatOtherId) { alert('Сначала откройте чат'); return; } document.getElementById('giftShopList').innerHTML = `<div class="gift-option" data-gift="sweet" data-cost="300" data-name="Sweet Candy 🍬"><span>🍬 Sweet Candy</span><span style="color:#FFD966;">300 🪙</span></div><div class="gift-option" data-gift="surprise" data-cost="50" data-name="Gift Surprise 🎁"><span>🎁 Gift Surprise</span><span style="color:#FFD966;">50 🪙</span></div>`; document.getElementById('giftShopModal').classList.remove('hidden'); document.querySelectorAll('#giftShopList .gift-option').forEach(el=>{ el.onclick = ()=>{ sendGiftToUser(currentChatOtherId, currentChatId, el.dataset.gift, parseInt(el.dataset.cost), el.dataset.name); document.getElementById('giftShopModal').classList.add('hidden'); }; }); }
-        function showGiftShopMobile() { if(chats.length===0){alert('Нет чатов');return;} document.getElementById('selectChatList').innerHTML = chats.map(c=>`<div class="chat-option" data-chat-id="${c.id}" data-user-id="${c.userId}"><span>@${c.name}</span></div>`).join(''); document.getElementById('selectChatModal').classList.remove('hidden'); document.querySelectorAll('#selectChatList .chat-option').forEach(el=>{ el.onclick = ()=>{ let chatId=el.dataset.chatId, userId=el.dataset.userId; document.getElementById('selectChatModal').classList.add('hidden'); document.getElementById('giftShopList').innerHTML = `<div class="gift-option" data-gift="sweet" data-cost="300" data-name="Sweet Candy 🍬"><span>🍬 Sweet Candy</span><span style="color:#FFD966;">300 🪙</span></div><div class="gift-option" data-gift="surprise" data-cost="50" data-name="Gift Surprise 🎁"><span>🎁 Gift Surprise</span><span style="color:#FFD966;">50 🪙</span></div>`; document.getElementById('giftShopModal').classList.remove('hidden'); document.querySelectorAll('#giftShopList .gift-option').forEach(g=>{ g.onclick = ()=>{ sendGiftToUser(userId, chatId, g.dataset.gift, parseInt(g.dataset.cost), g.dataset.name); document.getElementById('giftShopModal').classList.add('hidden'); }; }); }; }); }
+        async function showGiftHistory() { 
+            if(!currentChatOtherId) { alert('Сначала откройте чат'); return; } 
+            let snap = await db.ref(`users/${currentChatOtherId}/gifts`).once('value'); 
+            let list = Object.values(snap.val()||{}).reverse(); 
+            document.getElementById('giftHistoryList').innerHTML = list.length ? list.map(g=>`<div class="gift-history-item"><div class="gift-icon ${getGiftIconClass(g.type)}" style="width:32px;height:32px;"></div><div><strong>${g.emoji || '🎁'} ${g.name}</strong><br><span style="font-size:0.7rem;">от ${g.fromName} • ${g.value} 🪙</span></div><div style="font-size:0.7rem;">${new Date(g.timestamp).toLocaleDateString()}</div></div>`).join('') : '<div style="text-align:center;padding:1rem;">Нет подарков</div>'; 
+            document.getElementById('giftHistoryModal').classList.remove('hidden'); 
+        }
+        
+        function getGiftIconClass(giftId) {
+            const gift = giftsList.find(g => g.id === giftId);
+            return gift ? gift.iconClass : 'gift-icon-surprise';
+        }
+        
+        function renderGiftShop(containerId, onSelect) {
+            let container = document.getElementById(containerId);
+            if(!container) return;
+            container.innerHTML = giftsList.map(g => `
+                <div class="gift-option" data-gift-id="${g.id}" data-gift-name="${g.name}" data-gift-price="${g.price}" data-gift-emoji="${g.emoji}">
+                    <div class="gift-left">
+                        <div class="gift-icon ${g.iconClass}"></div>
+                        <span class="gift-name">${g.emoji} ${g.name}</span>
+                    </div>
+                    <div class="gift-price">
+                        <span class="icon icon-coin" style="width:16px;height:16px;"></span> ${g.price}
+                    </div>
+                </div>
+            `).join('');
+            document.querySelectorAll(`#${containerId} .gift-option`).forEach(el => {
+                el.onclick = () => {
+                    onSelect(el.dataset.giftId, el.dataset.giftName, parseInt(el.dataset.giftPrice), el.dataset.giftEmoji);
+                };
+            });
+        }
+        
+        function showGiftShopDesktop() { 
+            if(!currentChatOtherId) { alert('Сначала откройте чат'); return; } 
+            renderGiftShop('giftShopList', (giftId, giftName, giftPrice, giftEmoji) => {
+                sendGiftToUser(currentChatOtherId, currentChatId, giftId, giftName, giftPrice, giftEmoji);
+                document.getElementById('giftShopModal').classList.add('hidden');
+            });
+            document.getElementById('giftShopModal').classList.remove('hidden'); 
+        }
+        
+        function showGiftShopMobile() { 
+            if(chats.length === 0){ alert('Нет чатов'); return; } 
+            document.getElementById('selectChatList').innerHTML = chats.map(c=>`<div class="chat-option" data-chat-id="${c.id}" data-user-id="${c.userId}"><span>@${c.name}</span></div>`).join(''); 
+            document.getElementById('selectChatModal').classList.remove('hidden'); 
+            document.querySelectorAll('#selectChatList .chat-option').forEach(el=>{ 
+                el.onclick = ()=>{ 
+                    let chatId = el.dataset.chatId, userId = el.dataset.userId; 
+                    document.getElementById('selectChatModal').classList.add('hidden'); 
+                    renderGiftShop('giftShopList', (giftId, giftName, giftPrice, giftEmoji) => {
+                        sendGiftToUser(userId, chatId, giftId, giftName, giftPrice, giftEmoji);
+                        document.getElementById('giftShopModal').classList.add('hidden');
+                    });
+                    document.getElementById('giftShopModal').classList.remove('hidden'); 
+                }; 
+            }); 
+        }
         
         async function createNewChat() { let username = document.getElementById('chatUsernameInput').value.trim().toLowerCase(); if(!username){alert('Введите username');return;} let found = Object.values(allUsersCache).find(u=>u.username === username); if(!found){alert('Не найден');return;} if(found.uid===currentUser.uid){alert('Сам с собой нельзя');return;} if(found.banned){alert('Заблокирован');return;} let existing = chats.find(c=>c.userId===found.uid); if(existing){ openChat(existing.id, existing.name, existing.userId); if(window.innerWidth<=768) openChatMobile(existing.id, existing.name, existing.userId); document.getElementById('newChatModal').classList.add('hidden'); document.getElementById('chatUsernameInput').value=''; return; } let chatId = Date.now().toString(); await db.ref(`users/${currentUser.uid}/chats/${chatId}`).set({with:found.uid, name:found.username, createdAt:Date.now()}); await db.ref(`users/${found.uid}/chats/${chatId}`).set({with:currentUser.uid, name:currentUserData?.username, createdAt:Date.now()}); document.getElementById('newChatModal').classList.add('hidden'); document.getElementById('chatUsernameInput').value=''; await loadChats(); openChat(chatId, found.username, found.uid); if(window.innerWidth<=768) openChatMobile(chatId, found.username, found.uid); }
         async function changeUsername(newU) { newU = newU.toLowerCase(); if(!validateUsername(newU)){alert('5-15 англ/цифры');return false;} let exist = Object.values(allUsersCache).find(u=>u.username === newU); if(exist && exist.uid!==currentUser.uid){alert('Занят');return false;} await db.ref(`usernames/${currentUserData.username}`).remove(); await db.ref(`usernames/${newU}`).set(currentUser.uid); await db.ref(`users/${currentUser.uid}`).update({username:newU}); await currentUser.updateProfile({displayName:newU}); currentUserData.username=newU; document.getElementById('userNameTextDesktop').innerText=newU; document.getElementById('mobileUserName').innerHTML=newU+'<span id="mobileUserBadge"></span>'; let badgeHtml = currentUserData.role==='admin'?'<span class="admin-badge">Admin</span>':(currentUserData.role==='tester'?'<span class="tester-badge">Tester</span>':''); document.getElementById('userBadgeDesktop').innerHTML = badgeHtml; document.getElementById('mobileUserBadge').innerHTML = badgeHtml; await loadAllUsers(); await loadChats(); return true; }
@@ -651,8 +761,8 @@
             currentUser=user; 
             let snap = await db.ref(`users/${user.uid}`).once('value'); 
             currentUserData=snap.val(); 
-            if(!currentUserData){ let uname = (user.displayName||user.email.split('@')[0]).toLowerCase(); await db.ref(`users/${user.uid}`).set({email:user.email, username:uname, role:user.email==='imbatop49@gmail.com'?'admin':'user', verified:user.emailVerified, banned:false, hasPassword:true, coins:0}); await db.ref(`usernames/${uname}`).set(user.uid); currentUserData = (await db.ref(`users/${user.uid}`).once('value')).val(); } 
-            if(currentUserData.coins === undefined) await db.ref(`users/${user.uid}`).update({coins:0});
+            if(!currentUserData){ let uname = (user.displayName||user.email.split('@')[0]).toLowerCase(); await db.ref(`users/${user.uid}`).set({email:user.email, username:uname, role:user.email==='imbatop49@gmail.com'?'admin':'user', verified:user.emailVerified, banned:false, hasPassword:true, coins:100}); await db.ref(`usernames/${uname}`).set(user.uid); currentUserData = (await db.ref(`users/${user.uid}`).once('value')).val(); } 
+            if(currentUserData.coins === undefined) await db.ref(`users/${user.uid}`).update({coins:100});
             currentUserData.coins = currentUserData.coins || 0;
             if(currentUserData.banned){ await auth.signOut(); alert('Аккаунт заблокирован'); window.location.href='login.html'; return; } 
             document.getElementById('userNameTextDesktop').innerText = currentUserData.username; document.getElementById('userEmailDesktop').innerText = user.email; 
@@ -661,10 +771,7 @@
             let badgeHtml = currentUserData.role==='admin'?'<span class="admin-badge">Admin</span>':(currentUserData.role==='tester'?'<span class="tester-badge">Tester</span>':'');
             document.getElementById('userBadgeDesktop').innerHTML = badgeHtml; document.getElementById('mobileUserBadge').innerHTML = badgeHtml;
             if(currentUserData.defaultPassword==='12345678'){ document.getElementById('changePasswordWarningDesktop').style.display='block'; document.getElementById('mobileChangePwdWarning').style.display='block'; } 
-            if(currentUserData.role==='admin'){ 
-                document.getElementById('adminBtnDesktop').style.display='flex';
-                // На телефоне кнопка админки НЕ показывается
-            }
+            if(currentUserData.role==='admin'){ document.getElementById('adminBtnDesktop').style.display='flex'; }
             await loadAllUsers(); 
             await loadChats(); 
             loadFontSize(); 
@@ -701,11 +808,11 @@
             let users = (await db.ref('users').once('value')).val()||{}; 
             let usersList = document.getElementById('adminUsersList');
             if(usersList) {
-                usersList.innerHTML = Object.entries(users).map(([uid,d])=>`<div class="admin-user"><div><strong>@${escapeHtml(d.username)}</strong> ${d.role==='admin'?'<span class="admin-badge">Admin</span>':(d.role==='tester'?'<span class="tester-badge">Tester</span>':'<span>User</span>')}<br><span style="font-size:0.7rem;">${escapeHtml(d.email)}</span></div><div class="admin-user-buttons"><button class="btn-tester" onclick="window.setRole('${uid}','tester')">Тестер</button><button class="btn-user" onclick="window.setRole('${uid}','user')">Юзер</button><button class="${d.banned?'btn-unban':'btn-ban'}" onclick="window.toggleBan('${uid}',${!d.banned})">${d.banned?'Разбан':'Бан'}</button></div></div>`).join('');
+                usersList.innerHTML = Object.entries(users).map(([uid,d])=>`<div class="admin-user"><div><strong>@${escapeHtml(d.username)}</strong> ${d.role==='admin'?'<span class="admin-badge">Admin</span>':(d.role==='tester'?'<span class="tester-badge">Tester</span>':'<span>User</span>')}<br><span style="font-size:0.7rem;">${escapeHtml(d.email)}</span><br><span style="font-size:0.7rem;">🪙 ${d.coins || 0} монет</span></div><div class="admin-user-buttons"><button class="btn-tester" onclick="window.setRole('${uid}','tester')">Тестер</button><button class="btn-user" onclick="window.setRole('${uid}','user')">Юзер</button><button class="${d.banned?'btn-unban':'btn-ban'}" onclick="window.toggleBan('${uid}',${!d.banned})">${d.banned?'Разбан':'Бан'}</button><button class="btn-tester" onclick="window.addCoinsAdmin('${uid}')">+100 🪙</button></div></div>`).join('');
             }
         }
+        window.addCoinsAdmin = async (uid) => { if(currentUserData?.role !== 'admin') return; let userSnap = await db.ref(`users/${uid}`).once('value'); let userData = userSnap.val(); let newCoins = (userData.coins || 0) + 100; await db.ref(`users/${uid}`).update({ coins: newCoins }); await refreshAdminPanel(); };
         document.getElementById('adminBtnDesktop').onclick = async()=>{ if(currentUserData?.role!=='admin')return; await refreshAdminPanel(); document.getElementById('adminPanel').classList.remove('hidden'); document.getElementById('adminPanel').classList.add('open'); };
-        // На телефоне обработчик для админки не нужен, так как кнопки нет
         document.getElementById('closeAdminBtn').onclick = ()=>{document.getElementById('adminPanel').classList.remove('open'); document.getElementById('adminPanel').classList.add('hidden');};
         window.setRole = async (uid,role)=>{ if(currentUserData?.role!=='admin') return; await db.ref(`users/${uid}`).update({role}); await loadAllUsers(); await loadChats(); await refreshAdminPanel(); };
         window.toggleBan = async (uid,ban)=>{ if(currentUserData?.role!=='admin') return; await db.ref(`users/${uid}`).update({banned:ban}); await loadAllUsers(); await loadChats(); await refreshAdminPanel(); if(ban && uid===currentUser.uid) setTimeout(()=>logout(), 500); };
