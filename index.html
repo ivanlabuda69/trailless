@@ -29,21 +29,20 @@
         *::-webkit-scrollbar { display: none; }
         body { background-color: var(--bg-main); color: var(--text-white); overflow: hidden; height: 100vh; width: 100vw; user-select: none; }
         
-        /* Иконка верификации */
+        /* Галочка: белый круг, чёрная галочка */
         .verified-badge {
             display: inline-flex;
             align-items: center;
             justify-content: center;
             width: 18px;
             height: 18px;
-            background: #000000;
+            background: #ffffff;
             border-radius: 50%;
             margin-left: 6px;
             flex-shrink: 0;
-            box-shadow: 0 0 0 1px rgba(255,255,255,0.2);
         }
         .verified-badge i {
-            color: #ffffff;
+            color: #000000;
             font-size: 10px;
         }
         .name-wrapper {
@@ -546,7 +545,7 @@
             transform: scale(1.1);
         }
         
-        /* МОДАЛКА ПРОФИЛЯ (всплывающая) */
+        /* МОДАЛКА ПРОФИЛЯ */
         .profile-modal {
             position: fixed;
             top: 0;
@@ -788,9 +787,13 @@
         .main-drawer { position: fixed; top: 60px; left: 16px; background: var(--bg-sidebar); border: 1px solid var(--border-glass-bright); border-radius: 12px; width: 250px; display: none; flex-direction: column; padding: 6px; z-index: 100; }
         .drawer-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; color: var(--text-gray-light); border: none; background: transparent; text-align: left; width: 100%; font-size: 13px; cursor: pointer; border-radius: 6px; }
         .drawer-item:hover { background: var(--bg-glass-active); color: #fff; }
-        .coin-display { display: flex; align-items: center; gap: 4px; background: #1a1f26; padding: 2px 8px; border-radius: 20px; font-size: 0.75rem; }
         select.auth-input { appearance: none; cursor: pointer; }
         .profile-avatar-preview { width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 16px; background-size: cover; background-position: center; background: var(--bg-panel); border: 1px solid var(--border-glass-bright); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 600; }
+        
+        /* Скрываем монеты везде */
+        .coin-display, [class*="coin"], [id*="Coin"], #profileModalCoins {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
@@ -812,7 +815,7 @@
         <div class="hero">
             <div class="hero-left">
                 <h1>Чат Trailless<br>в новом стиле</h1>
-                <p>Регистрация по email, личные чаты по username, группы и подарки. Простота и доступность в элегантном оформлении.</p>
+                <p>Регистрация по email, личные чаты по username, группы. Простота и доступность в элегантном оформлении.</p>
                 <div class="hero-buttons">
                     <button class="hero-btn hero-btn-primary" id="heroRegisterBtn"><i class="fa-solid fa-rocket"></i> Создать аккаунт</button>
                     <button class="hero-btn hero-btn-secondary" id="heroLoginBtn"><i class="fa-solid fa-key"></i> Войти</button>
@@ -824,7 +827,7 @@
                     <div class="feature-item"><div class="feature-icon"><i class="fa-solid fa-envelope"></i></div><div class="feature-text">Регистрация по email<small>Быстрая верификация</small></div></div>
                     <div class="feature-item"><div class="feature-icon"><i class="fa-solid fa-comments"></i></div><div class="feature-text">Личные чаты по username<small>Как в Telegram, но легче</small></div></div>
                     <div class="feature-item"><div class="feature-icon"><i class="fa-solid fa-bolt"></i></div><div class="feature-text">Мгновенная доставка<small>Firebase Realtime</small></div></div>
-                    <div class="feature-item"><div class="feature-icon"><i class="fa-solid fa-gift"></i></div><div class="feature-text">Подарки и монеты<small>🎁 Система поощрений</small></div></div>
+                    <div class="feature-item"><div class="feature-icon"><i class="fa-solid fa-gift"></i></div><div class="feature-text">Подарки<small>🎁 Система поощрений</small></div></div>
                 </div>
             </div>
         </div>
@@ -876,7 +879,7 @@
     </div>
 </div>
 
-<!-- МОДАЛКА ПРОФИЛЯ (всплывающая) -->
+<!-- МОДАЛКА ПРОФИЛЯ -->
 <div class="profile-modal" id="profileModal">
     <div class="profile-window" id="profileWindow">
         <button class="profile-edit-btn" id="profileEditBtn" style="display: none;"><i class="fa-solid fa-pencil"></i></button>
@@ -891,10 +894,7 @@
             <span class="profile-info-label">Дата регистрации</span>
             <span class="profile-info-value" id="profileModalCreated">-</span>
         </div>
-        <div class="profile-info-item">
-            <span class="profile-info-label">Монеты</span>
-            <span class="profile-info-value" id="profileModalCoins">0 🪙</span>
-        </div>
+        <!-- Монеты скрыты -->
         <button class="google-btn" id="profileModalCloseBtn" style="background:#21262d; color:#fff; margin-top:20px;">Закрыть</button>
     </div>
 </div>
@@ -1014,7 +1014,6 @@
     const SAVED_CHAT_ID = 'saved_messages';
     const SAVED_AVATAR_URL = 'https://i.ibb.co/cXM6mbNq/photo-2026-06-14-21-27-45.jpg';
 
-    // Функции для отображения
     function renderNameWithBadge(name, isVerified) {
         if (isVerified === true) {
             return `${escapeHtml(name)}<span class="verified-badge"><i class="fas fa-check"></i></span>`;
@@ -1047,7 +1046,6 @@
         const user = allUsersCache[uid];
         if (!user) return;
         
-        // Заполняем данные
         const fullName = user.firstName ? (user.lastName ? `${user.firstName} ${user.lastName}` : user.firstName) : user.username;
         document.getElementById('profileModalAvatar').innerHTML = getInitials(fullName);
         document.getElementById('profileModalAvatar').style.backgroundImage = '';
@@ -1060,9 +1058,7 @@
         document.getElementById('profileModalUsername').innerHTML = `@${escapeHtml(user.username)}`;
         document.getElementById('profileModalUid').innerText = uid.substring(0, 12) + '...';
         document.getElementById('profileModalCreated').innerText = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Неизвестно';
-        document.getElementById('profileModalCoins').innerHTML = `${user.coins || 0} 🪙`;
         
-        // Показываем/скрываем кнопку редактирования
         if (isOwn) {
             profileEditBtn.style.display = 'flex';
         } else {
@@ -1173,7 +1169,6 @@
         document.getElementById('editSuccess').innerText = '✅ Профиль обновлён';
         setTimeout(() => {
             editProfileModal.style.display = 'none';
-            // Обновляем отображение в чате
             if (currentChatId !== SAVED_CHAT_ID && !currentChatIsGroup) {
                 const chat = chats.find(c => c.id === currentChatId);
                 if (chat) {
@@ -1215,7 +1210,6 @@
         emojiBar.classList.remove('active');
     });
 
-    // DOM элементы
     const loader = document.getElementById('loader');
     const landing = document.getElementById('landing');
     const authModal = document.getElementById('authModal');
@@ -1262,7 +1256,6 @@
                 lastName: d.lastName, 
                 birthdate: d.birthdate,
                 verified: d.verified === true,
-                coins: d.coins || 0,
                 createdAt: d.createdAt || Date.now()
             };
         }
@@ -1349,7 +1342,6 @@
                 let verified = el.dataset.verified === 'true';
                 openChat(id, name, uid, isGroup, isSaved, verified);
             };
-            // Добавляем контекстное меню для просмотра профиля (правый клик)
             el.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
                 const uid = el.dataset.uid;
@@ -1376,8 +1368,6 @@
         let line = document.createElement('div');
         line.className = `msg-line ${isOut ? 'out' : 'in'}`;
         let senderNameHtml = renderNameWithBadge(msg.senderName, msg.senderVerified === true);
-        
-        // Добавляем обработчик контекстного меню на имя отправителя
         line.innerHTML = `
             <div class="bubble">
                 ${!isOut && currentChatIsGroup ? `<strong class="msg-sender-name" data-uid="${msg.senderId}" style="cursor:pointer;">${senderNameHtml}</strong><br>` : ''}
@@ -1388,7 +1378,6 @@
         `;
         wrapper.appendChild(line);
         
-        // Добавляем обработчик для открытия профиля по клику на имя
         const senderNameSpan = line.querySelector('.msg-sender-name');
         if (senderNameSpan) {
             senderNameSpan.style.cursor = 'pointer';
@@ -1541,7 +1530,6 @@
                 username: username,
                 email: email,
                 verified: false,
-                coins: 100,
                 createdAt: Date.now()
             });
             await db.ref(`usernames/${username}`).set(user.uid);
@@ -1572,7 +1560,6 @@
                     username: username,
                     email: user.email,
                     verified: false,
-                    coins: 100,
                     createdAt: Date.now()
                 });
                 await db.ref(`usernames/${username}`).set(user.uid);
@@ -1607,7 +1594,7 @@
             let snap = await db.ref(`users/${user.uid}`).once('value');
             if (!snap.exists()) {
                 let username = user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
-                await db.ref(`users/${user.uid}`).set({ email: user.email, username: username, firstName: username, verified: false, coins: 100, createdAt: Date.now() });
+                await db.ref(`users/${user.uid}`).set({ email: user.email, username: username, firstName: username, verified: false, createdAt: Date.now() });
                 await db.ref(`usernames/${username}`).set(user.uid);
             }
             hideAuthModal();
@@ -1649,13 +1636,8 @@
     document.getElementById('drawerTrigger').onclick = (e) => { e.stopPropagation(); let d = document.getElementById('mainDrawer'); d.style.display = d.style.display === 'flex' ? 'none' : 'flex'; };
     document.onclick = () => document.getElementById('mainDrawer').style.display = 'none';
     document.getElementById('profileInspectTrigger').onclick = () => {
-        // Открываем профиль текущего чата
         if (currentChatId !== SAVED_CHAT_ID && currentChatOtherId) {
             showProfile(currentChatOtherId, false);
-        } else if (currentChatId === SAVED_CHAT_ID) {
-            // Ничего не делаем для избранного
-        } else if (currentChatIsGroup) {
-            // Для группы пока ничего
         }
     };
     document.getElementById('closeRightPanelBtn').onclick = () => {
@@ -1678,9 +1660,9 @@
             currentUserData = snap.val();
             if (!currentUserData) {
                 let username = user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
-                await db.ref(`users/${user.uid}`).set({ email: user.email, username: username, firstName: username, verified: false, coins: 100, createdAt: Date.now() });
+                await db.ref(`users/${user.uid}`).set({ email: user.email, username: username, firstName: username, verified: false, createdAt: Date.now() });
                 await db.ref(`usernames/${username}`).set(user.uid);
-                currentUserData = { username, firstName: username, verified: false, coins: 100 };
+                currentUserData = { username, firstName: username, verified: false };
             }
             landing.classList.add('hide');
             setTimeout(() => {
