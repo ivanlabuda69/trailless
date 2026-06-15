@@ -483,6 +483,45 @@
             flex: 1;
         }
         
+        /* ЭМОДЗИ БАР */
+        .emoji-bar {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-sidebar);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass-bright);
+            border-radius: 60px;
+            padding: 8px 16px;
+            display: none;
+            gap: 8px;
+            z-index: 1000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            animation: fadeInUp 0.2s ease;
+        }
+        .emoji-bar.active {
+            display: flex;
+        }
+        .emoji-btn {
+            background: transparent;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.2s;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .emoji-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.1);
+        }
+        
         /* Чат (твой полный макет) */
         .spa-screen {
             display: none;
@@ -615,10 +654,10 @@
         .msg-line.in .bubble { background: var(--bg-panel); color: var(--text-white); border-bottom-left-radius: 4px; border: 1px solid var(--border-glass); }
         .bubble-meta { font-size: 10px; color: var(--text-gray); float: right; margin-top: 5px; margin-left: 10px; }
         .msg-line.out .bubble-meta { color: rgba(0,0,0,0.5); }
-        .input-panel { padding: 0 10% 24px 10%; }
+        .input-panel { padding: 0 10% 24px 10%; position: relative; }
         .input-container { background: var(--bg-sidebar); border: 1px solid var(--border-glass); border-radius: 14px; display: flex; align-items: center; padding: 8px 14px; gap: 12px; }
         .input-field { flex: 1; background: transparent; border: none; outline: none; color: var(--text-white); font-size: 14px; resize: none; height: 24px; }
-        .btn-icon { background: transparent; border: none; color: var(--text-gray); font-size: 16px; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn-icon { background: transparent; border: none; color: var(--text-gray); font-size: 16px; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
         .btn-icon:hover { background: var(--bg-glass-active); color: var(--text-white); }
         .right-inspect-panel { display: none; flex-direction: column; background: var(--bg-sidebar); border-left: 1px solid var(--border-glass); height: 100%; }
         .inspect-header { height: 60px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-glass); }
@@ -641,7 +680,7 @@
     <div class="spinner"></div>
 </div>
 
-<!-- ЛЕНДИНГ (показывается, если пользователь не залогинен) -->
+<!-- ЛЕНДИНГ -->
 <div class="landing" id="landing">
     <div class="container">
         <div class="header">
@@ -718,7 +757,7 @@
     </div>
 </div>
 
-<!-- ЧАТ (твой полный макет) -->
+<!-- ЧАТ -->
 <div class="spa-screen" id="screenMessenger">
     <div class="desktop-layout" id="mainLayout">
         <aside class="sidebar">
@@ -744,9 +783,22 @@
             <div class="messages-scroll" id="messagesWrapper"></div>
             <div class="input-panel">
                 <div class="input-container">
-                    <button class="btn-icon"><i class="fa-regular fa-face-smile"></i></button>
+                    <button class="btn-icon" id="emojiBtn"><i class="fa-regular fa-face-smile"></i></button>
                     <input type="text" class="input-field" id="mainInput" placeholder="Напишите сообщение...">
                     <button class="btn-icon" id="actionSendBtn"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+                <!-- ЭМОДЗИ БАР -->
+                <div class="emoji-bar" id="emojiBar">
+                    <button class="emoji-btn" data-emoji="😀">😀</button>
+                    <button class="emoji-btn" data-emoji="😂">😂</button>
+                    <button class="emoji-btn" data-emoji="🥰">🥰</button>
+                    <button class="emoji-btn" data-emoji="😎">😎</button>
+                    <button class="emoji-btn" data-emoji="🤔">🤔</button>
+                    <button class="emoji-btn" data-emoji="😢">😢</button>
+                    <button class="emoji-btn" data-emoji="🔥">🔥</button>
+                    <button class="emoji-btn" data-emoji="❤️">❤️</button>
+                    <button class="emoji-btn" data-emoji="👍">👍</button>
+                    <button class="emoji-btn" data-emoji="🎉">🎉</button>
                 </div>
             </div>
         </section>
@@ -818,13 +870,42 @@
     const SAVED_CHAT_ID = 'saved_messages';
     const SAVED_AVATAR_URL = 'https://i.ibb.co/cXM6mbNq/photo-2026-06-14-21-27-45.jpg';
 
+    // ЭМОДЗИ БАР
+    const emojiBtn = document.getElementById('emojiBtn');
+    const emojiBar = document.getElementById('emojiBar');
+    const mainInput = document.getElementById('mainInput');
+
+    emojiBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        emojiBar.classList.toggle('active');
+    });
+
+    document.querySelectorAll('.emoji-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const emoji = btn.getAttribute('data-emoji');
+            if (mainInput) {
+                const start = mainInput.selectionStart;
+                const end = mainInput.selectionEnd;
+                const text = mainInput.value;
+                mainInput.value = text.substring(0, start) + emoji + text.substring(end);
+                mainInput.focus();
+                mainInput.selectionStart = mainInput.selectionEnd = start + emoji.length;
+            }
+            emojiBar.classList.remove('active');
+        });
+    });
+
+    document.addEventListener('click', () => {
+        emojiBar.classList.remove('active');
+    });
+
     // DOM элементы
     const loader = document.getElementById('loader');
     const landing = document.getElementById('landing');
     const authModal = document.getElementById('authModal');
     const messengerScreen = document.getElementById('screenMessenger');
 
-    // Функции для модалки авторизации
     function showAuthModal(showLogin = true) {
         authModal.classList.add('active');
         if (showLogin) {
@@ -839,7 +920,6 @@
         authModal.classList.remove('active');
     }
 
-    // Функции для инициализации чата (твой полный код)
     function initDateSelects(prefix = 'reg') {
         let daySelect = document.getElementById(`${prefix}Day`);
         if (daySelect && daySelect.options.length <= 1) {
@@ -1269,7 +1349,6 @@
     document.getElementById('ctaLoginBtn').onclick = () => showAuthModal(true);
     document.getElementById('ctaRegisterBtn').onclick = () => showAuthModal(false);
 
-    // Обработчики модалки
     document.getElementById('showRegisterBtn').onclick = () => {
         document.getElementById('loginCard').classList.remove('active');
         document.getElementById('registerCard').classList.add('active');
@@ -1302,10 +1381,8 @@
     document.getElementById('googleRegisterBtn').onclick = registerWithGoogle;
     document.getElementById('emailRegisterBtn').onclick = registerWithEmail;
 
-    // Закрытие модалки по клику вне
     authModal.onclick = (e) => { if (e.target === authModal) hideAuthModal(); };
 
-    // Обработчики чата
     document.getElementById('menuLogout').onclick = () => auth.signOut();
     document.getElementById('menuNewChat').onclick = () => document.getElementById('newChatModal').style.display = 'flex';
     document.getElementById('menuNewGroup').onclick = () => document.getElementById('createGroupModal').style.display = 'flex';
@@ -1339,7 +1416,6 @@
     });
     document.getElementById('coreSearch').oninput = () => renderChats();
 
-    // Проверка сессии Firebase
     auth.onAuthStateChanged(async (user) => {
         if (user) {
             currentUser = user;
@@ -1351,7 +1427,6 @@
                 await db.ref(`usernames/${username}`).set(user.uid);
                 currentUserData = { username, firstName: username, coins: 100 };
             }
-            // Скрываем лендинг, показываем чат
             landing.classList.add('hide');
             setTimeout(() => {
                 landing.style.display = 'none';
@@ -1363,7 +1438,6 @@
                 openChat(SAVED_CHAT_ID, 'Избранное', null, false, true);
             }
         } else {
-            // Показываем лендинг, скрываем чат
             landing.style.display = 'block';
             landing.classList.remove('hide');
             messengerScreen.classList.remove('active');
@@ -1373,7 +1447,6 @@
             }
             currentChatId = SAVED_CHAT_ID;
         }
-        // Убираем спиннер загрузки
         loader.style.display = 'none';
     });
 </script>
