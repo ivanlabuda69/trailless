@@ -790,7 +790,7 @@
         select.auth-input { appearance: none; cursor: pointer; }
         .profile-avatar-preview { width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 16px; background-size: cover; background-position: center; background: var(--bg-panel); border: 1px solid var(--border-glass-bright); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 600; }
         
-        /* Скрываем монеты везде */
+        /* Скрываем монеты */
         .coin-display, [class*="coin"], [id*="Coin"], #profileModalCoins {
             display: none !important;
         }
@@ -870,6 +870,7 @@
         <button class="google-btn" id="googleRegisterBtn"><i class="fa-brands fa-google"></i> Google</button>
         <div class="auth-divider">или</div>
         <div class="input-group"><label>Имя</label><input type="text" class="auth-input" id="regName" placeholder="Иван"></div>
+        <div class="input-group"><label>Фамилия</label><input type="text" class="auth-input" id="regLastName" placeholder="Иванов"></div>
         <div class="input-group"><label>Username</label><input type="text" class="auth-input" id="regUsername" placeholder="5-15 букв/цифр"></div>
         <div class="input-group"><label>Email</label><input type="email" class="auth-input" id="regEmail" placeholder="your@email.com"></div>
         <div class="input-group"><label>Пароль</label><input type="password" class="auth-input" id="regPassword" placeholder="минимум 6 символов"></div>
@@ -894,7 +895,6 @@
             <span class="profile-info-label">Дата регистрации</span>
             <span class="profile-info-value" id="profileModalCreated">-</span>
         </div>
-        <!-- Монеты скрыты -->
         <button class="google-btn" id="profileModalCloseBtn" style="background:#21262d; color:#fff; margin-top:20px;">Закрыть</button>
     </div>
 </div>
@@ -1013,6 +1013,17 @@
 
     const SAVED_CHAT_ID = 'saved_messages';
     const SAVED_AVATAR_URL = 'https://i.ibb.co/cXM6mbNq/photo-2026-06-14-21-27-45.jpg';
+
+    // Функция для получения отображаемого имени (Имя + Фамилия или Username)
+    function getDisplayName(user) {
+        if (user.firstName && user.lastName) {
+            return `${user.firstName} ${user.lastName}`;
+        } else if (user.firstName) {
+            return user.firstName;
+        } else {
+            return user.username;
+        }
+    }
 
     function renderNameWithBadge(name, isVerified) {
         if (isVerified === true) {
@@ -1252,8 +1263,8 @@
                 uid, 
                 username: (d.username || '').toLowerCase(), 
                 email: d.email, 
-                firstName: d.firstName, 
-                lastName: d.lastName, 
+                firstName: d.firstName || '', 
+                lastName: d.lastName || '', 
                 birthdate: d.birthdate,
                 verified: d.verified === true,
                 createdAt: d.createdAt || Date.now()
@@ -1282,7 +1293,8 @@
                     let lastSnap = await db.ref(`messages/${cid}`).orderByKey().limitToLast(1).once('value');
                     let lastMsg = '';
                     lastSnap.forEach(m => lastMsg = m.val().text);
-                    newChats.push({ id: cid, name: other.username, userId: info.with, isGroup: false, lastMessage: lastMsg || 'Нет сообщений', verified: other.verified === true });
+                    const displayName = getDisplayName(other);
+                    newChats.push({ id: cid, name: displayName, userId: info.with, isGroup: false, lastMessage: lastMsg || 'Нет сообщений', verified: other.verified === true });
                 }
             }
         }
@@ -1313,7 +1325,7 @@
                 <div class="chat-card ${currentChatId === c.id ? 'active' : ''}" data-id="${c.id}" data-name="${escapeHtml(c.name)}" data-uid="${c.userId || ''}" data-isgroup="${c.isGroup}" data-issaved="${isSaved}" data-verified="${c.verified}">
                     <div class="avatar-container">${avatarHtml}</div>
                     <div class="chat-details">
-                        <div class="chat-meta-row"><div class="name-wrapper">${c.id === SAVED_CHAT_ID ? '⭐ ' : (c.isGroup ? '👥 ' : '@')}${nameHtml}<span class="chat-type-badge">${c.id === SAVED_CHAT_ID ? 'избранное' : (c.isGroup ? 'группа' : 'человек')}</span></div></div>
+                        <div class="chat-meta-row"><div class="name-wrapper">${c.id === SAVED_CHAT_ID ? '⭐ ' : (c.isGroup ? '👥 ' : '')}${nameHtml}<span class="chat-type-badge">${c.id === SAVED_CHAT_ID ? 'избранное' : (c.isGroup ? 'группа' : 'человек')}</span></div></div>
                         <div class="preview-text">${escapeHtml(c.lastMessage.substring(0, 50))}</div>
                     </div>
                 </div>
@@ -1367,7 +1379,15 @@
         let time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         let line = document.createElement('div');
         line.className = `msg-line ${isOut ? 'out' : 'in'}`;
-        let senderNameHtml = renderNameWithBadge(msg.senderName, msg.senderVerified === true);
+        
+        // Получаем отображаемое имя отправителя
+        let senderDisplayName = msg.senderName;
+        if (allUsersCache[msg.senderId]) {
+            const sender = allUsersCache[msg.senderId];
+            senderDisplayName = getDisplayName(sender);
+        }
+        let senderNameHtml = renderNameWithBadge(senderDisplayName, msg.senderVerified === true);
+        
         line.innerHTML = `
             <div class="bubble">
                 ${!isOut && currentChatIsGroup ? `<strong class="msg-sender-name" data-uid="${msg.senderId}" style="cursor:pointer;">${senderNameHtml}</strong><br>` : ''}
@@ -1428,6 +1448,7 @@
             displayName = 'Избранное';
             displayVerified = false;
         } else if (!isGroup && otherUid && allUsersCache[otherUid]) {
+            displayName = getDisplayName(allUsersCache[otherUid]);
             displayVerified = allUsersCache[otherUid].verified === true;
         }
         
@@ -1456,10 +1477,16 @@
         let input = document.getElementById('mainInput');
         let text = input.value.trim();
         if (!text || !currentChatId || !currentUser) return;
+        
+        // Получаем отображаемое имя отправителя
+        let senderDisplayName = currentUserData?.firstName ? 
+            (currentUserData?.lastName ? `${currentUserData.firstName} ${currentUserData.lastName}` : currentUserData.firstName) : 
+            currentUserData?.username || 'user';
+        
         let msg = { 
             text, 
             senderId: currentUser.uid, 
-            senderName: currentUserData?.username || 'user',
+            senderName: senderDisplayName,
             senderVerified: currentUserData?.verified === true,
             timestamp: Date.now() 
         };
@@ -1483,13 +1510,15 @@
             return;
         }
         let chatId = Date.now().toString();
-        await db.ref(`users/${currentUser.uid}/chats/${chatId}`).set({ with: found.uid, name: found.username, createdAt: Date.now(), isGroup: false });
-        await db.ref(`users/${found.uid}/chats/${chatId}`).set({ with: currentUser.uid, name: currentUserData.username, createdAt: Date.now(), isGroup: false });
+        const displayName = getDisplayName(found);
+        await db.ref(`users/${currentUser.uid}/chats/${chatId}`).set({ with: found.uid, name: displayName, createdAt: Date.now(), isGroup: false });
+        const currentDisplayName = getDisplayName(currentUserData);
+        await db.ref(`users/${found.uid}/chats/${chatId}`).set({ with: currentUser.uid, name: currentDisplayName, createdAt: Date.now(), isGroup: false });
         document.getElementById('newChatModal').style.display = 'none';
         document.getElementById('chatUsernameInput').value = '';
         await loadAllUsers();
         await loadChats();
-        openChat(chatId, found.username, found.uid, false, false, found.verified);
+        openChat(chatId, displayName, found.uid, false, false, found.verified);
     }
 
     async function createGroup() {
@@ -1506,15 +1535,16 @@
     }
 
     async function registerWithEmail() {
-        let name = document.getElementById('regName').value.trim();
-        let username = document.getElementById('regUsername').value.trim().toLowerCase();
-        let email = document.getElementById('regEmail').value.trim();
-        let password = document.getElementById('regPassword').value;
+        const firstName = document.getElementById('regName').value.trim();
+        const lastName = document.getElementById('regLastName').value.trim();
+        const username = document.getElementById('regUsername').value.trim().toLowerCase();
+        const email = document.getElementById('regEmail').value.trim();
+        const password = document.getElementById('regPassword').value;
 
         document.getElementById('registerError').innerText = '';
         document.getElementById('registerSuccess').innerText = '';
 
-        if (!name) { document.getElementById('registerError').innerText = 'Введите имя'; return; }
+        if (!firstName) { document.getElementById('registerError').innerText = 'Введите имя'; return; }
         if (!validateUsername(username)) { document.getElementById('registerError').innerText = 'Username: 5-15 букв/цифр'; return; }
         if (!email) { document.getElementById('registerError').innerText = 'Введите email'; return; }
         if (!password || password.length < 6) { document.getElementById('registerError').innerText = 'Пароль минимум 6 символов'; return; }
@@ -1526,7 +1556,8 @@
             let cred = await auth.createUserWithEmailAndPassword(email, password);
             let user = cred.user;
             await db.ref(`users/${user.uid}`).set({
-                firstName: name,
+                firstName: firstName,
+                lastName: lastName,
                 username: username,
                 email: email,
                 verified: false,
@@ -1538,13 +1569,14 @@
     }
 
     async function registerWithGoogle() {
-        let name = document.getElementById('regName').value.trim();
-        let username = document.getElementById('regUsername').value.trim().toLowerCase();
+        const firstName = document.getElementById('regName').value.trim();
+        const lastName = document.getElementById('regLastName').value.trim();
+        const username = document.getElementById('regUsername').value.trim().toLowerCase();
 
         document.getElementById('registerError').innerText = '';
         document.getElementById('registerSuccess').innerText = '';
 
-        if (!name) { document.getElementById('registerError').innerText = 'Введите имя'; return; }
+        if (!firstName) { document.getElementById('registerError').innerText = 'Введите имя'; return; }
         if (!validateUsername(username)) { document.getElementById('registerError').innerText = 'Username: 5-15 букв/цифр'; return; }
 
         let check = await db.ref(`usernames/${username}`).once('value');
@@ -1556,7 +1588,8 @@
             let snap = await db.ref(`users/${user.uid}`).once('value');
             if (!snap.exists()) {
                 await db.ref(`users/${user.uid}`).set({
-                    firstName: name,
+                    firstName: firstName,
+                    lastName: lastName,
                     username: username,
                     email: user.email,
                     verified: false,
@@ -1594,7 +1627,7 @@
             let snap = await db.ref(`users/${user.uid}`).once('value');
             if (!snap.exists()) {
                 let username = user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
-                await db.ref(`users/${user.uid}`).set({ email: user.email, username: username, firstName: username, verified: false, createdAt: Date.now() });
+                await db.ref(`users/${user.uid}`).set({ email: user.email, username: username, firstName: username, lastName: '', verified: false, createdAt: Date.now() });
                 await db.ref(`usernames/${username}`).set(user.uid);
             }
             hideAuthModal();
@@ -1660,9 +1693,9 @@
             currentUserData = snap.val();
             if (!currentUserData) {
                 let username = user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
-                await db.ref(`users/${user.uid}`).set({ email: user.email, username: username, firstName: username, verified: false, createdAt: Date.now() });
+                await db.ref(`users/${user.uid}`).set({ email: user.email, username: username, firstName: username, lastName: '', verified: false, createdAt: Date.now() });
                 await db.ref(`usernames/${username}`).set(user.uid);
-                currentUserData = { username, firstName: username, verified: false };
+                currentUserData = { username, firstName: username, lastName: '', verified: false };
             }
             landing.classList.add('hide');
             setTimeout(() => {
