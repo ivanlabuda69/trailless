@@ -5,8 +5,8 @@
   
   <!-- Кнопки -->
   <p>
-    <a href="https://ivanlabuda69.github.io/trailless/" target="_blank" style="display: inline-block; background: #ffffff; color: #000000; padding: 12px 28px; border-radius: 40px; text-decoration: none; font-weight: 600; margin: 8px; transition: all 0.2s;">🚀 Попробовать сейчас</a>
-    <a href="https://github.com/ivanlabuda69/trailless" target="_blank" style="display: inline-block; background: transparent; border: 1px solid rgba(255,255,255,0.18); color: #ffffff; padding: 12px 28px; border-radius: 40px; text-decoration: none; font-weight: 600; margin: 8px; transition: all 0.2s;">📦 GitHub</a>
+    <a href="https://ivanlabuda69.github.io/trailless/" target="_blank" style="display: inline-block; background: #ffffff; color: #000000; padding: 12px 32px; border-radius: 40px; text-decoration: none; font-weight: 600; margin: 8px; transition: all 0.2s; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">🚀 Попробовать</a>
+    <a href="https://github.com/ivanlabuda69/trailless" target="_blank" style="display: inline-block; background: #ffffff; color: #000000; padding: 12px 32px; border-radius: 40px; text-decoration: none; font-weight: 600; margin: 8px; transition: all 0.2s; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">📦 GitHub</a>
   </p>
 </div>
 
@@ -19,7 +19,6 @@
 | <code>🧑‍💻</code> **Авторизация** | Вход по email + Google |
 | <code>💬</code> **Личные чаты** | Общение по username |
 | <code>👥</code> **Группы** | Создавай и приглашай |
-| <code>⭐</code> **Избранное** | Сохраняй важные сообщения |
 | <code>✏️</code> **Редактирование** | ПКМ по своему сообщению → изменить |
 | <code>🗑️</code> **Удаление** | ПКМ → удалить (только для себя) |
 | <code>↩️</code> **Ответы** | ПКМ → ответить на сообщение |
