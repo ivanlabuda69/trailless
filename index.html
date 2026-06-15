@@ -29,6 +29,60 @@
         *::-webkit-scrollbar { display: none; }
         body { background-color: var(--bg-main); color: var(--text-white); overflow: hidden; height: 100vh; width: 100vw; user-select: none; }
         
+        /* Мобильная заглушка */
+        .mobile-blocker {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000000;
+            z-index: 99999;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            text-align: center;
+            padding: 32px;
+        }
+        .mobile-blocker.active {
+            display: flex;
+        }
+        .mobile-blocker .blocker-icon {
+            font-size: 80px;
+            margin-bottom: 24px;
+        }
+        .mobile-blocker h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #ffffff, #a1a1aa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .mobile-blocker p {
+            color: var(--text-gray);
+            font-size: 16px;
+            margin-bottom: 32px;
+        }
+        .mobile-blocker .blocker-btn {
+            background: #ffffff;
+            color: #000000;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 40px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                overflow: hidden;
+            }
+        }
+        
         /* Галочка: белый круг, чёрная галочка */
         .verified-badge {
             display: inline-flex;
@@ -50,6 +104,92 @@
             align-items: center;
             gap: 4px;
             flex-wrap: wrap;
+        }
+        
+        /* Контекстное меню */
+        .context-menu {
+            position: fixed;
+            background: var(--bg-sidebar);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass-bright);
+            border-radius: 12px;
+            padding: 8px;
+            min-width: 200px;
+            z-index: 10000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            animation: fadeInUp 0.15s ease;
+        }
+        .context-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.1s;
+            color: var(--text-gray-light);
+        }
+        .context-menu-item:hover {
+            background: var(--bg-glass-active);
+            color: var(--text-white);
+        }
+        .context-menu-item.danger {
+            color: #da3633;
+        }
+        .context-menu-item.danger:hover {
+            background: #da363320;
+        }
+        .context-menu-divider {
+            height: 1px;
+            background: var(--border-glass);
+            margin: 6px 0;
+        }
+        
+        /* Реакции */
+        .reaction-picker {
+            position: fixed;
+            background: var(--bg-sidebar);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass-bright);
+            border-radius: 40px;
+            padding: 8px 16px;
+            display: flex;
+            gap: 8px;
+            z-index: 10000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .reaction-emoji {
+            font-size: 28px;
+            padding: 8px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+        .reaction-emoji:hover {
+            background: var(--bg-glass-active);
+            transform: scale(1.1);
+        }
+        
+        /* Ответ */
+        .reply-bar {
+            background: var(--bg-glass-active);
+            border-radius: 12px;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: var(--text-gray);
+        }
+        .reply-cancel {
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 20px;
+        }
+        .reply-cancel:hover {
+            background: var(--bg-glass-active);
         }
         
         /* Спиннер загрузки */
@@ -798,6 +938,14 @@
 </head>
 <body>
 
+<!-- Мобильная заглушка -->
+<div class="mobile-blocker" id="mobileBlocker">
+    <div class="blocker-icon"><i class="fa-solid fa-computer"></i></div>
+    <h1>Только для ПК</h1>
+    <p>К сожалению, эта версия Trailless пока доступна только на компьютере.<br>Зайдите с ПК для полноценного использования.</p>
+    <button class="blocker-btn" onclick="location.reload()">Обновить</button>
+</div>
+
 <div id="loader" class="loader-overlay">
     <div class="spinner"></div>
 </div>
@@ -988,6 +1136,16 @@
 </div>
 
 <script>
+    // Проверка мобильного устройства
+    function isMobile() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    }
+    
+    if (isMobile()) {
+        document.getElementById('mobileBlocker').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    
     const firebaseConfig = {
         apiKey: "AIzaSyD7c2eq_Z9v_XjxSafPYJuBV3kDa82Eg9w",
         authDomain: "trailless-chat.firebaseapp.com",
@@ -1010,11 +1168,11 @@
     let chats = [];
     let allUsersCache = {};
     let currentMessageListener = null;
+    let currentReplyTo = null;
 
     const SAVED_CHAT_ID = 'saved_messages';
     const SAVED_AVATAR_URL = 'https://i.ibb.co/cXM6mbNq/photo-2026-06-14-21-27-45.jpg';
 
-    // Функция для получения отображаемого имени (Имя + Фамилия или Username)
     function getDisplayName(user) {
         if (user.firstName && user.lastName) {
             return `${user.firstName} ${user.lastName}`;
@@ -1047,6 +1205,223 @@
     function escapeHtml(s) { return s?.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>' : '&gt;' }[m])) || ''; }
 
     function validateUsername(u) { return /^[a-zA-Z0-9]{5,15}$/.test(u); }
+
+    // Контекстное меню
+    function hideContextMenu() {
+        const existing = document.querySelector('.context-menu');
+        if (existing) existing.remove();
+        const existingReaction = document.querySelector('.reaction-picker');
+        if (existingReaction) existingReaction.remove();
+    }
+
+    function showMessageContextMenu(e, msgId, msgText, isOwn, senderId) {
+        e.preventDefault();
+        hideContextMenu();
+        
+        const menu = document.createElement('div');
+        menu.className = 'context-menu';
+        menu.style.left = e.clientX + 'px';
+        menu.style.top = e.clientY + 'px';
+        
+        // Реакции
+        const reactionItem = document.createElement('div');
+        reactionItem.className = 'context-menu-item';
+        reactionItem.innerHTML = '<i class="fa-regular fa-face-smile"></i> Реакции';
+        reactionItem.onclick = () => {
+            menu.remove();
+            showReactionPicker(e.clientX, e.clientY, msgId);
+        };
+        menu.appendChild(reactionItem);
+        
+        // Ответить
+        const replyItem = document.createElement('div');
+        replyItem.className = 'context-menu-item';
+        replyItem.innerHTML = '<i class="fa-solid fa-reply"></i> Ответить';
+        replyItem.onclick = () => {
+            menu.remove();
+            setReply(msgId, msgText);
+        };
+        menu.appendChild(replyItem);
+        
+        if (isOwn) {
+            const editItem = document.createElement('div');
+            editItem.className = 'context-menu-item';
+            editItem.innerHTML = '<i class="fa-solid fa-pencil"></i> Редактировать';
+            editItem.onclick = () => {
+                menu.remove();
+                editMessage(msgId, msgText);
+            };
+            menu.appendChild(editItem);
+            
+            const deleteItem = document.createElement('div');
+            deleteItem.className = 'context-menu-item danger';
+            deleteItem.innerHTML = '<i class="fa-solid fa-trash"></i> Удалить';
+            deleteItem.onclick = () => {
+                menu.remove();
+                deleteMessage(msgId);
+            };
+            menu.appendChild(deleteItem);
+        }
+        
+        document.body.appendChild(menu);
+        
+        setTimeout(() => {
+            document.addEventListener('click', function closeMenu() {
+                hideContextMenu();
+                document.removeEventListener('click', closeMenu);
+            });
+        }, 10);
+    }
+    
+    function showReactionPicker(x, y, msgId) {
+        const picker = document.createElement('div');
+        picker.className = 'reaction-picker';
+        picker.style.left = (x - 100) + 'px';
+        picker.style.top = (y - 50) + 'px';
+        
+        const reactions = ['👍', '❤️', '😂', '😮', '😢', '🔥', '🎉'];
+        reactions.forEach(emoji => {
+            const btn = document.createElement('div');
+            btn.className = 'reaction-emoji';
+            btn.textContent = emoji;
+            btn.onclick = () => {
+                addReaction(msgId, emoji);
+                picker.remove();
+            };
+            picker.appendChild(btn);
+        });
+        
+        document.body.appendChild(picker);
+        
+        setTimeout(() => {
+            document.addEventListener('click', function closePicker(e) {
+                if (!picker.contains(e.target)) picker.remove();
+                document.removeEventListener('click', closePicker);
+            });
+        }, 10);
+    }
+    
+    async function addReaction(msgId, emoji) {
+        if (!currentChatId) return;
+        const reactionRef = db.ref(`messages/${currentChatId}/${msgId}/reactions/${emoji}`);
+        const snap = await reactionRef.once('value');
+        let users = snap.val() || [];
+        if (users.includes(currentUser.uid)) {
+            users = users.filter(u => u !== currentUser.uid);
+            if (users.length === 0) {
+                await reactionRef.remove();
+            } else {
+                await reactionRef.set(users);
+            }
+        } else {
+            users.push(currentUser.uid);
+            await reactionRef.set(users);
+        }
+        // Обновляем сообщение в UI
+        const msgElement = document.querySelector(`.message[data-msg-id="${msgId}"]`);
+        if (msgElement) {
+            await updateMessageReactions(msgId, msgElement);
+        }
+    }
+    
+    async function updateMessageReactions(msgId, msgElement) {
+        const snap = await db.ref(`messages/${currentChatId}/${msgId}/reactions`).once('value');
+        const reactions = snap.val() || {};
+        let reactionsHtml = '';
+        for (const [emoji, users] of Object.entries(reactions)) {
+            if (users && users.length > 0) {
+                reactionsHtml += `<span class="reaction-bubble" data-reaction="${emoji}" onclick="event.stopPropagation(); addReaction('${msgId}', '${emoji}')">${emoji} ${users.length}</span>`;
+            }
+        }
+        let reactionsDiv = msgElement.querySelector('.message-reactions');
+        if (reactionsHtml) {
+            if (!reactionsDiv) {
+                reactionsDiv = document.createElement('div');
+                reactionsDiv.className = 'message-reactions';
+                msgElement.appendChild(reactionsDiv);
+            }
+            reactionsDiv.innerHTML = reactionsHtml;
+            reactionsDiv.style.display = 'flex';
+            reactionsDiv.style.gap = '6px';
+            reactionsDiv.style.marginTop = '4px';
+        } else if (reactionsDiv) {
+            reactionsDiv.remove();
+        }
+    }
+    
+    function setReply(msgId, msgText) {
+        currentReplyTo = { id: msgId, text: msgText };
+        const replyBar = document.getElementById('replyBar');
+        if (replyBar) {
+            replyBar.classList.remove('hidden');
+            document.getElementById('replyText').innerText = `Ответ: ${escapeHtml(msgText.substring(0, 50))}`;
+        }
+    }
+    
+    function cancelReply() {
+        currentReplyTo = null;
+        const replyBar = document.getElementById('replyBar');
+        if (replyBar) replyBar.classList.add('hidden');
+    }
+    
+    async function editMessage(msgId, oldText) {
+        const newText = prompt('Редактировать сообщение:', oldText);
+        if (!newText || newText === oldText) return;
+        await db.ref(`messages/${currentChatId}/${msgId}`).update({ text: newText, edited: true });
+        const msgElement = document.querySelector(`.message[data-msg-id="${msgId}"]`);
+        if (msgElement) {
+            const textDiv = msgElement.querySelector('.message-text');
+            if (textDiv) {
+                textDiv.innerHTML = `${escapeHtml(newText)} <span class="edited-mark">(ред.)</span>`;
+            }
+        }
+    }
+    
+    async function deleteMessage(msgId) {
+        if (!confirm('Удалить сообщение?')) return;
+        await db.ref(`messages/${currentChatId}/${msgId}`).remove();
+        const msgElement = document.querySelector(`.message[data-msg-id="${msgId}"]`);
+        if (msgElement) msgElement.remove();
+    }
+    
+    function showChatContextMenu(e, chatId, chatName, otherUid, isGroup) {
+        e.preventDefault();
+        hideContextMenu();
+        
+        const menu = document.createElement('div');
+        menu.className = 'context-menu';
+        menu.style.left = e.clientX + 'px';
+        menu.style.top = e.clientY + 'px';
+        
+        const deleteItem = document.createElement('div');
+        deleteItem.className = 'context-menu-item danger';
+        deleteItem.innerHTML = '<i class="fa-solid fa-trash"></i> Удалить чат (только для себя)';
+        deleteItem.onclick = async () => {
+            menu.remove();
+            if (confirm(`Удалить чат с ${chatName}? Это действие только для вас.`)) {
+                await db.ref(`users/${currentUser.uid}/chats/${chatId}`).remove();
+                if (currentChatId === chatId) {
+                    if (currentMessageListener) {
+                        db.ref(`messages/${currentMessageListener.chatId}`).off('child_added', currentMessageListener.handler);
+                        currentMessageListener = null;
+                    }
+                    currentChatId = SAVED_CHAT_ID;
+                    openChat(SAVED_CHAT_ID, 'Избранное', null, false, true);
+                }
+                await loadChats();
+            }
+        };
+        menu.appendChild(deleteItem);
+        
+        document.body.appendChild(menu);
+        
+        setTimeout(() => {
+            document.addEventListener('click', function closeMenu() {
+                hideContextMenu();
+                document.removeEventListener('click', closeMenu);
+            });
+        }, 10);
+    }
 
     // Модалка профиля
     const profileModal = document.getElementById('profileModal');
@@ -1083,7 +1458,6 @@
         profileModal.classList.remove('active');
     }
 
-    // Редактирование профиля
     function initEditSelects() {
         const daySelect = document.getElementById('editDay');
         if (daySelect && daySelect.options.length <= 1) {
@@ -1219,6 +1593,7 @@
 
     document.addEventListener('click', () => {
         emojiBar.classList.remove('active');
+        hideContextMenu();
     });
 
     const loader = document.getElementById('loader');
@@ -1355,11 +1730,9 @@
                 openChat(id, name, uid, isGroup, isSaved, verified);
             };
             el.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
                 const uid = el.dataset.uid;
                 if (uid && uid !== 'null' && uid !== '') {
-                    const isOwn = uid === currentUser?.uid;
-                    showProfile(uid, isOwn);
+                    showChatContextMenu(e, el.dataset.id, el.dataset.name, uid, el.dataset.isgroup === 'true');
                 }
             });
         });
@@ -1379,8 +1752,8 @@
         let time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         let line = document.createElement('div');
         line.className = `msg-line ${isOut ? 'out' : 'in'}`;
+        line.setAttribute('data-msg-id', msgId);
         
-        // Получаем отображаемое имя отправителя
         let senderDisplayName = msg.senderName;
         if (allUsersCache[msg.senderId]) {
             const sender = allUsersCache[msg.senderId];
@@ -1388,28 +1761,63 @@
         }
         let senderNameHtml = renderNameWithBadge(senderDisplayName, msg.senderVerified === true);
         
+        let replyHtml = '';
+        if (msg.replyTo && msg.replyToText) {
+            replyHtml = `<div class="reply-preview" style="font-size: 11px; color: var(--text-gray); margin-bottom: 4px;">↳ ${escapeHtml(msg.replyToText.substring(0, 50))}</div>`;
+        }
+        
+        let editedHtml = msg.edited ? '<span class="edited-mark" style="font-size: 10px; opacity: 0.6; margin-left: 6px;">(ред.)</span>' : '';
+        
+        let reactionsHtml = '';
+        if (msg.reactions) {
+            for (const [emoji, users] of Object.entries(msg.reactions)) {
+                if (users && users.length > 0) {
+                    reactionsHtml += `<span class="reaction-bubble" data-reaction="${emoji}" style="background: rgba(255,255,255,0.1); border-radius: 20px; padding: 2px 6px; font-size: 12px; cursor: pointer;">${emoji} ${users.length}</span>`;
+                }
+            }
+        }
+        
         line.innerHTML = `
-            <div class="bubble">
-                ${!isOut && currentChatIsGroup ? `<strong class="msg-sender-name" data-uid="${msg.senderId}" style="cursor:pointer;">${senderNameHtml}</strong><br>` : ''}
-                ${!isOut && currentChatId === SAVED_CHAT_ID && !isOut ? `<strong class="msg-sender-name" data-uid="${msg.senderId}" style="cursor:pointer;">${senderNameHtml}</strong><br>` : ''}
-                ${escapeHtml(msg.text)}
+            <div class="bubble" style="position: relative;">
+                ${!isOut && (currentChatIsGroup || currentChatId === SAVED_CHAT_ID) ? `<strong class="msg-sender-name" data-uid="${msg.senderId}" style="cursor: pointer;">${senderNameHtml}</strong><br>` : ''}
+                ${replyHtml}
+                <div class="message-text">${escapeHtml(msg.text)} ${editedHtml}</div>
                 <div class="bubble-meta">${time}</div>
+                ${reactionsHtml ? `<div class="message-reactions" style="display: flex; gap: 6px; margin-top: 4px;">${reactionsHtml}</div>` : ''}
             </div>
         `;
+        
         wrapper.appendChild(line);
         
-        const senderNameSpan = line.querySelector('.msg-sender-name');
-        if (senderNameSpan) {
-            senderNameSpan.style.cursor = 'pointer';
-            senderNameSpan.onclick = (e) => {
+        // Добавляем обработчики контекстного меню на сообщение
+        const bubble = line.querySelector('.bubble');
+        bubble.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            showMessageContextMenu(e, msgId, msg.text, isOut, msg.senderId);
+        });
+        
+        // Добавляем обработчик клика на имя отправителя
+        const senderSpan = line.querySelector('.msg-sender-name');
+        if (senderSpan) {
+            senderSpan.onclick = (e) => {
                 e.stopPropagation();
-                const uid = senderNameSpan.getAttribute('data-uid');
+                const uid = senderSpan.getAttribute('data-uid');
                 if (uid) {
-                    const isOwn = uid === currentUser?.uid;
-                    showProfile(uid, isOwn);
+                    showProfile(uid, uid === currentUser?.uid);
                 }
             };
         }
+        
+        // Добавляем обработчики реакций
+        const reactionSpans = line.querySelectorAll('.reaction-bubble');
+        reactionSpans.forEach(span => {
+            span.onclick = (e) => {
+                e.stopPropagation();
+                const emoji = span.getAttribute('data-reaction');
+                if (emoji) addReaction(msgId, emoji);
+            };
+        });
         
         scrollToBottom();
     }
@@ -1441,6 +1849,7 @@
         currentChatIsGroup = isGroup;
         currentChatOtherId = otherUid;
         currentChatIsSaved = isSaved || chatId === SAVED_CHAT_ID;
+        cancelReply();
         
         let displayName = chatName;
         let displayVerified = verified;
@@ -1478,7 +1887,6 @@
         let text = input.value.trim();
         if (!text || !currentChatId || !currentUser) return;
         
-        // Получаем отображаемое имя отправителя
         let senderDisplayName = currentUserData?.firstName ? 
             (currentUserData?.lastName ? `${currentUserData.firstName} ${currentUserData.lastName}` : currentUserData.firstName) : 
             currentUserData?.username || 'user';
@@ -1490,6 +1898,13 @@
             senderVerified: currentUserData?.verified === true,
             timestamp: Date.now() 
         };
+        
+        if (currentReplyTo) {
+            msg.replyTo = currentReplyTo.id;
+            msg.replyToText = currentReplyTo.text;
+            cancelReply();
+        }
+        
         await db.ref(`messages/${currentChatId}`).push(msg);
         input.value = '';
         await loadChats();
@@ -1603,6 +2018,13 @@
             }
         } catch (e) { document.getElementById('registerError').innerText = e.message; }
     }
+
+    // Добавляем reply bar в DOM
+    const inputPanel = document.querySelector('.input-panel');
+    const replyBarHtml = `<div id="replyBar" class="reply-bar hidden" style="background: var(--bg-glass-active); border-radius: 12px; padding: 8px 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;"><span id="replyText" style="font-size: 12px; color: var(--text-gray);"></span><span class="reply-cancel" onclick="cancelReply()" style="cursor: pointer; padding: 4px 8px; border-radius: 20px;">✕</span></div>`;
+    inputPanel.insertAdjacentHTML('afterbegin', replyBarHtml);
+    window.cancelReply = cancelReply;
+    window.addReaction = addReaction;
 
     // Обработчики
     document.getElementById('landingLoginBtn').onclick = () => showAuthModal(true);
