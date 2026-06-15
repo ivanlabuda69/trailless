@@ -482,15 +482,12 @@
         }
     }
 
-    function editMessageLocally(msgElement, newText) {
+    function updateMessageTextInDOM(msgElement, newText, isEdited) {
         if (msgElement) {
             const textDiv = msgElement.querySelector('.message-text');
             if (textDiv) {
-                let html = textDiv.innerHTML;
-                const editedMark = '<span class="edited-mark">(ред.)</span>';
-                const hasEdited = html.includes('(ред.)');
-                const textOnly = html.replace(/<span class="edited-mark">\(ред.\)<\/span>/g, '').trim();
-                textDiv.innerHTML = `${escapeHtml(newText)} ${hasEdited ? editedMark : ''}`;
+                const editedHtml = isEdited ? '<span class="edited-mark">(ред.)</span>' : '';
+                textDiv.innerHTML = `${escapeHtml(newText)} ${editedHtml}`;
             }
         }
     }
@@ -549,11 +546,17 @@
         if (!newText) return;
         if (!currentChatId || !currentEditingMsgId) return;
         
+        // Сохраняем в Firebase
+        await db.ref(`messages/${currentChatId}/${currentEditingMsgId}`).update({ 
+            text: newText, 
+            edited: true 
+        });
+        
+        // Обновляем DOM
         if (currentEditingMsgElement) {
-            editMessageLocally(currentEditingMsgElement, newText);
+            updateMessageTextInDOM(currentEditingMsgElement, newText, true);
         }
         
-        await db.ref(`messages/${currentChatId}/${currentEditingMsgId}`).update({ text: newText, edited: true });
         cancelEditMessage();
     }
     
@@ -581,7 +584,6 @@
         e.preventDefault();
         e.stopPropagation();
         
-        // Нельзя удалить Избранное
         if (isSaved || chatId === SAVED_CHAT_ID) return;
         
         hideContextMenu();
@@ -891,7 +893,7 @@
         let text = input.value.trim();
         if (!text || !currentChatId || !currentUser) return;
         
-        // Если в режиме редактирования
+        // Если в режиме редактирования - редактируем
         if (currentEditingMsgId) {
             await confirmEditMessage();
             return;
