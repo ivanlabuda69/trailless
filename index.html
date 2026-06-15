@@ -29,6 +29,30 @@
         *::-webkit-scrollbar { display: none; }
         body { background-color: var(--bg-main); color: var(--text-white); overflow: hidden; height: 100vh; width: 100vw; user-select: none; }
         
+        /* Иконка верификации — белая галочка в чёрном кружке (как в Telegram) */
+        .verified-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            background: #000000;
+            border-radius: 50%;
+            margin-left: 6px;
+            flex-shrink: 0;
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.2);
+        }
+        .verified-badge i {
+            color: #ffffff;
+            font-size: 10px;
+        }
+        .name-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+        
         /* Спиннер загрузки */
         .loader-overlay {
             position: fixed;
@@ -54,7 +78,7 @@
             to { transform: rotate(360deg); }
         }
         
-        /* ЛЕНДИНГ (ГЛАВНАЯ СТРАНИЦА) */
+        /* ЛЕНДИНГ */
         .landing {
             position: fixed;
             top: 0;
@@ -522,7 +546,7 @@
             transform: scale(1.1);
         }
         
-        /* Чат (твой полный макет) */
+        /* Чат */
         .spa-screen {
             display: none;
             width: 100vw;
@@ -638,7 +662,7 @@
         .user-avatar { width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(135deg, #1f1f23, #050505); border: 1px solid var(--border-glass); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; background-size: cover; background-position: center; background-repeat: no-repeat; }
         .chat-details { flex: 1; min-width: 0; }
         .chat-meta-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-        .name-wrapper { font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px; }
+        .name-wrapper { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
         .chat-type-badge { font-size: 9px; padding: 2px 5px; background: var(--text-gray-dark); border-radius: 4px; color: var(--text-gray); text-transform: capitalize; }
         .time-text { font-size: 11px; color: var(--text-gray); }
         .preview-text { font-size: 12px; color: var(--text-gray); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -776,7 +800,10 @@
             <div class="viewport-header">
                 <div class="header-interact" id="profileInspectTrigger">
                     <div class="avatar-container"><div class="user-avatar" id="activeAvatar">⭐</div></div>
-                    <div class="header-meta"><div class="name-wrapper" id="activeName">Избранное</div><div class="time-text" id="activeStatus"></div></div>
+                    <div class="header-meta">
+                        <div class="name-wrapper" id="activeNameContainer"></div>
+                        <div class="time-text" id="activeStatus"></div>
+                    </div>
                 </div>
                 <div><button class="btn-icon" id="triplePanelToggle"><i class="fa-solid fa-table-columns"></i></button></div>
             </div>
@@ -787,7 +814,6 @@
                     <input type="text" class="input-field" id="mainInput" placeholder="Напишите сообщение...">
                     <button class="btn-icon" id="actionSendBtn"><i class="fa-solid fa-paper-plane"></i></button>
                 </div>
-                <!-- ЭМОДЗИ БАР -->
                 <div class="emoji-bar" id="emojiBar">
                     <button class="emoji-btn" data-emoji="😀">😀</button>
                     <button class="emoji-btn" data-emoji="😂">😂</button>
@@ -869,6 +895,22 @@
 
     const SAVED_CHAT_ID = 'saved_messages';
     const SAVED_AVATAR_URL = 'https://i.ibb.co/cXM6mbNq/photo-2026-06-14-21-27-45.jpg';
+
+    // Функция для отображения имени с галочкой верификации (только если verified === true)
+    function renderNameWithBadge(name, isVerified) {
+        if (isVerified === true) {
+            return `${escapeHtml(name)}<span class="verified-badge"><i class="fas fa-check"></i></span>`;
+        }
+        return escapeHtml(name);
+    }
+
+    // Обновление отображения имени в шапке чата
+    function updateChatHeaderName(name, isVerified) {
+        const container = document.getElementById('activeNameContainer');
+        if (container) {
+            container.innerHTML = renderNameWithBadge(name, isVerified);
+        }
+    }
 
     // ЭМОДЗИ БАР
     const emojiBtn = document.getElementById('emojiBtn');
@@ -987,7 +1029,15 @@
         let snap = await db.ref('users').once('value');
         let users = snap.val() || {};
         for (let [uid, d] of Object.entries(users)) {
-            allUsersCache[uid] = { uid, username: (d.username || '').toLowerCase(), email: d.email, firstName: d.firstName, lastName: d.lastName, birthdate: d.birthdate };
+            allUsersCache[uid] = { 
+                uid, 
+                username: (d.username || '').toLowerCase(), 
+                email: d.email, 
+                firstName: d.firstName, 
+                lastName: d.lastName, 
+                birthdate: d.birthdate,
+                verified: d.verified === true
+            };
         }
     }
 
@@ -1004,7 +1054,7 @@
                     let lastSnap = await db.ref(`messages/${cid}`).orderByKey().limitToLast(1).once('value');
                     let lastMsg = '';
                     lastSnap.forEach(m => lastMsg = m.val().text);
-                    newChats.push({ id: cid, name: group.name, userId: null, isGroup: true, lastMessage: lastMsg || 'Нет сообщений' });
+                    newChats.push({ id: cid, name: group.name, userId: null, isGroup: true, lastMessage: lastMsg || 'Нет сообщений', verified: false });
                 }
             } else {
                 let other = allUsersCache[info.with];
@@ -1012,14 +1062,14 @@
                     let lastSnap = await db.ref(`messages/${cid}`).orderByKey().limitToLast(1).once('value');
                     let lastMsg = '';
                     lastSnap.forEach(m => lastMsg = m.val().text);
-                    newChats.push({ id: cid, name: other.username, userId: info.with, isGroup: false, lastMessage: lastMsg || 'Нет сообщений' });
+                    newChats.push({ id: cid, name: other.username, userId: info.with, isGroup: false, lastMessage: lastMsg || 'Нет сообщений', verified: other.verified === true });
                 }
             }
         }
         let savedLastSnap = await db.ref(`messages/${SAVED_CHAT_ID}`).orderByKey().limitToLast(1).once('value');
         let savedLastMsg = '';
         savedLastSnap.forEach(m => savedLastMsg = m.val().text);
-        newChats.unshift({ id: SAVED_CHAT_ID, name: 'Избранное', userId: null, isGroup: false, lastMessage: savedLastMsg || 'Нет сообщений', isSaved: true });
+        newChats.unshift({ id: SAVED_CHAT_ID, name: 'Избранное', userId: null, isGroup: false, lastMessage: savedLastMsg || 'Нет сообщений', isSaved: true, verified: false });
         chats = newChats;
         renderChats();
     }
@@ -1038,11 +1088,12 @@
         wrapper.innerHTML = filtered.map(c => {
             let isSaved = c.id === SAVED_CHAT_ID;
             let avatarHtml = isSaved ? `<div class="user-avatar" id="avatar-${c.id}"></div>` : `<div class="user-avatar" id="avatar-${c.id}">${getInitials(c.name)}</div>`;
+            let nameHtml = isSaved ? c.name : renderNameWithBadge(c.name, c.verified);
             return `
-                <div class="chat-card ${currentChatId === c.id ? 'active' : ''}" data-id="${c.id}" data-name="${escapeHtml(c.name)}" data-uid="${c.userId || ''}" data-isgroup="${c.isGroup}" data-issaved="${isSaved}">
+                <div class="chat-card ${currentChatId === c.id ? 'active' : ''}" data-id="${c.id}" data-name="${escapeHtml(c.name)}" data-uid="${c.userId || ''}" data-isgroup="${c.isGroup}" data-issaved="${isSaved}" data-verified="${c.verified}">
                     <div class="avatar-container">${avatarHtml}</div>
                     <div class="chat-details">
-                        <div class="chat-meta-row"><div class="name-wrapper">${c.id === SAVED_CHAT_ID ? '⭐ ' : (c.isGroup ? '👥 ' : '@')}${escapeHtml(c.name)}<span class="chat-type-badge">${c.id === SAVED_CHAT_ID ? 'избранное' : (c.isGroup ? 'группа' : 'человек')}</span></div></div>
+                        <div class="chat-meta-row"><div class="name-wrapper">${c.id === SAVED_CHAT_ID ? '⭐ ' : (c.isGroup ? '👥 ' : '@')}${nameHtml}<span class="chat-type-badge">${c.id === SAVED_CHAT_ID ? 'избранное' : (c.isGroup ? 'группа' : 'человек')}</span></div></div>
                         <div class="preview-text">${escapeHtml(c.lastMessage.substring(0, 50))}</div>
                     </div>
                 </div>
@@ -1068,7 +1119,8 @@
                 let uid = el.dataset.uid;
                 let isGroup = el.dataset.isgroup === 'true';
                 let isSaved = el.dataset.issaved === 'true';
-                openChat(id, name, uid, isGroup, isSaved);
+                let verified = el.dataset.verified === 'true';
+                openChat(id, name, uid, isGroup, isSaved, verified);
             };
         });
     }
@@ -1087,10 +1139,11 @@
         let time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         let line = document.createElement('div');
         line.className = `msg-line ${isOut ? 'out' : 'in'}`;
+        let senderNameHtml = renderNameWithBadge(msg.senderName, msg.senderVerified === true);
         line.innerHTML = `
             <div class="bubble">
-                ${!isOut && currentChatIsGroup ? `<strong>${escapeHtml(msg.senderName)}</strong><br>` : ''}
-                ${!isOut && currentChatId === SAVED_CHAT_ID && !isOut ? `<strong>${escapeHtml(msg.senderName)}</strong><br>` : ''}
+                ${!isOut && currentChatIsGroup ? `<strong>${senderNameHtml}</strong><br>` : ''}
+                ${!isOut && currentChatId === SAVED_CHAT_ID && !isOut ? `<strong>${senderNameHtml}</strong><br>` : ''}
                 ${escapeHtml(msg.text)}
                 <div class="bubble-meta">${time}</div>
             </div>
@@ -1117,7 +1170,7 @@
         scrollToBottom();
     }
 
-    async function openChat(chatId, chatName, otherUid, isGroup, isSaved = false) {
+    async function openChat(chatId, chatName, otherUid, isGroup, isSaved = false, verified = false) {
         if (currentChatId === chatId) return;
         if (currentMessageListener) {
             db.ref(`messages/${currentMessageListener.chatId}`).off('child_added', currentMessageListener.handler);
@@ -1128,10 +1181,16 @@
         currentChatIsSaved = isSaved || chatId === SAVED_CHAT_ID;
         
         let displayName = chatName;
-        if (isSaved || chatId === SAVED_CHAT_ID) displayName = 'Избранное';
+        let displayVerified = verified;
+        if (isSaved || chatId === SAVED_CHAT_ID) {
+            displayName = 'Избранное';
+            displayVerified = false;
+        } else if (!isGroup && otherUid && allUsersCache[otherUid]) {
+            displayVerified = allUsersCache[otherUid].verified === true;
+        }
         
-        document.getElementById('activeName').innerText = displayName;
-        document.getElementById('inspectName').innerText = displayName;
+        updateChatHeaderName(displayName, displayVerified);
+        document.getElementById('inspectName').innerHTML = renderNameWithBadge(displayName, displayVerified);
         document.getElementById('inspectNodeId').innerText = chatId === SAVED_CHAT_ID ? 'saved_messages' : chatId;
         
         let activeAvatar = document.getElementById('activeAvatar');
@@ -1155,7 +1214,13 @@
         let input = document.getElementById('mainInput');
         let text = input.value.trim();
         if (!text || !currentChatId || !currentUser) return;
-        let msg = { text, senderId: currentUser.uid, senderName: currentUserData?.username || 'user', timestamp: Date.now() };
+        let msg = { 
+            text, 
+            senderId: currentUser.uid, 
+            senderName: currentUserData?.username || 'user',
+            senderVerified: currentUserData?.verified === true,
+            timestamp: Date.now() 
+        };
         await db.ref(`messages/${currentChatId}`).push(msg);
         input.value = '';
         await loadChats();
@@ -1170,7 +1235,7 @@
         if (found.uid === currentUser.uid) { alert('Нельзя начать чат с самим собой'); return; }
         let existing = chats.find(c => !c.isGroup && c.userId === found.uid && c.id !== SAVED_CHAT_ID);
         if (existing) {
-            openChat(existing.id, existing.name, existing.userId, false);
+            openChat(existing.id, existing.name, existing.userId, false, false, found.verified);
             document.getElementById('newChatModal').style.display = 'none';
             document.getElementById('chatUsernameInput').value = '';
             return;
@@ -1182,7 +1247,7 @@
         document.getElementById('chatUsernameInput').value = '';
         await loadAllUsers();
         await loadChats();
-        openChat(chatId, found.username, found.uid, false);
+        openChat(chatId, found.username, found.uid, false, false, found.verified);
     }
 
     async function createGroup() {
@@ -1259,22 +1324,15 @@
         setTimeout(() => document.getElementById('profileModal').style.display = 'none', 1500);
         await loadChats();
         
-        if (currentChatId !== SAVED_CHAT_ID) {
-            let activeAvatar = document.getElementById('activeAvatar');
-            let inspectAvatar = document.getElementById('inspectAvatar');
-            let currentChat = chats.find(c => c.id === currentChatId);
-            if (currentChat) {
-                if (currentChat.isGroup) {
-                    setAvatarImage(activeAvatar, false, currentChat.name);
-                    setAvatarImage(inspectAvatar, false, currentChat.name);
-                } else {
-                    setAvatarImage(activeAvatar, false, currentChat.name);
-                    setAvatarImage(inspectAvatar, false, currentChat.name);
-                }
+        if (currentChatId !== SAVED_CHAT_ID && !currentChatIsGroup) {
+            let chat = chats.find(c => c.id === currentChatId);
+            if (chat) {
+                updateChatHeaderName(chat.name, chat.verified);
             }
         }
     }
 
+    // Регистрация с verified: false
     async function registerWithEmail() {
         let name = document.getElementById('regName').value.trim();
         let username = document.getElementById('regUsername').value.trim().toLowerCase();
@@ -1299,6 +1357,7 @@
                 firstName: name,
                 username: username,
                 email: email,
+                verified: false,
                 coins: 100,
                 createdAt: Date.now()
             });
@@ -1329,6 +1388,7 @@
                     firstName: name,
                     username: username,
                     email: user.email,
+                    verified: false,
                     coins: 100,
                     createdAt: Date.now()
                 });
@@ -1364,7 +1424,7 @@
             let snap = await db.ref(`users/${user.uid}`).once('value');
             if (!snap.exists()) {
                 let username = user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
-                await db.ref(`users/${user.uid}`).set({ email: user.email, username: username, firstName: username, coins: 100, createdAt: Date.now() });
+                await db.ref(`users/${user.uid}`).set({ email: user.email, username: username, firstName: username, verified: false, coins: 100, createdAt: Date.now() });
                 await db.ref(`usernames/${username}`).set(user.uid);
             }
             hideAuthModal();
@@ -1423,9 +1483,9 @@
             currentUserData = snap.val();
             if (!currentUserData) {
                 let username = user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
-                await db.ref(`users/${user.uid}`).set({ email: user.email, username: username, firstName: username, coins: 100, createdAt: Date.now() });
+                await db.ref(`users/${user.uid}`).set({ email: user.email, username: username, firstName: username, verified: false, coins: 100, createdAt: Date.now() });
                 await db.ref(`usernames/${username}`).set(user.uid);
-                currentUserData = { username, firstName: username, coins: 100 };
+                currentUserData = { username, firstName: username, verified: false, coins: 100 };
             }
             landing.classList.add('hide');
             setTimeout(() => {
@@ -1435,7 +1495,7 @@
             await loadAllUsers();
             await loadChats();
             if (!currentChatId || currentChatId === 'saved_messages') {
-                openChat(SAVED_CHAT_ID, 'Избранное', null, false, true);
+                openChat(SAVED_CHAT_ID, 'Избранное', null, false, true, false);
             }
         } else {
             landing.style.display = 'block';
