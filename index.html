@@ -29,7 +29,7 @@
         *::-webkit-scrollbar { display: none; }
         body { background-color: var(--bg-main); color: var(--text-white); overflow: hidden; height: 100vh; width: 100vw; user-select: none; }
         
-        /* Иконка верификации — белая галочка в чёрном кружке (как в Telegram) */
+        /* Иконка верификации */
         .verified-badge {
             display: inline-flex;
             align-items: center;
@@ -546,6 +546,101 @@
             transform: scale(1.1);
         }
         
+        /* МОДАЛКА ПРОФИЛЯ (всплывающая) */
+        .profile-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(20px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        .profile-modal.active {
+            display: flex;
+        }
+        .profile-window {
+            background: var(--bg-sidebar);
+            border: 1px solid var(--border-glass-bright);
+            border-radius: 24px;
+            width: 420px;
+            padding: 32px;
+            box-shadow: 0 30px 70px rgba(0,0,0,0.8);
+            position: relative;
+        }
+        .profile-avatar-large {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #1f1f23, #050505);
+            border: 2px solid var(--border-glass-bright);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 42px;
+            font-weight: 600;
+            background-size: cover;
+            background-position: center;
+        }
+        .profile-name-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+        .profile-name {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .profile-username {
+            text-align: center;
+            color: var(--text-gray);
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+        .profile-info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-glass);
+        }
+        .profile-info-label {
+            color: var(--text-gray);
+            font-size: 13px;
+        }
+        .profile-info-value {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .profile-edit-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-glass-active);
+            border: none;
+            color: var(--text-gray);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .profile-edit-btn:hover {
+            background: var(--bg-glass-active);
+            color: var(--text-white);
+        }
+        
         /* Чат */
         .spa-screen {
             display: none;
@@ -781,6 +876,29 @@
     </div>
 </div>
 
+<!-- МОДАЛКА ПРОФИЛЯ (всплывающая) -->
+<div class="profile-modal" id="profileModal">
+    <div class="profile-window" id="profileWindow">
+        <button class="profile-edit-btn" id="profileEditBtn" style="display: none;"><i class="fa-solid fa-pencil"></i></button>
+        <div class="profile-avatar-large" id="profileModalAvatar">👤</div>
+        <div class="profile-name-row" id="profileModalNameRow"></div>
+        <div class="profile-username" id="profileModalUsername">@username</div>
+        <div class="profile-info-item">
+            <span class="profile-info-label">ID пользователя</span>
+            <span class="profile-info-value" id="profileModalUid">-</span>
+        </div>
+        <div class="profile-info-item">
+            <span class="profile-info-label">Дата регистрации</span>
+            <span class="profile-info-value" id="profileModalCreated">-</span>
+        </div>
+        <div class="profile-info-item">
+            <span class="profile-info-label">Монеты</span>
+            <span class="profile-info-value" id="profileModalCoins">0 🪙</span>
+        </div>
+        <button class="google-btn" id="profileModalCloseBtn" style="background:#21262d; color:#fff; margin-top:20px;">Закрыть</button>
+    </div>
+</div>
+
 <!-- ЧАТ -->
 <div class="spa-screen" id="screenMessenger">
     <div class="desktop-layout" id="mainLayout">
@@ -839,7 +957,7 @@
 </div>
 
 <div class="main-drawer" id="mainDrawer">
-    <button class="drawer-item" id="menuProfile"><i class="fa-solid fa-user"></i> Профиль</button>
+    <button class="drawer-item" id="menuProfile"><i class="fa-solid fa-user"></i> Мой профиль</button>
     <button class="drawer-item" id="menuNewGroup"><i class="fa-solid fa-users"></i> Создать группу</button>
     <button class="drawer-item" id="menuNewChat"><i class="fa-solid fa-plus"></i> Новый чат</button>
     <button class="drawer-item" id="menuLogout"><i class="fa-solid fa-sign-out-alt"></i> Выйти</button>
@@ -848,24 +966,24 @@
 <div class="modal-overlay" id="newChatModal"><div class="modal-window"><div class="auth-title" style="text-align:left;">Новый чат</div><input type="text" class="auth-input" id="chatUsernameInput" placeholder="Username пользователя"><button class="google-btn" id="createChatBtn" style="margin-top:16px;">Начать чат</button><button class="google-btn" id="cancelChatBtn" style="background:#21262d; color:#fff;">Отмена</button></div></div>
 <div class="modal-overlay" id="createGroupModal"><div class="modal-window"><div class="auth-title" style="text-align:left;">Создать группу</div><input type="text" class="auth-input" id="groupNameInput" placeholder="Название группы" maxlength="20"><button class="google-btn" id="confirmCreateGroupBtn" style="margin-top:16px;">Создать</button><button class="google-btn" id="cancelCreateGroupBtn" style="background:#21262d; color:#fff;">Отмена</button></div></div>
 
-<div class="modal-overlay" id="profileModal">
+<div class="modal-overlay" id="editProfileModal">
     <div class="modal-window">
         <div class="auth-title" style="text-align:left;">Редактировать профиль</div>
-        <div class="profile-avatar-preview" id="profileAvatarPreview">👤</div>
-        <div class="input-group"><label>Имя</label><input type="text" class="auth-input" id="profileFirstName" placeholder="Имя"></div>
-        <div class="input-group"><label>Фамилия</label><input type="text" class="auth-input" id="profileLastName" placeholder="Фамилия"></div>
-        <div class="input-group"><label>Username</label><input type="text" class="auth-input" id="profileUsername" placeholder="Username"></div>
+        <div class="profile-avatar-preview" id="editAvatarPreview">👤</div>
+        <div class="input-group"><label>Имя</label><input type="text" class="auth-input" id="editFirstName" placeholder="Имя"></div>
+        <div class="input-group"><label>Фамилия</label><input type="text" class="auth-input" id="editLastName" placeholder="Фамилия"></div>
+        <div class="input-group"><label>Username</label><input type="text" class="auth-input" id="editUsername" placeholder="Username"></div>
         <div class="input-group"><label>Дата рождения</label>
             <div class="date-row">
-                <select class="auth-input" id="profileDay"><option value="">День</option></select>
-                <select class="auth-input" id="profileMonth"><option value="">Месяц</option></select>
-                <select class="auth-input" id="profileYear"><option value="">Год</option></select>
+                <select class="auth-input" id="editDay"><option value="">День</option></select>
+                <select class="auth-input" id="editMonth"><option value="">Месяц</option></select>
+                <select class="auth-input" id="editYear"><option value="">Год</option></select>
             </div>
         </div>
-        <button class="google-btn" id="saveProfileBtn" style="background:#fff; color:#000; margin-top:16px;">Сохранить</button>
-        <button class="google-btn" id="closeProfileBtn" style="background:#21262d; color:#fff; margin-top:8px;">Отмена</button>
-        <div id="profileError" class="auth-error"></div>
-        <div id="profileSuccess" class="auth-success"></div>
+        <button class="google-btn" id="saveEditBtn" style="background:#fff; color:#000; margin-top:16px;">Сохранить</button>
+        <button class="google-btn" id="cancelEditBtn" style="background:#21262d; color:#fff; margin-top:8px;">Отмена</button>
+        <div id="editError" class="auth-error"></div>
+        <div id="editSuccess" class="auth-success"></div>
     </div>
 </div>
 
@@ -896,7 +1014,7 @@
     const SAVED_CHAT_ID = 'saved_messages';
     const SAVED_AVATAR_URL = 'https://i.ibb.co/cXM6mbNq/photo-2026-06-14-21-27-45.jpg';
 
-    // Функция для отображения имени с галочкой верификации (только если verified === true)
+    // Функции для отображения
     function renderNameWithBadge(name, isVerified) {
         if (isVerified === true) {
             return `${escapeHtml(name)}<span class="verified-badge"><i class="fas fa-check"></i></span>`;
@@ -904,12 +1022,167 @@
         return escapeHtml(name);
     }
 
-    // Обновление отображения имени в шапке чата
     function updateChatHeaderName(name, isVerified) {
         const container = document.getElementById('activeNameContainer');
         if (container) {
             container.innerHTML = renderNameWithBadge(name, isVerified);
         }
+    }
+
+    function getInitials(name) {
+        if (!name) return '??';
+        return name.substring(0, 2).toUpperCase();
+    }
+
+    function escapeHtml(s) { return s?.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>' : '&gt;' }[m])) || ''; }
+
+    function validateUsername(u) { return /^[a-zA-Z0-9]{5,15}$/.test(u); }
+
+    // Модалка профиля
+    const profileModal = document.getElementById('profileModal');
+    const profileEditBtn = document.getElementById('profileEditBtn');
+    const editProfileModal = document.getElementById('editProfileModal');
+
+    function showProfile(uid, isOwn = false) {
+        const user = allUsersCache[uid];
+        if (!user) return;
+        
+        // Заполняем данные
+        const fullName = user.firstName ? (user.lastName ? `${user.firstName} ${user.lastName}` : user.firstName) : user.username;
+        document.getElementById('profileModalAvatar').innerHTML = getInitials(fullName);
+        document.getElementById('profileModalAvatar').style.backgroundImage = '';
+        
+        const nameRow = document.getElementById('profileModalNameRow');
+        nameRow.innerHTML = `
+            <span class="profile-name">${escapeHtml(fullName)}</span>
+            ${user.verified ? '<span class="verified-badge"><i class="fas fa-check"></i></span>' : ''}
+        `;
+        document.getElementById('profileModalUsername').innerHTML = `@${escapeHtml(user.username)}`;
+        document.getElementById('profileModalUid').innerText = uid.substring(0, 12) + '...';
+        document.getElementById('profileModalCreated').innerText = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Неизвестно';
+        document.getElementById('profileModalCoins').innerHTML = `${user.coins || 0} 🪙`;
+        
+        // Показываем/скрываем кнопку редактирования
+        if (isOwn) {
+            profileEditBtn.style.display = 'flex';
+        } else {
+            profileEditBtn.style.display = 'none';
+        }
+        
+        profileModal.classList.add('active');
+    }
+
+    function hideProfileModal() {
+        profileModal.classList.remove('active');
+    }
+
+    // Редактирование профиля
+    function initEditSelects() {
+        const daySelect = document.getElementById('editDay');
+        if (daySelect && daySelect.options.length <= 1) {
+            for (let i = 1; i <= 31; i++) daySelect.innerHTML += `<option value="${i}">${i}</option>`;
+        }
+        const monthSelect = document.getElementById('editMonth');
+        if (monthSelect && monthSelect.options.length <= 1) {
+            const months = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
+            for (let i = 0; i < 12; i++) monthSelect.innerHTML += `<option value="${i+1}">${months[i]}</option>`;
+        }
+        const yearSelect = document.getElementById('editYear');
+        if (yearSelect && yearSelect.options.length <= 1) {
+            const currentYear = new Date().getFullYear();
+            for (let i = currentYear; i >= currentYear - 100; i--) yearSelect.innerHTML += `<option value="${i}">${i}</option>`;
+        }
+    }
+    initEditSelects();
+
+    function setEditBirthdate(birthdate) {
+        if (!birthdate) return;
+        const parts = birthdate.split('-');
+        if (parts.length === 3) {
+            const year = document.getElementById('editYear');
+            const month = document.getElementById('editMonth');
+            const day = document.getElementById('editDay');
+            if (year) year.value = parts[0];
+            if (month) month.value = parseInt(parts[1]);
+            if (day) day.value = parseInt(parts[2]);
+        }
+    }
+
+    function getEditBirthdate() {
+        const day = document.getElementById('editDay')?.value;
+        const month = document.getElementById('editMonth')?.value;
+        const year = document.getElementById('editYear')?.value;
+        if (day && month && year) return `${year}-${month.padStart(2,'0')}-${day.padStart(2,'0')}`;
+        return null;
+    }
+
+    function openEditProfile() {
+        if (!currentUserData) return;
+        document.getElementById('editFirstName').value = currentUserData.firstName || '';
+        document.getElementById('editLastName').value = currentUserData.lastName || '';
+        document.getElementById('editUsername').value = currentUserData.username || '';
+        if (currentUserData.birthdate) setEditBirthdate(currentUserData.birthdate);
+        
+        const preview = document.getElementById('editAvatarPreview');
+        const nameForAvatar = currentUserData.firstName || currentUserData.username || 'U';
+        preview.innerHTML = getInitials(nameForAvatar);
+        preview.style.backgroundImage = '';
+        preview.style.fontSize = '32px';
+        
+        editProfileModal.style.display = 'flex';
+        document.getElementById('editError').innerText = '';
+        document.getElementById('editSuccess').innerText = '';
+    }
+
+    async function saveEditProfile() {
+        const firstName = document.getElementById('editFirstName').value.trim();
+        const lastName = document.getElementById('editLastName').value.trim();
+        const newUsername = document.getElementById('editUsername').value.trim().toLowerCase();
+        const birthdate = getEditBirthdate();
+        
+        document.getElementById('editError').innerText = '';
+        document.getElementById('editSuccess').innerText = '';
+        
+        if (newUsername && !validateUsername(newUsername)) {
+            document.getElementById('editError').innerText = 'Username: 5-15 букв/цифр';
+            return;
+        }
+        
+        if (newUsername && newUsername !== currentUserData.username) {
+            const check = await db.ref(`usernames/${newUsername}`).once('value');
+            if (check.exists()) {
+                document.getElementById('editError').innerText = 'Username уже занят';
+                return;
+            }
+            await db.ref(`usernames/${currentUserData.username}`).remove();
+            await db.ref(`usernames/${newUsername}`).set(currentUser.uid);
+        }
+        
+        const updates = {};
+        if (firstName) updates.firstName = firstName;
+        if (lastName) updates.lastName = lastName;
+        if (newUsername) updates.username = newUsername;
+        if (birthdate) updates.birthdate = birthdate;
+        
+        await db.ref(`users/${currentUser.uid}`).update(updates);
+        if (newUsername) currentUserData.username = newUsername;
+        if (firstName) currentUserData.firstName = firstName;
+        if (lastName) currentUserData.lastName = lastName;
+        if (birthdate) currentUserData.birthdate = birthdate;
+        
+        document.getElementById('editSuccess').innerText = '✅ Профиль обновлён';
+        setTimeout(() => {
+            editProfileModal.style.display = 'none';
+            // Обновляем отображение в чате
+            if (currentChatId !== SAVED_CHAT_ID && !currentChatIsGroup) {
+                const chat = chats.find(c => c.id === currentChatId);
+                if (chat) {
+                    updateChatHeaderName(chat.name, chat.verified);
+                }
+            }
+        }, 1500);
+        await loadAllUsers();
+        await loadChats();
     }
 
     // ЭМОДЗИ БАР
@@ -962,54 +1235,6 @@
         authModal.classList.remove('active');
     }
 
-    function initDateSelects(prefix = 'reg') {
-        let daySelect = document.getElementById(`${prefix}Day`);
-        if (daySelect && daySelect.options.length <= 1) {
-            for (let i = 1; i <= 31; i++) daySelect.innerHTML += `<option value="${i}">${i}</option>`;
-        }
-        let monthSelect = document.getElementById(`${prefix}Month`);
-        if (monthSelect && monthSelect.options.length <= 1) {
-            let months = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
-            for (let i = 0; i < 12; i++) monthSelect.innerHTML += `<option value="${i+1}">${months[i]}</option>`;
-        }
-        let yearSelect = document.getElementById(`${prefix}Year`);
-        if (yearSelect && yearSelect.options.length <= 1) {
-            let currentYear = new Date().getFullYear();
-            for (let i = currentYear; i >= currentYear - 100; i--) yearSelect.innerHTML += `<option value="${i}">${i}</option>`;
-        }
-    }
-    initDateSelects('reg');
-    initDateSelects('profile');
-
-    function getBirthdate(prefix = 'reg') {
-        let day = document.getElementById(`${prefix}Day`)?.value;
-        let month = document.getElementById(`${prefix}Month`)?.value;
-        let year = document.getElementById(`${prefix}Year`)?.value;
-        if (day && month && year) return `${year}-${month.padStart(2,'0')}-${day.padStart(2,'0')}`;
-        return null;
-    }
-
-    function setBirthdateSelects(birthdate, prefix = 'profile') {
-        if (!birthdate) return;
-        let parts = birthdate.split('-');
-        if (parts.length === 3) {
-            let year = document.getElementById(`${prefix}Year`);
-            let month = document.getElementById(`${prefix}Month`);
-            let day = document.getElementById(`${prefix}Day`);
-            if (year) year.value = parts[0];
-            if (month) month.value = parseInt(parts[1]);
-            if (day) day.value = parseInt(parts[2]);
-        }
-    }
-
-    function validateUsername(u) { return /^[a-zA-Z0-9]{5,15}$/.test(u); }
-    function escapeHtml(s) { return s?.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>' : '&gt;' }[m])) || ''; }
-
-    function getInitials(name) {
-        if (!name) return '??';
-        return name.substring(0, 2).toUpperCase();
-    }
-
     function setAvatarImage(element, isSaved, textName, imageUrl = null) {
         if (isSaved) {
             element.style.backgroundImage = `url('${SAVED_AVATAR_URL}')`;
@@ -1036,7 +1261,9 @@
                 firstName: d.firstName, 
                 lastName: d.lastName, 
                 birthdate: d.birthdate,
-                verified: d.verified === true
+                verified: d.verified === true,
+                coins: d.coins || 0,
+                createdAt: d.createdAt || Date.now()
             };
         }
     }
@@ -1122,6 +1349,15 @@
                 let verified = el.dataset.verified === 'true';
                 openChat(id, name, uid, isGroup, isSaved, verified);
             };
+            // Добавляем контекстное меню для просмотра профиля (правый клик)
+            el.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                const uid = el.dataset.uid;
+                if (uid && uid !== 'null' && uid !== '') {
+                    const isOwn = uid === currentUser?.uid;
+                    showProfile(uid, isOwn);
+                }
+            });
         });
     }
 
@@ -1140,15 +1376,32 @@
         let line = document.createElement('div');
         line.className = `msg-line ${isOut ? 'out' : 'in'}`;
         let senderNameHtml = renderNameWithBadge(msg.senderName, msg.senderVerified === true);
+        
+        // Добавляем обработчик контекстного меню на имя отправителя
         line.innerHTML = `
             <div class="bubble">
-                ${!isOut && currentChatIsGroup ? `<strong>${senderNameHtml}</strong><br>` : ''}
-                ${!isOut && currentChatId === SAVED_CHAT_ID && !isOut ? `<strong>${senderNameHtml}</strong><br>` : ''}
+                ${!isOut && currentChatIsGroup ? `<strong class="msg-sender-name" data-uid="${msg.senderId}" style="cursor:pointer;">${senderNameHtml}</strong><br>` : ''}
+                ${!isOut && currentChatId === SAVED_CHAT_ID && !isOut ? `<strong class="msg-sender-name" data-uid="${msg.senderId}" style="cursor:pointer;">${senderNameHtml}</strong><br>` : ''}
                 ${escapeHtml(msg.text)}
                 <div class="bubble-meta">${time}</div>
             </div>
         `;
         wrapper.appendChild(line);
+        
+        // Добавляем обработчик для открытия профиля по клику на имя
+        const senderNameSpan = line.querySelector('.msg-sender-name');
+        if (senderNameSpan) {
+            senderNameSpan.style.cursor = 'pointer';
+            senderNameSpan.onclick = (e) => {
+                e.stopPropagation();
+                const uid = senderNameSpan.getAttribute('data-uid');
+                if (uid) {
+                    const isOwn = uid === currentUser?.uid;
+                    showProfile(uid, isOwn);
+                }
+            };
+        }
+        
         scrollToBottom();
     }
 
@@ -1263,76 +1516,6 @@
         openChat(groupId, groupName, null, true);
     }
 
-    async function openProfileModal() {
-        if (!currentUserData) return;
-        document.getElementById('profileFirstName').value = currentUserData.firstName || '';
-        document.getElementById('profileLastName').value = currentUserData.lastName || '';
-        document.getElementById('profileUsername').value = currentUserData.username || '';
-        if (currentUserData.birthdate) setBirthdateSelects(currentUserData.birthdate, 'profile');
-        
-        let profilePreview = document.getElementById('profileAvatarPreview');
-        let nameForAvatar = currentUserData.firstName || currentUserData.username || 'U';
-        profilePreview.style.backgroundImage = '';
-        profilePreview.innerHTML = getInitials(nameForAvatar);
-        profilePreview.style.fontSize = '32px';
-        profilePreview.style.display = 'flex';
-        profilePreview.style.alignItems = 'center';
-        profilePreview.style.justifyContent = 'center';
-        
-        document.getElementById('profileModal').style.display = 'flex';
-        document.getElementById('profileError').innerText = '';
-        document.getElementById('profileSuccess').innerText = '';
-    }
-
-    async function saveProfile() {
-        let firstName = document.getElementById('profileFirstName').value.trim();
-        let lastName = document.getElementById('profileLastName').value.trim();
-        let newUsername = document.getElementById('profileUsername').value.trim().toLowerCase();
-        let birthdate = getBirthdate('profile');
-        
-        document.getElementById('profileError').innerText = '';
-        document.getElementById('profileSuccess').innerText = '';
-        
-        if (newUsername && !validateUsername(newUsername)) {
-            document.getElementById('profileError').innerText = 'Username: 5-15 букв/цифр';
-            return;
-        }
-        
-        if (newUsername && newUsername !== currentUserData.username) {
-            let check = await db.ref(`usernames/${newUsername}`).once('value');
-            if (check.exists()) {
-                document.getElementById('profileError').innerText = 'Username уже занят';
-                return;
-            }
-            await db.ref(`usernames/${currentUserData.username}`).remove();
-            await db.ref(`usernames/${newUsername}`).set(currentUser.uid);
-        }
-        
-        let updates = {};
-        if (firstName) updates.firstName = firstName;
-        if (lastName) updates.lastName = lastName;
-        if (newUsername) updates.username = newUsername;
-        if (birthdate) updates.birthdate = birthdate;
-        
-        await db.ref(`users/${currentUser.uid}`).update(updates);
-        if (newUsername) currentUserData.username = newUsername;
-        if (firstName) currentUserData.firstName = firstName;
-        if (lastName) currentUserData.lastName = lastName;
-        if (birthdate) currentUserData.birthdate = birthdate;
-        
-        document.getElementById('profileSuccess').innerText = '✅ Профиль обновлён';
-        setTimeout(() => document.getElementById('profileModal').style.display = 'none', 1500);
-        await loadChats();
-        
-        if (currentChatId !== SAVED_CHAT_ID && !currentChatIsGroup) {
-            let chat = chats.find(c => c.id === currentChatId);
-            if (chat) {
-                updateChatHeaderName(chat.name, chat.verified);
-            }
-        }
-    }
-
-    // Регистрация с verified: false
     async function registerWithEmail() {
         let name = document.getElementById('regName').value.trim();
         let username = document.getElementById('regUsername').value.trim().toLowerCase();
@@ -1401,7 +1584,7 @@
         } catch (e) { document.getElementById('registerError').innerText = e.message; }
     }
 
-    // Обработчики для лендинга
+    // Обработчики
     document.getElementById('landingLoginBtn').onclick = () => showAuthModal(true);
     document.getElementById('landingRegisterBtn').onclick = () => showAuthModal(false);
     document.getElementById('heroLoginBtn').onclick = () => showAuthModal(true);
@@ -1442,13 +1625,21 @@
     document.getElementById('emailRegisterBtn').onclick = registerWithEmail;
 
     authModal.onclick = (e) => { if (e.target === authModal) hideAuthModal(); };
+    profileModal.onclick = (e) => { if (e.target === profileModal) hideProfileModal(); };
+    document.getElementById('profileModalCloseBtn').onclick = hideProfileModal;
+    profileEditBtn.onclick = () => {
+        hideProfileModal();
+        openEditProfile();
+    };
+    document.getElementById('saveEditBtn').onclick = saveEditProfile;
+    document.getElementById('cancelEditBtn').onclick = () => editProfileModal.style.display = 'none';
 
     document.getElementById('menuLogout').onclick = () => auth.signOut();
     document.getElementById('menuNewChat').onclick = () => document.getElementById('newChatModal').style.display = 'flex';
     document.getElementById('menuNewGroup').onclick = () => document.getElementById('createGroupModal').style.display = 'flex';
-    document.getElementById('menuProfile').onclick = openProfileModal;
-    document.getElementById('closeProfileBtn').onclick = () => document.getElementById('profileModal').style.display = 'none';
-    document.getElementById('saveProfileBtn').onclick = saveProfile;
+    document.getElementById('menuProfile').onclick = () => {
+        if (currentUser) showProfile(currentUser.uid, true);
+    };
     document.getElementById('createChatBtn').onclick = createPrivateChat;
     document.getElementById('cancelChatBtn').onclick = () => { document.getElementById('newChatModal').style.display = 'none'; document.getElementById('chatUsernameInput').value = ''; };
     document.getElementById('confirmCreateGroupBtn').onclick = createGroup;
@@ -1458,10 +1649,14 @@
     document.getElementById('drawerTrigger').onclick = (e) => { e.stopPropagation(); let d = document.getElementById('mainDrawer'); d.style.display = d.style.display === 'flex' ? 'none' : 'flex'; };
     document.onclick = () => document.getElementById('mainDrawer').style.display = 'none';
     document.getElementById('profileInspectTrigger').onclick = () => {
-        let layout = document.getElementById('mainLayout');
-        let panel = document.getElementById('rightPanel');
-        layout.classList.toggle('triple-panel');
-        panel.style.display = layout.classList.contains('triple-panel') ? 'flex' : 'none';
+        // Открываем профиль текущего чата
+        if (currentChatId !== SAVED_CHAT_ID && currentChatOtherId) {
+            showProfile(currentChatOtherId, false);
+        } else if (currentChatId === SAVED_CHAT_ID) {
+            // Ничего не делаем для избранного
+        } else if (currentChatIsGroup) {
+            // Для группы пока ничего
+        }
     };
     document.getElementById('closeRightPanelBtn').onclick = () => {
         document.getElementById('mainLayout').classList.remove('triple-panel');
