@@ -727,27 +727,6 @@
     const authModal = document.getElementById('authModal');
     const messengerScreen = document.getElementById('screenMessenger');
 
-    // Функция для переключения на лендинг (главная страница)
-    function showLanding() {
-        messengerScreen.classList.remove('active');
-        landing.style.display = 'block';
-        landing.classList.remove('hide');
-        document.getElementById('messagesWrapper').innerHTML = '';
-        document.getElementById('chatsWrapper').innerHTML = '';
-        // Закрываем все модалки
-        authModal.classList.remove('active');
-        profileModal.classList.remove('active');
-        editProfileModal.style.display = 'none';
-        document.getElementById('mainDrawer').style.display = 'none';
-    }
-
-    // Функция для переключения на чат
-    function showMessenger() {
-        landing.style.display = 'none';
-        landing.classList.add('hide');
-        messengerScreen.classList.add('active');
-    }
-
     function showAuthModal(showLogin = true) {
         authModal.classList.add('active');
         if (showLogin) { document.getElementById('loginCard').classList.add('active'); document.getElementById('registerCard').classList.remove('active'); }
@@ -759,6 +738,24 @@
         if (isSaved) { element.style.backgroundImage = `url('${SAVED_AVATAR_URL}')`; element.style.backgroundSize = 'cover'; element.innerHTML = ''; }
         else if (imageUrl) { element.style.backgroundImage = `url('${imageUrl}')`; element.style.backgroundSize = 'cover'; element.innerHTML = ''; }
         else { element.style.backgroundImage = ''; element.innerHTML = getInitials(textName); }
+    }
+
+    function showLanding() {
+        messengerScreen.classList.remove('active');
+        landing.style.display = 'block';
+        landing.classList.remove('hide');
+        document.getElementById('messagesWrapper').innerHTML = '';
+        document.getElementById('chatsWrapper').innerHTML = '';
+        authModal.classList.remove('active');
+        profileModal.classList.remove('active');
+        editProfileModal.style.display = 'none';
+        document.getElementById('mainDrawer').style.display = 'none';
+    }
+
+    function showMessenger() {
+        landing.style.display = 'none';
+        landing.classList.add('hide');
+        messengerScreen.classList.add('active');
     }
 
     async function loadAllUsers() {
@@ -1027,13 +1024,9 @@
     document.getElementById('saveEditBtn').onclick = saveEditProfile;
     document.getElementById('cancelEditProfileBtn').onclick = () => editProfileModal.style.display = 'none';
     
-    // Кнопка выхода - завершает сессию Firebase и показывает лендинг
     document.getElementById('menuLogout').onclick = async () => {
         document.getElementById('mainDrawer').style.display = 'none';
-        // ЗАВЕРШАЕМ СЕССИЮ FIREBASE
         await auth.signOut();
-        // После signOut сработает onAuthStateChanged с user = null
-        // и покажет лендинг
     };
     
     document.getElementById('menuNewChat').onclick = () => document.getElementById('newChatModal').style.display = 'flex';
@@ -1054,13 +1047,10 @@
     document.getElementById('cancelReplyBtn').onclick = cancelReply;
     document.getElementById('cancelEditBtn').onclick = cancelEditMessage;
 
-    // Основная инициализация
-    let initCompleted = false;
-    
+    // --- АВТОРИЗАЦИЯ ---
     auth.onAuthStateChanged(async (user) => {
-        if (initCompleted) return;
-        
         if (user) {
+            // ПОЛЬЗОВАТЕЛЬ ВОШЕЛ
             currentUser = user;
             let snap = await db.ref(`users/${user.uid}`).once('value');
             currentUserData = snap.val();
@@ -1073,8 +1063,6 @@
             
             await loadAllUsers();
             await loadChats();
-            
-            // Показываем чат
             showMessenger();
             
             setTimeout(() => {
@@ -1085,7 +1073,7 @@
                 setTimeout(() => { loader.style.display = 'none'; }, 300);
             }, 300);
         } else {
-            // Сбрасываем состояние при выходе
+            // ПОЛЬЗОВАТЕЛЬ ВЫШЕЛ
             currentUser = null;
             currentUserData = null;
             currentChatId = 'saved_messages';
@@ -1095,27 +1083,23 @@
             chats = [];
             allUsersCache = {};
             
-            // Отключаем слушатели сообщений
             if (currentMessageListener) { 
                 db.ref(`messages/${currentMessageListener.chatId}`).off('child_added', currentMessageListener.handler); 
                 currentMessageListener = null; 
             }
             
-            // Показываем лендинг
             showLanding();
             loader.classList.add('hide');
             setTimeout(() => { loader.style.display = 'none'; }, 300);
         }
-        
-        initCompleted = true;
     });
     
+    // Если Firebase не ответил через 5 секунд - показываем лендинг
     setTimeout(() => {
-        if (!initCompleted) {
+        if (!currentUser) {
             loader.classList.add('hide');
             setTimeout(() => { loader.style.display = 'none'; }, 300);
             showLanding();
-            initCompleted = true;
         }
     }, 5000);
 </script>
