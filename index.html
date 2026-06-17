@@ -447,6 +447,7 @@
     let currentReplyTo = null;
     let currentEditingMsgId = null;
     let currentEditingMsgElement = null;
+    let isMessagesLoaded = false; // Флаг для предотвращения дублирования
 
     const SAVED_CHAT_ID = 'saved_messages';
     const SAVED_AVATAR_URL = 'https://i.ibb.co/cXM6mbNq/photo-2026-06-14-21-27-45.jpg';
@@ -750,6 +751,7 @@
         profileModal.classList.remove('active');
         editProfileModal.style.display = 'none';
         document.getElementById('mainDrawer').style.display = 'none';
+        isMessagesLoaded = false;
     }
 
     function showMessenger() {
@@ -839,9 +841,13 @@
 
     function scrollToBottom() { setTimeout(() => { let container = document.getElementById('messagesWrapper'); if (container) container.scrollTop = container.scrollHeight; }, 100); }
 
-    function renderMessage(msg, msgId) {
+    function renderMessage(msg, msgId, append = true) {
         let wrapper = document.getElementById('messagesWrapper');
         if (!wrapper) return;
+        // Проверяем, не существует ли уже сообщение с таким id
+        if (wrapper.querySelector(`[data-msg-id="${msgId}"]`)) {
+            return; // Сообщение уже есть, пропускаем
+        }
         let isOut = msg.senderId === currentUser?.uid;
         let time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         let line = document.createElement('div');
@@ -853,7 +859,12 @@
         let replyHtml = ''; if (msg.replyTo && msg.replyToText) { replyHtml = `<div class="reply-preview" style="border-left-color: var(--text-gray); margin-bottom: 4px;"><span>↳ ${escapeHtml(msg.replyToText.substring(0, 50))}</span></div>`; }
         let editedHtml = msg.edited ? '<span class="edited-mark">(ред.)</span>' : '';
         line.innerHTML = `<div class="bubble">${!isOut && (currentChatIsGroup || currentChatId === SAVED_CHAT_ID) ? `<strong class="msg-sender-name" data-uid="${msg.senderId}" style="cursor: pointer;">${senderNameHtml}</strong><br>` : ''}${replyHtml}<div class="message-text">${escapeHtml(msg.text)} ${editedHtml}</div><div class="bubble-meta">${time}</div></div>`;
-        wrapper.appendChild(line);
+        
+        if (append) {
+            wrapper.appendChild(line);
+        } else {
+            wrapper.prepend(line);
+        }
         const bubble = line.querySelector('.bubble');
         bubble.addEventListener('contextmenu', (e) => { e.preventDefault(); e.stopPropagation(); showMessageContextMenu(e, msgId, msg.text, isOut, msg.senderId, line); });
         const senderSpan = line.querySelector('.msg-sender-name');
@@ -862,30 +873,71 @@
     }
 
     async function loadMessages(chatId) {
-        if (currentMessageListener) { db.ref(`messages/${currentMessageListener.chatId}`).off('child_added', currentMessageListener.handler); }
+        // Отключаем старый слушатель
+        if (currentMessageListener) { 
+            db.ref(`messages/${currentMessageListener.chatId}`).off('child_added', currentMessageListener.handler); 
+            currentMessageListener = null; 
+        }
+        
         let wrapper = document.getElementById('messagesWrapper');
         if (wrapper) wrapper.innerHTML = '<div style="text-align:center;color:var(--text-gray);padding:2rem;">Загрузка...</div>';
+        
+        // Загружаем все сообщения один раз
         let snap = await db.ref(`messages/${chatId}`).once('value');
         let msgs = snap.val() || {};
         let sorted = Object.entries(msgs).sort((a, b) => a[1].timestamp - b[1].timestamp);
+        
         if (wrapper) wrapper.innerHTML = '';
-        for (let [id, msg] of sorted) renderMessage(msg, id);
+        for (let [id, msg] of sorted) {
+            renderMessage(msg, id, true);
+        }
         if (sorted.length === 0 && wrapper) wrapper.innerHTML = '<div style="text-align:center;color:var(--text-gray);padding:2rem;">Нет сообщений. Напишите что-нибудь!</div>';
-        let handler = (snap) => { renderMessage(snap.val(), snap.key); };
+        
+        // Устанавливаем слушатель только на новые сообщения (после последней загрузки)
+        let lastTimestamp = sorted.length > 0 ? sorted[sorted.length - 1][1].timestamp : 0;
+        
+        // Слушаем только новые сообщения
+        let handler = (snap) => {
+            const msg = snap.val();
+            // Проверяем, что сообщение новее последнего загруженного
+            if (msg.timestamp > lastTimestamp) {
+                renderMessage(msg, snap.key, true);
+            } else {
+                // Если сообщение уже было загружено, проверяем, есть ли оно в DOM
+                const wrapperEl = document.getElementById('messagesWrapper');
+                if (wrapperEl && !wrapperEl.querySelector(`[data-msg-id="${snap.key}"]`)) {
+                    renderMessage(msg, snap.key, true);
+                }
+            }
+        };
+        
         db.ref(`messages/${chatId}`).on('child_added', handler);
         currentMessageListener = { chatId, handler };
+        isMessagesLoaded = true;
         scrollToBottom();
     }
 
     async function openChat(chatId, chatName, otherUid, isGroup, isSaved = false, verified = false) {
-        if (currentChatId === chatId) return;
-        if (currentMessageListener) { db.ref(`messages/${currentMessageListener.chatId}`).off('child_added', currentMessageListener.handler); }
+        if (currentChatId === chatId && isMessagesLoaded) {
+            // Если уже открыт этот чат и сообщения загружены, просто прокручиваем вниз
+            scrollToBottom();
+            return;
+        }
+        
+        // Отключаем старый слушатель
+        if (currentMessageListener) { 
+            db.ref(`messages/${currentMessageListener.chatId}`).off('child_added', currentMessageListener.handler); 
+            currentMessageListener = null; 
+        }
+        
         currentChatId = chatId;
         currentChatIsGroup = isGroup;
         currentChatOtherId = otherUid;
         currentChatIsSaved = isSaved || chatId === SAVED_CHAT_ID;
+        isMessagesLoaded = false;
         cancelReply();
         cancelEditMessage();
+        
         let displayName = chatName;
         let displayVerified = verified;
         if (isSaved || chatId === SAVED_CHAT_ID) { displayName = 'Избранное'; displayVerified = false; }
@@ -898,6 +950,7 @@
         if (isSaved || chatId === SAVED_CHAT_ID) { setAvatarImage(activeAvatar, true, ''); setAvatarImage(inspectAvatar, true, ''); }
         else if (isGroup) { setAvatarImage(activeAvatar, false, chatName); setAvatarImage(inspectAvatar, false, chatName); }
         else { setAvatarImage(activeAvatar, false, chatName); setAvatarImage(inspectAvatar, false, chatName); }
+        
         await loadMessages(chatId);
         renderChats();
     }
@@ -1026,6 +1079,11 @@
     
     document.getElementById('menuLogout').onclick = async () => {
         document.getElementById('mainDrawer').style.display = 'none';
+        isMessagesLoaded = false;
+        if (currentMessageListener) { 
+            db.ref(`messages/${currentMessageListener.chatId}`).off('child_added', currentMessageListener.handler); 
+            currentMessageListener = null; 
+        }
         await auth.signOut();
     };
     
@@ -1082,6 +1140,7 @@
             currentChatIsSaved = true;
             chats = [];
             allUsersCache = {};
+            isMessagesLoaded = false;
             
             if (currentMessageListener) { 
                 db.ref(`messages/${currentMessageListener.chatId}`).off('child_added', currentMessageListener.handler); 
