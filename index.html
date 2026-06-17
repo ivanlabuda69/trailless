@@ -546,13 +546,11 @@
         if (!newText) return;
         if (!currentChatId || !currentEditingMsgId) return;
         
-        // Сохраняем в Firebase
         await db.ref(`messages/${currentChatId}/${currentEditingMsgId}`).update({ 
             text: newText, 
             edited: true 
         });
         
-        // Обновляем DOM
         if (currentEditingMsgElement) {
             updateMessageTextInDOM(currentEditingMsgElement, newText, true);
         }
@@ -893,7 +891,6 @@
         let text = input.value.trim();
         if (!text || !currentChatId || !currentUser) return;
         
-        // Если в режиме редактирования - редактируем
         if (currentEditingMsgId) {
             await confirmEditMessage();
             return;
@@ -1008,7 +1005,13 @@
     profileEditBtn.onclick = () => { hideProfileModal(); openEditProfile(); };
     document.getElementById('saveEditBtn').onclick = saveEditProfile;
     document.getElementById('cancelEditProfileBtn').onclick = () => editProfileModal.style.display = 'none';
-    document.getElementById('menuLogout').onclick = () => auth.signOut();
+    
+    // Обновленная кнопка выхода - закрывает меню и выполняет выход
+    document.getElementById('menuLogout').onclick = () => {
+        document.getElementById('mainDrawer').style.display = 'none';
+        auth.signOut();
+    };
+    
     document.getElementById('menuNewChat').onclick = () => document.getElementById('newChatModal').style.display = 'flex';
     document.getElementById('menuNewGroup').onclick = () => document.getElementById('createGroupModal').style.display = 'flex';
     document.getElementById('menuProfile').onclick = () => { if (currentUser) showProfile(currentUser.uid, true); };
@@ -1045,11 +1048,11 @@
             }
             
             landing.classList.add('hide');
+            landing.style.display = 'none';
             await loadAllUsers();
             await loadChats();
             
             setTimeout(() => {
-                landing.style.display = 'none';
                 messengerScreen.classList.add('active');
                 if (!currentChatId || currentChatId === 'saved_messages') { 
                     openChat(SAVED_CHAT_ID, 'Избранное', null, false, true, false);
@@ -1058,14 +1061,26 @@
                 setTimeout(() => { loader.style.display = 'none'; }, 300);
             }, 300);
         } else {
-            landing.style.display = 'block';
-            landing.classList.remove('hide');
-            messengerScreen.classList.remove('active');
+            // Сброс состояния при выходе
+            currentUser = null;
+            currentUserData = null;
+            currentChatId = 'saved_messages';
+            currentChatIsGroup = false;
+            currentChatOtherId = null;
+            currentChatIsSaved = true;
+            
             if (currentMessageListener) { 
                 db.ref(`messages/${currentMessageListener.chatId}`).off('child_added', currentMessageListener.handler); 
                 currentMessageListener = null; 
             }
-            currentChatId = SAVED_CHAT_ID;
+            
+            messengerScreen.classList.remove('active');
+            landing.style.display = 'block';
+            landing.classList.remove('hide');
+            
+            document.getElementById('messagesWrapper').innerHTML = '';
+            document.getElementById('chatsWrapper').innerHTML = '';
+            
             loader.classList.add('hide');
             setTimeout(() => { loader.style.display = 'none'; }, 300);
         }
