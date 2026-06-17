@@ -70,7 +70,7 @@
         .loader-overlay.hide { opacity: 0; pointer-events: none; }
         .spinner { width: 40px; height: 40px; border: 3px solid rgba(255, 255, 255, 0.06); border-top-color: #ffffff; border-radius: 50%; animation: spin 1s linear infinite; }
         
-        .landing { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000000; overflow-y: auto; z-index: 10; transition: opacity 0.5s ease; }
+        .landing { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000000; overflow-y: auto; z-index: 10; transition: opacity 0.3s ease; }
         .landing.hide { opacity: 0; pointer-events: none; }
         .container { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
         .header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.06); margin-bottom: 60px; }
@@ -740,6 +740,27 @@
         else { element.style.backgroundImage = ''; element.innerHTML = getInitials(textName); }
     }
 
+    // Функция для переключения на лендинг (главная страница)
+    function showLanding() {
+        messengerScreen.classList.remove('active');
+        landing.style.display = 'block';
+        landing.classList.remove('hide');
+        document.getElementById('messagesWrapper').innerHTML = '';
+        document.getElementById('chatsWrapper').innerHTML = '';
+        // Закрываем все модалки
+        authModal.classList.remove('active');
+        profileModal.classList.remove('active');
+        editProfileModal.style.display = 'none';
+        document.getElementById('mainDrawer').style.display = 'none';
+    }
+
+    // Функция для переключения на чат
+    function showMessenger() {
+        landing.style.display = 'none';
+        landing.classList.add('hide');
+        messengerScreen.classList.add('active');
+    }
+
     async function loadAllUsers() {
         let snap = await db.ref('users').once('value');
         let users = snap.val() || {};
@@ -1006,10 +1027,26 @@
     document.getElementById('saveEditBtn').onclick = saveEditProfile;
     document.getElementById('cancelEditProfileBtn').onclick = () => editProfileModal.style.display = 'none';
     
-    // Обновленная кнопка выхода - закрывает меню и выполняет выход
+    // Кнопка выхода - показывает лендинг (главную страницу)
     document.getElementById('menuLogout').onclick = () => {
         document.getElementById('mainDrawer').style.display = 'none';
-        auth.signOut();
+        // Отключаем слушатели сообщений
+        if (currentMessageListener) { 
+            db.ref(`messages/${currentMessageListener.chatId}`).off('child_added', currentMessageListener.handler); 
+            currentMessageListener = null; 
+        }
+        // Сбрасываем состояние
+        currentUser = null;
+        currentUserData = null;
+        currentChatId = 'saved_messages';
+        currentChatIsGroup = false;
+        currentChatOtherId = null;
+        currentChatIsSaved = true;
+        chats = [];
+        allUsersCache = {};
+        
+        // Показываем лендинг
+        showLanding();
     };
     
     document.getElementById('menuNewChat').onclick = () => document.getElementById('newChatModal').style.display = 'flex';
@@ -1047,13 +1084,13 @@
                 currentUserData = { username, firstName: username, lastName: '', verified: false };
             }
             
-            landing.classList.add('hide');
-            landing.style.display = 'none';
             await loadAllUsers();
             await loadChats();
             
+            // Показываем чат
+            showMessenger();
+            
             setTimeout(() => {
-                messengerScreen.classList.add('active');
                 if (!currentChatId || currentChatId === 'saved_messages') { 
                     openChat(SAVED_CHAT_ID, 'Избранное', null, false, true, false);
                 }
@@ -1061,26 +1098,8 @@
                 setTimeout(() => { loader.style.display = 'none'; }, 300);
             }, 300);
         } else {
-            // Сброс состояния при выходе
-            currentUser = null;
-            currentUserData = null;
-            currentChatId = 'saved_messages';
-            currentChatIsGroup = false;
-            currentChatOtherId = null;
-            currentChatIsSaved = true;
-            
-            if (currentMessageListener) { 
-                db.ref(`messages/${currentMessageListener.chatId}`).off('child_added', currentMessageListener.handler); 
-                currentMessageListener = null; 
-            }
-            
-            messengerScreen.classList.remove('active');
-            landing.style.display = 'block';
-            landing.classList.remove('hide');
-            
-            document.getElementById('messagesWrapper').innerHTML = '';
-            document.getElementById('chatsWrapper').innerHTML = '';
-            
+            // Показываем лендинг (главную страницу)
+            showLanding();
             loader.classList.add('hide');
             setTimeout(() => { loader.style.display = 'none'; }, 300);
         }
@@ -1092,8 +1111,7 @@
         if (!initCompleted) {
             loader.classList.add('hide');
             setTimeout(() => { loader.style.display = 'none'; }, 300);
-            landing.style.display = 'block';
-            landing.classList.remove('hide');
+            showLanding();
             initCompleted = true;
         }
     }, 5000);
