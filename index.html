@@ -1027,8 +1027,8 @@
     document.getElementById('saveEditBtn').onclick = saveEditProfile;
     document.getElementById('cancelEditProfileBtn').onclick = () => editProfileModal.style.display = 'none';
     
-    // Кнопка выхода - показывает лендинг (главную страницу)
-    document.getElementById('menuLogout').onclick = () => {
+    // Кнопка выхода - завершает сессию Firebase и показывает лендинг
+    document.getElementById('menuLogout').onclick = async () => {
         document.getElementById('mainDrawer').style.display = 'none';
         // Отключаем слушатели сообщений
         if (currentMessageListener) { 
@@ -1047,6 +1047,9 @@
         
         // Показываем лендинг
         showLanding();
+        
+        // ЗАВЕРШАЕМ СЕССИЮ FIREBASE
+        await auth.signOut();
     };
     
     document.getElementById('menuNewChat').onclick = () => document.getElementById('newChatModal').style.display = 'flex';
