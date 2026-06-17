@@ -727,19 +727,6 @@
     const authModal = document.getElementById('authModal');
     const messengerScreen = document.getElementById('screenMessenger');
 
-    function showAuthModal(showLogin = true) {
-        authModal.classList.add('active');
-        if (showLogin) { document.getElementById('loginCard').classList.add('active'); document.getElementById('registerCard').classList.remove('active'); }
-        else { document.getElementById('loginCard').classList.remove('active'); document.getElementById('registerCard').classList.add('active'); }
-    }
-    function hideAuthModal() { authModal.classList.remove('active'); }
-
-    function setAvatarImage(element, isSaved, textName, imageUrl = null) {
-        if (isSaved) { element.style.backgroundImage = `url('${SAVED_AVATAR_URL}')`; element.style.backgroundSize = 'cover'; element.innerHTML = ''; }
-        else if (imageUrl) { element.style.backgroundImage = `url('${imageUrl}')`; element.style.backgroundSize = 'cover'; element.innerHTML = ''; }
-        else { element.style.backgroundImage = ''; element.innerHTML = getInitials(textName); }
-    }
-
     // Функция для переключения на лендинг (главная страница)
     function showLanding() {
         messengerScreen.classList.remove('active');
@@ -759,6 +746,19 @@
         landing.style.display = 'none';
         landing.classList.add('hide');
         messengerScreen.classList.add('active');
+    }
+
+    function showAuthModal(showLogin = true) {
+        authModal.classList.add('active');
+        if (showLogin) { document.getElementById('loginCard').classList.add('active'); document.getElementById('registerCard').classList.remove('active'); }
+        else { document.getElementById('loginCard').classList.remove('active'); document.getElementById('registerCard').classList.add('active'); }
+    }
+    function hideAuthModal() { authModal.classList.remove('active'); }
+
+    function setAvatarImage(element, isSaved, textName, imageUrl = null) {
+        if (isSaved) { element.style.backgroundImage = `url('${SAVED_AVATAR_URL}')`; element.style.backgroundSize = 'cover'; element.innerHTML = ''; }
+        else if (imageUrl) { element.style.backgroundImage = `url('${imageUrl}')`; element.style.backgroundSize = 'cover'; element.innerHTML = ''; }
+        else { element.style.backgroundImage = ''; element.innerHTML = getInitials(textName); }
     }
 
     async function loadAllUsers() {
@@ -1030,26 +1030,10 @@
     // Кнопка выхода - завершает сессию Firebase и показывает лендинг
     document.getElementById('menuLogout').onclick = async () => {
         document.getElementById('mainDrawer').style.display = 'none';
-        // Отключаем слушатели сообщений
-        if (currentMessageListener) { 
-            db.ref(`messages/${currentMessageListener.chatId}`).off('child_added', currentMessageListener.handler); 
-            currentMessageListener = null; 
-        }
-        // Сбрасываем состояние
-        currentUser = null;
-        currentUserData = null;
-        currentChatId = 'saved_messages';
-        currentChatIsGroup = false;
-        currentChatOtherId = null;
-        currentChatIsSaved = true;
-        chats = [];
-        allUsersCache = {};
-        
-        // Показываем лендинг
-        showLanding();
-        
         // ЗАВЕРШАЕМ СЕССИЮ FIREBASE
         await auth.signOut();
+        // После signOut сработает onAuthStateChanged с user = null
+        // и покажет лендинг
     };
     
     document.getElementById('menuNewChat').onclick = () => document.getElementById('newChatModal').style.display = 'flex';
@@ -1101,7 +1085,23 @@
                 setTimeout(() => { loader.style.display = 'none'; }, 300);
             }, 300);
         } else {
-            // Показываем лендинг (главную страницу)
+            // Сбрасываем состояние при выходе
+            currentUser = null;
+            currentUserData = null;
+            currentChatId = 'saved_messages';
+            currentChatIsGroup = false;
+            currentChatOtherId = null;
+            currentChatIsSaved = true;
+            chats = [];
+            allUsersCache = {};
+            
+            // Отключаем слушатели сообщений
+            if (currentMessageListener) { 
+                db.ref(`messages/${currentMessageListener.chatId}`).off('child_added', currentMessageListener.handler); 
+                currentMessageListener = null; 
+            }
+            
+            // Показываем лендинг
             showLanding();
             loader.classList.add('hide');
             setTimeout(() => { loader.style.display = 'none'; }, 300);
